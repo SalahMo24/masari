@@ -26,7 +26,7 @@ export const lightTheme: AppTheme = {
     ...DefaultTheme.colors,
     primary: palette.nileGreen.base,
     background: palette.linenWhite.base,
-    card: palette.linenWhite.warm,
+    card: palette.linenWhite.base,
     text: palette.blackEarth.base,
     border: palette.stone.light,
     notification: palette.pharaonicGold.base,
