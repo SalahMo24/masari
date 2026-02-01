@@ -1,18 +1,17 @@
-import { MaterialIcons } from "@expo/vector-icons";
 import { useMemo } from "react";
 import {
-  I18nManager,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Circle, Defs, Pattern, Rect } from "react-native-svg";
 
-import BarChart from "@/src/components/bar-chart.component";
+import ActivityCard from "@/src/components/activity-card.component";
+import BarChartCard from "@/src/components/bar-chart-card.component";
+import DonutChartCard from "@/src/components/donut-chart-card.component";
 import Wallet from "@/src/components/wallet.component";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
@@ -32,83 +31,9 @@ const monoFont = Platform.select({
   default: "monospace",
 });
 
-function LotusPattern({ color }: { color: string }) {
-  return (
-    <Svg
-      style={StyleSheet.absoluteFill}
-      width="100%"
-      height="100%"
-      preserveAspectRatio="xMidYMid slice"
-      pointerEvents="none"
-    >
-      <Defs>
-        <Pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
-          <Rect x="2" y="2" width="2" height="2" fill={color} opacity={0.08} />
-        </Pattern>
-      </Defs>
-      <Rect width="100%" height="100%" fill="url(#dots)" />
-    </Svg>
-  );
-}
-
-function DonutChart({
-  size,
-  strokeWidth,
-  segments,
-  trackColor,
-}: {
-  size: number;
-  strokeWidth: number;
-  segments: { percent: number; color: string }[];
-  trackColor: string;
-}) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const normalizedSegments = segments.map((segment) => ({
-    ...segment,
-    length: circumference * segment.percent,
-  }));
-  let cumulativeOffset = 0;
-
-  return (
-    <Svg width={size} height={size}>
-      <Circle
-        cx={size / 2}
-        cy={size / 2}
-        r={radius}
-        stroke={trackColor}
-        strokeWidth={strokeWidth}
-        fill="transparent"
-      />
-      {normalizedSegments.map((segment, index) => {
-        const dasharray = `${segment.length} ${circumference - segment.length}`;
-        const dashoffset = -cumulativeOffset;
-        cumulativeOffset += segment.length;
-        return (
-          <Circle
-            key={`segment-${index}`}
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke={segment.color}
-            strokeWidth={strokeWidth}
-            strokeDasharray={dasharray}
-            strokeDashoffset={dashoffset}
-            strokeLinecap="round"
-            fill="transparent"
-            transform={`rotate(-90 ${size / 2} ${size / 2})`}
-          />
-        );
-      })}
-    </Svg>
-  );
-}
-
 export default function DashboardScreen() {
   const theme = useAppTheme();
-  const insets = useSafeAreaInsets();
   const { t } = useI18n();
-  const isRtl = I18nManager.isRTL;
 
   const colors = useMemo(
     () => ({
@@ -164,56 +89,15 @@ export default function DashboardScreen() {
     { percent: 0.15, color: colors.gold },
   ];
 
-  const fabBottom = insets.bottom + 88;
-
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <LotusPattern color={"red"} />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={{
           paddingBottom: 160,
         }}
-        stickyHeaderIndices={[0]}
         showsVerticalScrollIndicator={false}
       >
-        <View
-          style={[
-            styles.header,
-            {
-              backgroundColor: colors.background,
-              borderBottomColor: colors.border,
-              paddingTop: insets.top + 8,
-            },
-          ]}
-        >
-          <View style={[styles.headerLeft]}>
-            <MaterialIcons name="security" size={28} color={colors.primary} />
-            <Text style={[styles.headerTitle, { color: colors.text }]}>
-              {t("dashboard.brand")}
-            </Text>
-          </View>
-          <View style={[styles.headerRight]}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.iconButton,
-                {
-                  backgroundColor: pressed ? colors.border : "transparent",
-                },
-              ]}
-            >
-              <MaterialIcons
-                name="visibility"
-                size={22}
-                color={colors.primary}
-              />
-            </Pressable>
-            <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-              <Text style={styles.avatarText}>KA</Text>
-            </View>
-          </View>
-        </View>
-
         <View style={styles.section}>
           <View style={[styles.sectionTitleRow]}>
             <Text style={[styles.sectionTitle, { color: colors.muted }]}>
@@ -242,202 +126,21 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        <View style={styles.section}>
-          <View style={[styles.sectionRow]}>
-            <Text
-              style={[
-                styles.sectionTitle,
-                { color: colors.muted, textAlign: isRtl ? "right" : "left" },
-              ]}
-            >
-              {t("dashboard.spendingTrend")}
-            </Text>
-            <View style={[styles.sectionRowRight]}>
-              <Pressable style={styles.chevronButton}>
-                <MaterialIcons
-                  name="chevron-left"
-                  size={18}
-                  color={colors.primary}
-                />
-              </Pressable>
-              <View
-                style={[styles.rangePill, { backgroundColor: colors.border }]}
-              >
-                <Text style={[styles.rangeText, { color: colors.text }]}>
-                  {t("dashboard.dateRange")}
-                </Text>
-              </View>
-              <Pressable style={styles.chevronButton}>
-                <MaterialIcons
-                  name="chevron-right"
-                  size={18}
-                  color={colors.primary}
-                />
-              </Pressable>
-            </View>
-          </View>
-          <View
-            style={[
-              styles.card,
-              styles.spendingCard,
-              { backgroundColor: colors.card, borderColor: colors.border },
-            ]}
-          >
-            <View style={[styles.spendingHeader]}>
-              <View>
-                <Text
-                  style={[
-                    styles.spendingValue,
-                    {
-                      color: colors.text,
-                      fontFamily: monoFont,
-                    },
-                  ]}
-                >
-                  {t("dashboard.currency")} 4,120.50
-                </Text>
-                <Text
-                  style={[
-                    styles.spendingLabel,
-                    {
-                      color: colors.muted,
-                    },
-                  ]}
-                >
-                  {t("dashboard.avgPerDay")}
-                </Text>
-              </View>
-              <View
-                style={[styles.trendBadge, { backgroundColor: colors.border }]}
-              >
-                <MaterialIcons
-                  name="trending-up"
-                  size={14}
-                  color={colors.muted}
-                />
-                <Text style={[styles.trendText, { color: colors.muted }]}>
-                  {t("dashboard.trendUp")}
-                </Text>
-              </View>
-            </View>
-            <BarChart barData={barData} colors={colors} />
-          </View>
-        </View>
+        <BarChartCard colors={colors} barData={barData} monoFont={monoFont} />
 
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.muted }]}>
-            {t("dashboard.categoryBreakdown")}
-          </Text>
-          <View
-            style={[
-              styles.card,
-              styles.categoryCard,
-              { backgroundColor: colors.card, borderColor: colors.border },
-            ]}
-          >
-            <View style={styles.donutWrapper}>
-              <View style={styles.donutContainer}>
-                <DonutChart
-                  size={160}
-                  strokeWidth={12}
-                  segments={spendingSegments}
-                  trackColor={colors.border}
-                />
-                <View style={styles.donutCenter}>
-                  <Text
-                    style={[
-                      styles.donutLabel,
-                      {
-                        color: colors.muted,
-                      },
-                    ]}
-                  >
-                    {t("dashboard.monthly")}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.donutValue,
-                      {
-                        color: colors.text,
-                        fontFamily: monoFont,
-                      },
-                    ]}
-                  >
-                    12,450
-                  </Text>
-                </View>
-              </View>
-            </View>
-            <View
-              style={[styles.categoryList, { borderTopColor: colors.border }]}
-            >
-              {categories.map((category) => (
-                <View key={category.label} style={[styles.categoryRow]}>
-                  <View style={[styles.categoryLeft]}>
-                    <View
-                      style={[
-                        styles.categoryDot,
-                        { backgroundColor: category.color },
-                      ]}
-                    />
-                    <View>
-                      <Text
-                        style={[
-                          styles.categoryLabel,
-                          {
-                            color: colors.text,
-                          },
-                        ]}
-                      >
-                        {category.label}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.categorySubtitle,
-                          {
-                            color: colors.muted,
-                          },
-                        ]}
-                      >
-                        {category.subtitle}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={[styles.categoryRight]}>
-                    <Text
-                      style={[
-                        styles.categoryAmount,
-                        {
-                          color: colors.text,
-                          fontFamily: monoFont,
-                        },
-                      ]}
-                    >
-                      {category.amount}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.categoryPercent,
-                        {
-                          color: colors.muted,
-                        },
-                      ]}
-                    >
-                      {category.percent}
-                    </Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-        </View>
+        <DonutChartCard
+          colors={colors}
+          categories={categories}
+          spendingSegments={spendingSegments}
+          monoFont={monoFont}
+        />
 
         <View style={styles.section}>
           <View style={[styles.sectionRow]}>
             <Text style={[styles.sectionTitle, { color: colors.muted }]}>
               {t("dashboard.recentActivity")}
             </Text>
-            <Pressable
+            <TouchableOpacity
               style={[
                 styles.viewAll,
                 { backgroundColor: `${colors.primary}14` },
@@ -453,197 +156,43 @@ export default function DashboardScreen() {
               >
                 {t("dashboard.viewAll")}
               </Text>
-            </Pressable>
+            </TouchableOpacity>
           </View>
           <View style={styles.activityList}>
-            <View
-              style={[
-                styles.activityRow,
-                {
-                  backgroundColor: `${colors.card}CC`,
-                  borderBottomColor: colors.border,
-                },
-              ]}
-            >
-              <View
-                style={[
-                  styles.activityIcon,
-                  { backgroundColor: colors.border },
-                ]}
-              >
-                <MaterialIcons
-                  name="shopping-cart"
-                  size={22}
-                  color={colors.muted}
-                />
-              </View>
-              <View style={styles.activityBody}>
-                <Text style={[styles.activityTitle, { color: colors.text }]}>
-                  {t("dashboard.activity.groceriesTitle")}
-                </Text>
-                <Text
-                  style={[
-                    styles.activityMeta,
-                    {
-                      color: colors.muted,
-                    },
-                  ]}
-                >
-                  {t("dashboard.activity.groceriesMeta")}
-                </Text>
-              </View>
-              <View style={[styles.activityRight]}>
-                <Text
-                  style={[
-                    styles.activityAmount,
-                    {
-                      color: colors.text,
-                      fontFamily: monoFont,
-                    },
-                  ]}
-                >
-                  -1,240.00
-                </Text>
-                <Text
-                  style={[
-                    styles.activitySource,
-                    {
-                      color: colors.muted,
-                    },
-                  ]}
-                >
-                  {t("dashboard.activity.groceriesSource")}
-                </Text>
-              </View>
-            </View>
-            <View
-              style={[
-                styles.activityRow,
-                {
-                  backgroundColor: `${colors.card}CC`,
-                  borderBottomColor: colors.border,
-                },
-              ]}
-            >
-              <View
-                style={[
-                  styles.activityIcon,
-                  { backgroundColor: `${colors.primary}14` },
-                ]}
-              >
-                <MaterialIcons name="work" size={22} color={colors.primary} />
-              </View>
-              <View style={styles.activityBody}>
-                <Text style={[styles.activityTitle, { color: colors.text }]}>
-                  {t("dashboard.activity.salaryTitle")}
-                </Text>
-                <Text
-                  style={[
-                    styles.activityMeta,
-                    {
-                      color: colors.muted,
-                    },
-                  ]}
-                >
-                  {t("dashboard.activity.salaryMeta")}
-                </Text>
-              </View>
-              <View style={[styles.activityRight]}>
-                <Text
-                  style={[
-                    styles.activityAmount,
-                    {
-                      color: colors.nileGreen,
-                      fontFamily: monoFont,
-                    },
-                  ]}
-                >
-                  +32,000.00
-                </Text>
-                <Text
-                  style={[
-                    styles.activitySource,
-                    {
-                      color: colors.muted,
-                    },
-                  ]}
-                >
-                  {t("dashboard.activity.salarySource")}
-                </Text>
-              </View>
-            </View>
-            <View
-              style={[
-                styles.activityRow,
-                {
-                  backgroundColor: `${colors.card}CC`,
-                  borderBottomColor: colors.border,
-                },
-              ]}
-            >
-              <View
-                style={[
-                  styles.activityIcon,
-                  { backgroundColor: colors.border },
-                ]}
-              >
-                <MaterialIcons name="commute" size={22} color={colors.muted} />
-              </View>
-              <View style={styles.activityBody}>
-                <Text style={[styles.activityTitle, { color: colors.text }]}>
-                  {t("dashboard.activity.transportTitle")}
-                </Text>
-                <Text
-                  style={[
-                    styles.activityMeta,
-                    {
-                      color: colors.muted,
-                    },
-                  ]}
-                >
-                  {t("dashboard.activity.transportMeta")}
-                </Text>
-              </View>
-              <View style={[styles.activityRight]}>
-                <Text
-                  style={[
-                    styles.activityAmount,
-                    {
-                      color: colors.text,
-                      fontFamily: monoFont,
-                    },
-                  ]}
-                >
-                  -145.50
-                </Text>
-                <Text
-                  style={[
-                    styles.activitySource,
-                    {
-                      color: colors.muted,
-                    },
-                  ]}
-                >
-                  {t("dashboard.activity.transportSource")}
-                </Text>
-              </View>
-            </View>
+            <ActivityCard
+              icon="shopping-cart"
+              transactionName={t("dashboard.activity.groceriesTitle")}
+              transactionCategory={t("dashboard.activity.groceriesMeta")}
+              transactionType="expense"
+              transactionDate={t("dashboard.activity.groceriesMeta")}
+              amount={"-1,240.00"}
+              source={t("dashboard.activity.groceriesMeta")}
+              monoFont={monoFont}
+            />
+            <ActivityCard
+              icon="work"
+              transactionName={t("dashboard.activity.salaryTitle")}
+              transactionCategory={t("dashboard.activity.salaryMeta")}
+              transactionType="income"
+              transactionDate={t("dashboard.activity.salaryMeta")}
+              amount={"+1,240.00"}
+              source={t("dashboard.activity.salaryMeta")}
+              monoFont={monoFont}
+            />
+            <ActivityCard
+              icon="commute"
+              transactionName={t("dashboard.activity.transportTitle")}
+              transactionCategory={t("dashboard.activity.transportMeta")}
+              transactionType="expense"
+              transactionDate={t("dashboard.activity.transportMeta")}
+              amount={"-1,240.00"}
+              source={t("dashboard.activity.transportMeta")}
+              monoFont={monoFont}
+            />
           </View>
         </View>
       </ScrollView>
 
-      <Pressable
-        style={[
-          styles.fab,
-          {
-            bottom: fabBottom,
-            backgroundColor: colors.primary,
-            shadowColor: colors.primary,
-          },
-        ]}
-      >
-        <MaterialIcons name="add" size={28} color="#fff" />
-      </Pressable>
     </View>
   );
 }
@@ -965,24 +514,5 @@ const styles = StyleSheet.create({
   activitySource: {
     fontSize: 10,
     textTransform: "uppercase",
-  },
-  fab: {
-    position: "absolute",
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
-    ...Platform.select({
-      ios: {
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
   },
 });

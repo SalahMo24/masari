@@ -47,7 +47,7 @@ const Wallet = ({
       ]}
     >
       <View style={[styles.walletHeader]}>
-        <MaterialIcons name={icon} size={20} color={colors.primary} />
+        <MaterialIcons name={icon} size={20} color={colors.muted} />
         <Text style={[styles.walletTag, { color: colors.muted }]}>{label}</Text>
       </View>
       <Text style={[styles.walletLabel, { color: colors.muted }]}>
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
         shadowRadius: 16,
       },
       android: {
-        elevation: 4,
+        elevation: 2,
       },
     }),
   },
