@@ -10,9 +10,10 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Circle, Defs, Line, Pattern, Rect } from "react-native-svg";
+import Svg, { Circle, Defs, Pattern, Rect } from "react-native-svg";
 
-import WalletComponent from "@/src/components/wallet.component";
+import BarChart from "@/src/components/bar-chart.component";
+import Wallet from "@/src/components/wallet.component";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 
@@ -46,24 +47,6 @@ function LotusPattern({ color }: { color: string }) {
         </Pattern>
       </Defs>
       <Rect width="100%" height="100%" fill="url(#dots)" />
-    </Svg>
-  );
-}
-
-function GridOverlay({ color }: { color: string }) {
-  return (
-    <Svg
-      style={StyleSheet.absoluteFill}
-      width="100%"
-      height="100%"
-      viewBox="0 0 100 100"
-      preserveAspectRatio="none"
-    >
-      <Line x1="0" y1="0" x2="100" y2="0" stroke={color} strokeWidth="1" />
-      <Line x1="0" y1="25" x2="100" y2="25" stroke={color} strokeWidth="1" />
-      <Line x1="0" y1="50" x2="100" y2="50" stroke={color} strokeWidth="1" />
-      <Line x1="0" y1="75" x2="100" y2="75" stroke={color} strokeWidth="1" />
-      <Line x1="0" y1="100" x2="100" y2="100" stroke={color} strokeWidth="1" />
     </Svg>
   );
 }
@@ -185,7 +168,7 @@ export default function DashboardScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <LotusPattern color={colors.primary} />
+      <LotusPattern color={"red"} />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={{
@@ -206,12 +189,7 @@ export default function DashboardScreen() {
         >
           <View style={[styles.headerLeft]}>
             <MaterialIcons name="security" size={28} color={colors.primary} />
-            <Text
-              style={[
-                styles.headerTitle,
-                { color: colors.text, textAlign: isRtl ? "right" : "left" },
-              ]}
-            >
+            <Text style={[styles.headerTitle, { color: colors.text }]}>
               {t("dashboard.brand")}
             </Text>
           </View>
@@ -249,13 +227,13 @@ export default function DashboardScreen() {
             />
           </View>
           <View style={[styles.grid]}>
-            <WalletComponent
+            <Wallet
               icon="account-balance"
               label={t("dashboard.bank")}
               subLabel={t("dashboard.totalBalance")}
               value="84,250"
             />
-            <WalletComponent
+            <Wallet
               icon="payments"
               label={t("dashboard.cash")}
               subLabel={t("dashboard.onHand")}
@@ -265,7 +243,7 @@ export default function DashboardScreen() {
         </View>
 
         <View style={styles.section}>
-          <View style={[styles.sectionRow, isRtl && styles.rowReverse]}>
+          <View style={[styles.sectionRow]}>
             <Text
               style={[
                 styles.sectionTitle,
@@ -274,7 +252,7 @@ export default function DashboardScreen() {
             >
               {t("dashboard.spendingTrend")}
             </Text>
-            <View style={[styles.sectionRowRight, isRtl && styles.rowReverse]}>
+            <View style={[styles.sectionRowRight]}>
               <Pressable style={styles.chevronButton}>
                 <MaterialIcons
                   name="chevron-left"
@@ -285,12 +263,7 @@ export default function DashboardScreen() {
               <View
                 style={[styles.rangePill, { backgroundColor: colors.border }]}
               >
-                <Text
-                  style={[
-                    styles.rangeText,
-                    { color: colors.text, textAlign: isRtl ? "right" : "left" },
-                  ]}
-                >
+                <Text style={[styles.rangeText, { color: colors.text }]}>
                   {t("dashboard.dateRange")}
                 </Text>
               </View>
@@ -310,7 +283,7 @@ export default function DashboardScreen() {
               { backgroundColor: colors.card, borderColor: colors.border },
             ]}
           >
-            <View style={[styles.spendingHeader, isRtl && styles.rowReverse]}>
+            <View style={[styles.spendingHeader]}>
               <View>
                 <Text
                   style={[
@@ -318,7 +291,6 @@ export default function DashboardScreen() {
                     {
                       color: colors.text,
                       fontFamily: monoFont,
-                      textAlign: isRtl ? "right" : "left",
                     },
                   ]}
                 >
@@ -329,7 +301,6 @@ export default function DashboardScreen() {
                     styles.spendingLabel,
                     {
                       color: colors.muted,
-                      textAlign: isRtl ? "right" : "left",
                     },
                   ]}
                 >
@@ -349,49 +320,12 @@ export default function DashboardScreen() {
                 </Text>
               </View>
             </View>
-            <View style={styles.barChart}>
-              <View style={styles.chartGrid}>
-                <GridOverlay color={colors.border} />
-              </View>
-              <View style={styles.barsRow}>
-                {barData.map((bar) => (
-                  <View key={bar.label} style={styles.barItem}>
-                    <View
-                      style={[
-                        styles.barFill,
-                        {
-                          backgroundColor: bar.highlight
-                            ? colors.primary
-                            : `${colors.primary}1A`,
-                          height: `${Math.round(bar.value * 100)}%`,
-                        },
-                      ]}
-                    />
-                    <Text
-                      style={[
-                        styles.barLabel,
-                        {
-                          color: bar.highlight ? colors.primary : colors.muted,
-                          fontWeight: bar.highlight ? "700" : "500",
-                        },
-                      ]}
-                    >
-                      {bar.label}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </View>
+            <BarChart barData={barData} colors={colors} />
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text
-            style={[
-              styles.sectionTitle,
-              { color: colors.muted, textAlign: isRtl ? "right" : "left" },
-            ]}
-          >
+          <Text style={[styles.sectionTitle, { color: colors.muted }]}>
             {t("dashboard.categoryBreakdown")}
           </Text>
           <View
@@ -415,7 +349,6 @@ export default function DashboardScreen() {
                       styles.donutLabel,
                       {
                         color: colors.muted,
-                        textAlign: isRtl ? "right" : "left",
                       },
                     ]}
                   >
@@ -427,7 +360,6 @@ export default function DashboardScreen() {
                       {
                         color: colors.text,
                         fontFamily: monoFont,
-                        textAlign: isRtl ? "right" : "left",
                       },
                     ]}
                   >
@@ -440,13 +372,8 @@ export default function DashboardScreen() {
               style={[styles.categoryList, { borderTopColor: colors.border }]}
             >
               {categories.map((category) => (
-                <View
-                  key={category.label}
-                  style={[styles.categoryRow, isRtl && styles.rowReverse]}
-                >
-                  <View
-                    style={[styles.categoryLeft, isRtl && styles.rowReverse]}
-                  >
+                <View key={category.label} style={[styles.categoryRow]}>
+                  <View style={[styles.categoryLeft]}>
                     <View
                       style={[
                         styles.categoryDot,
@@ -459,7 +386,6 @@ export default function DashboardScreen() {
                           styles.categoryLabel,
                           {
                             color: colors.text,
-                            textAlign: isRtl ? "right" : "left",
                           },
                         ]}
                       >
@@ -470,7 +396,6 @@ export default function DashboardScreen() {
                           styles.categorySubtitle,
                           {
                             color: colors.muted,
-                            textAlign: isRtl ? "right" : "left",
                           },
                         ]}
                       >
@@ -478,16 +403,13 @@ export default function DashboardScreen() {
                       </Text>
                     </View>
                   </View>
-                  <View
-                    style={[styles.categoryRight, isRtl && styles.alignStart]}
-                  >
+                  <View style={[styles.categoryRight]}>
                     <Text
                       style={[
                         styles.categoryAmount,
                         {
                           color: colors.text,
                           fontFamily: monoFont,
-                          textAlign: isRtl ? "right" : "left",
                         },
                       ]}
                     >
@@ -498,7 +420,6 @@ export default function DashboardScreen() {
                         styles.categoryPercent,
                         {
                           color: colors.muted,
-                          textAlign: isRtl ? "right" : "left",
                         },
                       ]}
                     >
@@ -512,13 +433,8 @@ export default function DashboardScreen() {
         </View>
 
         <View style={styles.section}>
-          <View style={[styles.sectionRow, isRtl && styles.rowReverse]}>
-            <Text
-              style={[
-                styles.sectionTitle,
-                { color: colors.muted, textAlign: isRtl ? "right" : "left" },
-              ]}
-            >
+          <View style={[styles.sectionRow]}>
+            <Text style={[styles.sectionTitle, { color: colors.muted }]}>
               {t("dashboard.recentActivity")}
             </Text>
             <Pressable
@@ -532,7 +448,6 @@ export default function DashboardScreen() {
                   styles.viewAllText,
                   {
                     color: colors.primary,
-                    textAlign: isRtl ? "right" : "left",
                   },
                 ]}
               >
@@ -548,7 +463,6 @@ export default function DashboardScreen() {
                   backgroundColor: `${colors.card}CC`,
                   borderBottomColor: colors.border,
                 },
-                isRtl && styles.rowReverse,
               ]}
             >
               <View
@@ -564,12 +478,7 @@ export default function DashboardScreen() {
                 />
               </View>
               <View style={styles.activityBody}>
-                <Text
-                  style={[
-                    styles.activityTitle,
-                    { color: colors.text, textAlign: isRtl ? "right" : "left" },
-                  ]}
-                >
+                <Text style={[styles.activityTitle, { color: colors.text }]}>
                   {t("dashboard.activity.groceriesTitle")}
                 </Text>
                 <Text
@@ -577,21 +486,19 @@ export default function DashboardScreen() {
                     styles.activityMeta,
                     {
                       color: colors.muted,
-                      textAlign: isRtl ? "right" : "left",
                     },
                   ]}
                 >
                   {t("dashboard.activity.groceriesMeta")}
                 </Text>
               </View>
-              <View style={[styles.activityRight, isRtl && styles.alignStart]}>
+              <View style={[styles.activityRight]}>
                 <Text
                   style={[
                     styles.activityAmount,
                     {
                       color: colors.text,
                       fontFamily: monoFont,
-                      textAlign: isRtl ? "right" : "left",
                     },
                   ]}
                 >
@@ -602,7 +509,6 @@ export default function DashboardScreen() {
                     styles.activitySource,
                     {
                       color: colors.muted,
-                      textAlign: isRtl ? "right" : "left",
                     },
                   ]}
                 >
@@ -617,7 +523,6 @@ export default function DashboardScreen() {
                   backgroundColor: `${colors.card}CC`,
                   borderBottomColor: colors.border,
                 },
-                isRtl && styles.rowReverse,
               ]}
             >
               <View
@@ -629,12 +534,7 @@ export default function DashboardScreen() {
                 <MaterialIcons name="work" size={22} color={colors.primary} />
               </View>
               <View style={styles.activityBody}>
-                <Text
-                  style={[
-                    styles.activityTitle,
-                    { color: colors.text, textAlign: isRtl ? "right" : "left" },
-                  ]}
-                >
+                <Text style={[styles.activityTitle, { color: colors.text }]}>
                   {t("dashboard.activity.salaryTitle")}
                 </Text>
                 <Text
@@ -642,21 +542,19 @@ export default function DashboardScreen() {
                     styles.activityMeta,
                     {
                       color: colors.muted,
-                      textAlign: isRtl ? "right" : "left",
                     },
                   ]}
                 >
                   {t("dashboard.activity.salaryMeta")}
                 </Text>
               </View>
-              <View style={[styles.activityRight, isRtl && styles.alignStart]}>
+              <View style={[styles.activityRight]}>
                 <Text
                   style={[
                     styles.activityAmount,
                     {
                       color: colors.nileGreen,
                       fontFamily: monoFont,
-                      textAlign: isRtl ? "right" : "left",
                     },
                   ]}
                 >
@@ -667,7 +565,6 @@ export default function DashboardScreen() {
                     styles.activitySource,
                     {
                       color: colors.muted,
-                      textAlign: isRtl ? "right" : "left",
                     },
                   ]}
                 >
@@ -682,7 +579,6 @@ export default function DashboardScreen() {
                   backgroundColor: `${colors.card}CC`,
                   borderBottomColor: colors.border,
                 },
-                isRtl && styles.rowReverse,
               ]}
             >
               <View
@@ -694,12 +590,7 @@ export default function DashboardScreen() {
                 <MaterialIcons name="commute" size={22} color={colors.muted} />
               </View>
               <View style={styles.activityBody}>
-                <Text
-                  style={[
-                    styles.activityTitle,
-                    { color: colors.text, textAlign: isRtl ? "right" : "left" },
-                  ]}
-                >
+                <Text style={[styles.activityTitle, { color: colors.text }]}>
                   {t("dashboard.activity.transportTitle")}
                 </Text>
                 <Text
@@ -707,21 +598,19 @@ export default function DashboardScreen() {
                     styles.activityMeta,
                     {
                       color: colors.muted,
-                      textAlign: isRtl ? "right" : "left",
                     },
                   ]}
                 >
                   {t("dashboard.activity.transportMeta")}
                 </Text>
               </View>
-              <View style={[styles.activityRight, isRtl && styles.alignStart]}>
+              <View style={[styles.activityRight]}>
                 <Text
                   style={[
                     styles.activityAmount,
                     {
                       color: colors.text,
                       fontFamily: monoFont,
-                      textAlign: isRtl ? "right" : "left",
                     },
                   ]}
                 >
@@ -732,7 +621,6 @@ export default function DashboardScreen() {
                     styles.activitySource,
                     {
                       color: colors.muted,
-                      textAlign: isRtl ? "right" : "left",
                     },
                   ]}
                 >

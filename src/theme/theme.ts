@@ -5,7 +5,7 @@ const palette = {
   pharaonicGold: { deep: "#D4AF37", base: "#F59E0B" },
   egyptianBlue: { deep: "#1034A6", base: "#1E40AF" },
   blackEarth: { deep: "#0F172A", base: "#1C1917" },
-  linenWhite: { warm: "#F5F5DC", base: "#FAFAF9" },
+  linenWhite: { warm: "#F5F5DC", base: "#FAFAF9", light: "#f4f1ea" },
   desertRed: { deep: "#DC2626", base: "#EA580C" },
   stone: { light: "#E7E5E4", mid: "#57534E", dark: "#1F2937" },
 };
@@ -25,7 +25,7 @@ export const lightTheme: AppTheme = {
   colors: {
     ...DefaultTheme.colors,
     primary: palette.nileGreen.base,
-    background: palette.linenWhite.base,
+    background: palette.linenWhite.light,
     card: palette.linenWhite.base,
     text: palette.blackEarth.base,
     border: palette.stone.light,
