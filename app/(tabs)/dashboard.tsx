@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import {
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,10 +8,10 @@ import {
   View,
 } from "react-native";
 
-import ActivityCard from "@/src/components/activity-card.component";
-import BarChartCard from "@/src/components/bar-chart-card.component";
-import DonutChartCard from "@/src/components/donut-chart-card.component";
-import Wallet from "@/src/components/wallet.component";
+import ActivityCard from "@/src/components/dashboard/activity-card.component";
+import BarChartCard from "@/src/components/dashboard/bar-chart-card.component";
+import DonutChartCard from "@/src/components/dashboard/donut-chart-card.component";
+import Wallet from "@/src/components/dashboard/wallet.component";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 
@@ -192,7 +191,6 @@ export default function DashboardScreen() {
           </View>
         </View>
       </ScrollView>
-
     </View>
   );
 }

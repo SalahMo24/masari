@@ -1,0 +1,8 @@
+this is a finance transaction react native expo application targeted at the Egyptain Market where it is designed to help
+users navigate their finances like Pros. the core of the app has all the features a normal finance app has
+the unique addition is "Ameen" the AI agent that will have access to the user finance info in the app and help
+the user budget, save money, pay debts and overall have healthier finances.
+
+Here are some rules while developing:
+- for the microcopy we need to have a localized arabic and english versions
+- if we are building a new screen we breakdown the screen elements into components, components do not need to be overlly generic or too specific they just need to fit the job

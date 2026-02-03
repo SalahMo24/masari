@@ -1,8 +1,8 @@
+import { TransactionType } from "@/src/data/entities";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { TransactionType } from "../data/entities";
 
 const ActivityCard = ({
   icon,
