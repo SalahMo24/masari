@@ -1,14 +1,3 @@
-import { transactionRepository } from "@/src/data/repositories";
-import type { TransactionType } from "@/src/data/entities";
-import { useI18n } from "@/src/i18n/useI18n";
-import { useAppTheme } from "@/src/theme/useAppTheme";
-import { formatAmountForSummary } from "@/src/utils/amount";
-import {
-  useAmountInput,
-  useCategorySelection,
-  useTransactionData,
-  useWalletSelection,
-} from "@/src/hooks/transactions";
 import {
   AmountDisplay,
   CategoryChips,
@@ -20,6 +9,17 @@ import {
   TransactionSummary,
   WalletSection,
 } from "@/src/components/transactions";
+import type { TransactionType } from "@/src/data/entities";
+import { transactionRepository } from "@/src/data/repositories";
+import {
+  useAmountInput,
+  useCategorySelection,
+  useTransactionData,
+  useWalletSelection,
+} from "@/src/hooks/transactions";
+import { useI18n } from "@/src/i18n/useI18n";
+import { useAppTheme } from "@/src/theme/useAppTheme";
+import { formatAmountForSummary } from "@/src/utils/amount";
 import { Stack, router } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -50,6 +50,9 @@ export default function NewTransactionScreen() {
   const {
     parsedAmount,
     formattedAmount,
+    hasDecimalInput,
+    integerDigitsEntered,
+    decimalDigitsEntered,
     onPressDigit,
     onPressDecimal,
     onPressBackspace,
@@ -214,7 +217,7 @@ export default function NewTransactionScreen() {
 
       await refreshData();
       router.back();
-    } catch {
+    } catch (error) {
       Alert.alert(t("transaction.error"), t("transaction.error.save"));
     } finally {
       setSaving(false);
@@ -270,6 +273,9 @@ export default function NewTransactionScreen() {
             <AmountDisplay
               currency={currency}
               formattedAmount={formattedAmount}
+              hasDecimalInput={hasDecimalInput}
+              integerDigitsEntered={integerDigitsEntered}
+              decimalDigitsEntered={decimalDigitsEntered}
               currencyColor={theme.colors.mutedText}
               amountColor={
                 mode === "income" ? theme.colors.success : theme.colors.text
