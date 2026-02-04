@@ -50,13 +50,16 @@ export default function NewTransactionScreen() {
   const {
     parsedAmount,
     formattedAmount,
-    hasDecimalInput,
     integerDigitsEntered,
     decimalDigitsEntered,
+    cursorPart,
+    operator,
     onPressDigit,
-    onPressDecimal,
+    onPressDotToggle,
     onPressBackspace,
     onLongPressClear,
+    onPressOperator,
+    onPressEquals,
   } = useAmountInput();
 
   // Wallet selection
@@ -273,9 +276,9 @@ export default function NewTransactionScreen() {
             <AmountDisplay
               currency={currency}
               formattedAmount={formattedAmount}
-              hasDecimalInput={hasDecimalInput}
               integerDigitsEntered={integerDigitsEntered}
               decimalDigitsEntered={decimalDigitsEntered}
+              cursorPart={cursorPart}
               currencyColor={theme.colors.mutedText}
               amountColor={
                 mode === "income" ? theme.colors.success : theme.colors.text
@@ -373,8 +376,12 @@ export default function NewTransactionScreen() {
             <Keypad
               onDigit={onPressDigit}
               onBackspace={onPressBackspace}
-              onDecimal={onPressDecimal}
+              onDotToggle={onPressDotToggle}
               onLongPressClear={onLongPressClear}
+              onOperator={onPressOperator}
+              onEquals={onPressEquals}
+              operator={operator}
+              cursorPart={cursorPart}
               border={theme.colors.border}
               background={theme.colors.card}
               text={theme.colors.text}

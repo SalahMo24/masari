@@ -4,9 +4,9 @@ import { I18nManager, StyleSheet, Text, View } from "react-native";
 export interface AmountDisplayProps {
   currency: string;
   formattedAmount: string;
-  hasDecimalInput: boolean;
   integerDigitsEntered: number;
   decimalDigitsEntered: number;
+  cursorPart: "int" | "dec";
   currencyColor: string;
   amountColor: string;
 }
@@ -14,38 +14,46 @@ export interface AmountDisplayProps {
 export function AmountDisplay({
   currency,
   formattedAmount,
-  hasDecimalInput,
   integerDigitsEntered,
   decimalDigitsEntered,
+  cursorPart,
   currencyColor,
   amountColor,
 }: AmountDisplayProps) {
   const elements: React.ReactNode[] = [];
-  let integerDigitsSeen = 0;
-  let decimalDigitsSeen = 0;
-  let passedDecimal = false;
+
+  // Find caret position based on entered digits (accounting for commas in int part)
+  const dotIndex = formattedAmount.indexOf(".");
+
+  let caretIndex: number;
+  if (cursorPart === "dec") {
+    // In decimal mode: position after '.' plus entered decimal digits
+    caretIndex = dotIndex + 1 + decimalDigitsEntered;
+  } else {
+    // In integer mode: position after `integerDigitsEntered` actual digits
+    let digitCount = 0;
+    caretIndex = 0;
+    for (let i = 0; i < dotIndex; i++) {
+      const char = formattedAmount[i];
+      if (char >= "0" && char <= "9") {
+        if (digitCount === integerDigitsEntered) {
+          caretIndex = i;
+          break;
+        }
+        digitCount++;
+      }
+    }
+    // If we've passed all entered digits, caret goes at dotIndex
+    if (digitCount === integerDigitsEntered && integerDigitsEntered > 0) {
+      caretIndex = dotIndex;
+    }
+  }
 
   for (let i = 0; i < formattedAmount.length; i++) {
     const char = formattedAmount[i];
-    const isDecimalPoint = char === ".";
-    const isDigit = char >= "0" && char <= "9";
-
-    // Place caret before integer digit if we haven't entered this digit yet
-    if (isDigit && !passedDecimal) {
-      if (integerDigitsSeen === integerDigitsEntered && !hasDecimalInput) {
-        elements.push(
-          <Text key={`caret-int-${i}`} style={[styles.caret, { color: amountColor }]}>
-            |
-          </Text>
-        );
-      }
-      integerDigitsSeen += 1;
-    }
-
-    // Place caret before decimal point if we've entered all integer digits but no decimal
-    if (isDecimalPoint && !hasDecimalInput && integerDigitsSeen === integerDigitsEntered && integerDigitsEntered > 0) {
+    if (i === caretIndex) {
       elements.push(
-        <Text key="caret-before-decimal" style={[styles.caret, { color: amountColor }]}>
+        <Text key={`caret-${i}`} style={[styles.caret, { color: amountColor }]}>
           |
         </Text>
       );
@@ -56,30 +64,14 @@ export function AmountDisplay({
         {char}
       </Text>
     );
+  }
 
-    if (isDecimalPoint) {
-      passedDecimal = true;
-      // Place caret right after decimal point if user just entered decimal (no decimal digits yet)
-      if (hasDecimalInput && decimalDigitsEntered === 0) {
-        elements.push(
-          <Text key="caret-after-decimal" style={[styles.caret, { color: amountColor }]}>
-            |
-          </Text>
-        );
-      }
-    }
-
-    // Track decimal digits and place caret after the entered ones
-    if (isDigit && passedDecimal) {
-      decimalDigitsSeen += 1;
-      if (hasDecimalInput && decimalDigitsSeen === decimalDigitsEntered && decimalDigitsEntered > 0) {
-        elements.push(
-          <Text key={`caret-decimal-${i}`} style={[styles.caret, { color: amountColor }]}>
-            |
-          </Text>
-        );
-      }
-    }
+  if (caretIndex >= formattedAmount.length) {
+    elements.push(
+      <Text key="caret-end" style={[styles.caret, { color: amountColor }]}>
+        |
+      </Text>
+    );
   }
 
   return (

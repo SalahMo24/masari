@@ -4,8 +4,12 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 export interface KeypadProps {
   onDigit: (digit: string) => void;
   onBackspace: () => void;
-  onDecimal: () => void;
+  onDotToggle: () => void;
   onLongPressClear: () => void;
+  onOperator: (op: "+" | "-") => void;
+  onEquals: () => void;
+  operator: "+" | "-";
+  cursorPart: "int" | "dec";
   border: string;
   background: string;
   text: string;
@@ -14,30 +18,46 @@ export interface KeypadProps {
 
 type KeyType =
   | { type: "digit"; value: string }
-  | { type: "decimal" }
   | { type: "zero" }
-  | { type: "backspace" };
+  | { type: "dot" }
+  | { type: "plus" }
+  | { type: "minus" }
+  | { type: "equals" }
+  | { type: "backspace" }
+  | { type: "spacer" };
 
+const COLUMNS = 4;
 const KEYS: KeyType[] = [
   { type: "digit", value: "1" },
   { type: "digit", value: "2" },
   { type: "digit", value: "3" },
+  { type: "plus" },
+
   { type: "digit", value: "4" },
   { type: "digit", value: "5" },
   { type: "digit", value: "6" },
+  { type: "minus" },
+
   { type: "digit", value: "7" },
   { type: "digit", value: "8" },
   { type: "digit", value: "9" },
-  { type: "decimal" },
-  { type: "zero" },
   { type: "backspace" },
+
+  { type: "dot" },
+  { type: "zero" },
+  { type: "equals" },
+  { type: "spacer" },
 ];
 
 export function Keypad({
   onDigit,
   onBackspace,
-  onDecimal,
   onLongPressClear,
+  onDotToggle,
+  onOperator,
+  onEquals,
+  operator,
+  cursorPart,
   border,
   background,
   text,
@@ -47,13 +67,17 @@ export function Keypad({
     <View style={[styles.keypad, { borderTopColor: border }]}>
       <View style={styles.keypadGrid}>
         {KEYS.map((k, idx) => {
-          const isRight = (idx + 1) % 3 === 0;
-          const isBottom = idx >= 9;
+          const isRight = (idx + 1) % COLUMNS === 0;
+          const isBottom = idx >= KEYS.length - COLUMNS;
           const cellBorders = {
             borderRightWidth: isRight ? 0 : 1,
             borderBottomWidth: isBottom ? 0 : 1,
             borderColor: border,
           } as const;
+
+          if (k.type === "spacer") {
+            return <View key={`spacer-${idx}`} style={[styles.key, cellBorders]} />;
+          }
 
           if (k.type === "digit" || k.type === "zero") {
             const value = k.type === "zero" ? "0" : k.value;
@@ -72,13 +96,32 @@ export function Keypad({
             );
           }
 
-          if (k.type === "decimal") {
+          if (k.type === "dot") {
+            const isActive = cursorPart === "dec";
             return (
               <Pressable
-                key={`decimal-${idx}`}
-                onPress={onDecimal}
-                onLongPress={onLongPressClear}
-                delayLongPress={450}
+                key={`dot-${idx}`}
+                onPress={onDotToggle}
+                style={({ pressed }) => [
+                  styles.key,
+                  isActive && styles.keyActive,
+                  cellBorders,
+                  { backgroundColor: pressed ? `${background}88` : background },
+                ]}
+              >
+                <Text style={[styles.keyText, { color: isActive ? accent : text }]}>
+                  .
+                </Text>
+              </Pressable>
+            );
+          }
+
+          if (k.type === "plus") {
+            const isActive = operator === "+";
+            return (
+              <Pressable
+                key={`plus-${idx}`}
+                onPress={() => onOperator("+")}
                 style={({ pressed }) => [
                   styles.key,
                   styles.keyAccent,
@@ -86,10 +129,46 @@ export function Keypad({
                   { backgroundColor: pressed ? `${background}88` : background },
                 ]}
               >
-                <Text style={[styles.keyPlus, { color: accent }]}>+</Text>
-                <Text style={[styles.keyHint, { color: accent }]}>
-                  Long-press -
+                <Text style={[styles.keyOp, { color: isActive ? accent : text }]}>
+                  +
                 </Text>
+              </Pressable>
+            );
+          }
+
+          if (k.type === "minus") {
+            const isActive = operator === "-";
+            return (
+              <Pressable
+                key={`minus-${idx}`}
+                onPress={() => onOperator("-")}
+                style={({ pressed }) => [
+                  styles.key,
+                  styles.keyAccent,
+                  cellBorders,
+                  { backgroundColor: pressed ? `${background}88` : background },
+                ]}
+              >
+                <Text style={[styles.keyOp, { color: isActive ? accent : text }]}>
+                  -
+                </Text>
+              </Pressable>
+            );
+          }
+
+          if (k.type === "equals") {
+            return (
+              <Pressable
+                key={`equals-${idx}`}
+                onPress={onEquals}
+                style={({ pressed }) => [
+                  styles.key,
+                  styles.keyAccent,
+                  cellBorders,
+                  { backgroundColor: pressed ? `${background}88` : background },
+                ]}
+              >
+                <Text style={[styles.keyOp, { color: accent }]}>=</Text>
               </Pressable>
             );
           }
@@ -98,6 +177,8 @@ export function Keypad({
             <Pressable
               key={`backspace-${idx}`}
               onPress={onBackspace}
+              onLongPress={onLongPressClear}
+              delayLongPress={450}
               style={({ pressed }) => [
                 styles.key,
                 cellBorders,
@@ -118,34 +199,28 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   keypadGrid: {
+    direction: "ltr",
     flexDirection: "row",
     flexWrap: "wrap",
   },
   key: {
-    width: "33.3333%",
+    width: "25%",
     height: 56,
     alignItems: "center",
     justifyContent: "center",
   },
   keyAccent: {
-    paddingTop: 6,
+    paddingTop: 2,
+  },
+  keyActive: {
+    backgroundColor: "transparent",
   },
   keyText: {
     fontSize: 26,
     fontWeight: "600",
   },
-  keyPlus: {
-    fontSize: 32,
+  keyOp: {
+    fontSize: 30,
     fontWeight: "900",
-    marginBottom: 2,
-  },
-  keyHint: {
-    position: "absolute",
-    bottom: 6,
-    fontSize: 9,
-    fontWeight: "800",
-    opacity: 0.4,
-    letterSpacing: 0.6,
-    textTransform: "uppercase",
   },
 });
