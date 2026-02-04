@@ -1,10 +1,12 @@
 import { useMemo } from "react";
+import { MaterialIcons } from "@expo/vector-icons";
 import {
+  I18nManager,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -12,17 +14,15 @@ import ActivityCard from "@/src/components/dashboard/activity-card.component";
 import BarChartCard from "@/src/components/dashboard/bar-chart-card.component";
 import DonutChartCard from "@/src/components/dashboard/donut-chart-card.component";
 import Wallet from "@/src/components/dashboard/wallet.component";
+import {
+  useCategoryBreakdown,
+  useDashboardData,
+  useSpendingTrend,
+  useWeeklyActivity,
+} from "@/src/hooks/dashboard";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
-
-type BarDatum = { label: string; value: number; highlight?: boolean };
-type CategoryDatum = {
-  label: string;
-  subtitle: string;
-  amount: string;
-  percent: string;
-  color: string;
-};
+import { formatAmountForSummary } from "@/src/utils/amount";
 
 const monoFont = Platform.select({
   ios: "Menlo",
@@ -33,6 +33,7 @@ const monoFont = Platform.select({
 export default function DashboardScreen() {
   const theme = useAppTheme();
   const { t } = useI18n();
+  const isRtl = I18nManager.isRTL;
 
   const colors = useMemo(
     () => ({
@@ -48,45 +49,42 @@ export default function DashboardScreen() {
     [theme]
   );
 
-  const barData: BarDatum[] = [
-    { label: t("dashboard.dayShort.sat"), value: 0.45 },
-    { label: t("dashboard.dayShort.sun"), value: 0.3 },
-    { label: t("dashboard.dayShort.mon"), value: 0.6 },
-    { label: t("dashboard.dayShort.tue"), value: 0.25 },
-    { label: t("dashboard.dayShort.wed"), value: 0.95, highlight: true },
-    { label: t("dashboard.dayShort.thu"), value: 0.5 },
-    { label: t("dashboard.dayShort.fri"), value: 0.4 },
-  ];
+  const { wallets, transactions, categories } = useDashboardData();
+  const {
+    barData,
+    rangeLabel,
+    averageValueLabel,
+    trendLabel,
+    trendDirection,
+    totalExpenses,
+    expenseTransactions,
+  } = useSpendingTrend(transactions, t);
+  const { categoryData, spendingSegments, totalAmountLabel } =
+    useCategoryBreakdown(expenseTransactions, totalExpenses, categories, t, {
+      primary: colors.primary,
+      nileGreen: colors.nileGreen,
+      gold: colors.gold,
+      border: colors.border,
+    });
+  const {
+    weekLabel,
+    canGoPrevWeek,
+    canGoNextWeek,
+    handlePrevWeek,
+    handleNextWeek,
+    recentActivity,
+  } = useWeeklyActivity(transactions, categories, wallets, t);
 
-  const categories: CategoryDatum[] = [
-    {
-      label: t("dashboard.category.housing"),
-      subtitle: t("dashboard.category.housingSubtitle"),
-      amount: `${t("dashboard.currency")} 5,600`,
-      percent: "45%",
-      color: colors.primary,
-    },
-    {
-      label: t("dashboard.category.groceries"),
-      subtitle: t("dashboard.category.groceriesSubtitle"),
-      amount: `${t("dashboard.currency")} 3,486`,
-      percent: "28%",
-      color: colors.nileGreen,
-    },
-    {
-      label: t("dashboard.category.dining"),
-      subtitle: t("dashboard.category.diningSubtitle"),
-      amount: `${t("dashboard.currency")} 1,867`,
-      percent: "15%",
-      color: colors.gold,
-    },
-  ];
-
-  const spendingSegments = [
-    { percent: 0.45, color: colors.primary },
-    { percent: 0.28, color: colors.nileGreen },
-    { percent: 0.15, color: colors.gold },
-  ];
+  const walletTotals = useMemo(() => {
+    return wallets.reduce(
+      (acc, wallet) => {
+        if (wallet.type === "bank") acc.bank += wallet.balance;
+        if (wallet.type === "cash") acc.cash += wallet.balance;
+        return acc;
+      },
+      { bank: 0, cash: 0 }
+    );
+  }, [wallets]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -114,24 +112,33 @@ export default function DashboardScreen() {
               icon="account-balance"
               label={t("dashboard.bank")}
               subLabel={t("dashboard.totalBalance")}
-              value="84,250"
+              value={formatAmountForSummary(walletTotals.bank)}
             />
             <Wallet
               icon="payments"
               label={t("dashboard.cash")}
               subLabel={t("dashboard.onHand")}
-              value="3,400"
+              value={formatAmountForSummary(walletTotals.cash)}
             />
           </View>
         </View>
 
-        <BarChartCard colors={colors} barData={barData} monoFont={monoFont} />
+        <BarChartCard
+          colors={colors}
+          barData={barData}
+          monoFont={monoFont}
+          rangeLabel={rangeLabel}
+          averageValue={averageValueLabel}
+          trendLabel={trendLabel}
+          trendDirection={trendDirection}
+        />
 
         <DonutChartCard
           colors={colors}
-          categories={categories}
+          categories={categoryData}
           spendingSegments={spendingSegments}
           monoFont={monoFont}
+          totalAmount={totalAmountLabel}
         />
 
         <View style={styles.section}>
@@ -139,55 +146,50 @@ export default function DashboardScreen() {
             <Text style={[styles.sectionTitle, { color: colors.muted }]}>
               {t("dashboard.recentActivity")}
             </Text>
-            <TouchableOpacity
-              style={[
-                styles.viewAll,
-                { backgroundColor: `${colors.primary}14` },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.viewAllText,
-                  {
-                    color: colors.primary,
-                  },
-                ]}
+            <View style={styles.sectionRowRight}>
+              <Pressable
+                style={styles.chevronButton}
+                onPress={handlePrevWeek}
+                disabled={!canGoPrevWeek}
               >
-                {t("dashboard.viewAll")}
-              </Text>
-            </TouchableOpacity>
+                <MaterialIcons
+                  name={isRtl ? "chevron-right" : "chevron-left"}
+                  size={18}
+                  color={canGoPrevWeek ? colors.primary : colors.border}
+                />
+              </Pressable>
+              <View style={[styles.rangePill, { backgroundColor: colors.border }]}>
+                <Text style={[styles.rangeText, { color: colors.text }]}>
+                  {weekLabel}
+                </Text>
+              </View>
+              <Pressable
+                style={styles.chevronButton}
+                onPress={handleNextWeek}
+                disabled={!canGoNextWeek}
+              >
+                <MaterialIcons
+                  name={isRtl ? "chevron-left" : "chevron-right"}
+                  size={18}
+                  color={canGoNextWeek ? colors.primary : colors.border}
+                />
+              </Pressable>
+            </View>
           </View>
           <View style={styles.activityList}>
-            <ActivityCard
-              icon="shopping-cart"
-              transactionName={t("dashboard.activity.groceriesTitle")}
-              transactionCategory={t("dashboard.activity.groceriesMeta")}
-              transactionType="expense"
-              transactionDate={t("dashboard.activity.groceriesMeta")}
-              amount={"-1,240.00"}
-              source={t("dashboard.activity.groceriesMeta")}
-              monoFont={monoFont}
-            />
-            <ActivityCard
-              icon="work"
-              transactionName={t("dashboard.activity.salaryTitle")}
-              transactionCategory={t("dashboard.activity.salaryMeta")}
-              transactionType="income"
-              transactionDate={t("dashboard.activity.salaryMeta")}
-              amount={"+1,240.00"}
-              source={t("dashboard.activity.salaryMeta")}
-              monoFont={monoFont}
-            />
-            <ActivityCard
-              icon="commute"
-              transactionName={t("dashboard.activity.transportTitle")}
-              transactionCategory={t("dashboard.activity.transportMeta")}
-              transactionType="expense"
-              transactionDate={t("dashboard.activity.transportMeta")}
-              amount={"-1,240.00"}
-              source={t("dashboard.activity.transportMeta")}
-              monoFont={monoFont}
-            />
+            {recentActivity.map((activity) => (
+              <ActivityCard
+                key={activity.id}
+                icon={activity.icon}
+                transactionName={activity.transactionName}
+                transactionCategory={activity.transactionCategory}
+                transactionType={activity.transactionType}
+                transactionDate={activity.transactionDate}
+                amount={activity.amount}
+                source={activity.source}
+                monoFont={monoFont}
+              />
+            ))}
           </View>
         </View>
       </ScrollView>

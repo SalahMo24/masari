@@ -15,6 +15,7 @@ const DonutChartCard = ({
   categories,
   spendingSegments,
   monoFont,
+  totalAmount,
 }: {
   colors: {
     primary: string;
@@ -27,8 +28,10 @@ const DonutChartCard = ({
   categories: CategoryDatum[];
   spendingSegments: { percent: number; color: string }[];
   monoFont: string;
+  totalAmount?: string;
 }) => {
   const { t } = useI18n();
+  const resolvedTotalAmount = totalAmount ?? "0";
   return (
     <View style={styles.section}>
       <Text style={[styles.sectionTitle, { color: colors.muted }]}>
@@ -69,7 +72,7 @@ const DonutChartCard = ({
                   },
                 ]}
               >
-                12,450
+                {resolvedTotalAmount}
               </Text>
             </View>
           </View>

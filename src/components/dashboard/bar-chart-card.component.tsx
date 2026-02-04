@@ -15,6 +15,10 @@ const BarChartCard = ({
   colors,
   barData,
   monoFont,
+  rangeLabel,
+  averageValue,
+  trendLabel,
+  trendDirection,
 }: {
   colors: {
     primary: string;
@@ -27,9 +31,23 @@ const BarChartCard = ({
   barData: BarDatum[];
 
   monoFont: string;
+  rangeLabel?: string;
+  averageValue?: string;
+  trendLabel?: string;
+  trendDirection?: "up" | "down" | "flat";
 }) => {
   const { t } = useI18n();
   const isRtl = I18nManager.isRTL;
+  const resolvedRangeLabel = rangeLabel ?? t("dashboard.dateRange");
+  const resolvedAverageValue = averageValue ?? `${t("dashboard.currency")} 0`;
+  const resolvedTrendLabel = trendLabel ?? t("dashboard.trendUp");
+  const resolvedTrendDirection = trendDirection ?? "flat";
+  const trendIcon =
+    resolvedTrendDirection === "down"
+      ? "trending-down"
+      : resolvedTrendDirection === "flat"
+        ? "trending-flat"
+        : "trending-up";
 
   return (
     <View style={styles.section}>
@@ -47,7 +65,7 @@ const BarChartCard = ({
           </Pressable>
           <View style={[styles.rangePill, { backgroundColor: colors.border }]}>
             <Text style={[styles.rangeText, { color: colors.text }]}>
-              {t("dashboard.dateRange")}
+              {resolvedRangeLabel}
             </Text>
           </View>
           <Pressable style={styles.chevronButton}>
@@ -77,7 +95,7 @@ const BarChartCard = ({
                 },
               ]}
             >
-              {t("dashboard.currency")} 4,120.50
+              {resolvedAverageValue}
             </Text>
             <Text
               style={[
@@ -91,9 +109,9 @@ const BarChartCard = ({
             </Text>
           </View>
           <View style={[styles.trendBadge, { backgroundColor: colors.border }]}>
-            <MaterialIcons name="trending-up" size={14} color={colors.muted} />
+            <MaterialIcons name={trendIcon} size={14} color={colors.muted} />
             <Text style={[styles.trendText, { color: colors.muted }]}>
-              {t("dashboard.trendUp")}
+              {resolvedTrendLabel}
             </Text>
           </View>
         </View>
