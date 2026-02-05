@@ -9,7 +9,12 @@ import {
   View,
 } from "react-native";
 import BarChart from "./bar-chart.component";
-type BarDatum = { label: string; value: number; highlight?: boolean };
+export type BarDatum = {
+  label: string;
+  value: number;
+  amountLabel: string;
+  highlight?: boolean;
+};
 
 const BarChartCard = ({
   colors,
@@ -161,6 +166,9 @@ const BarChartCard = ({
           </View>
         </View>
         <BarChart barData={barData} colors={colors} />
+        <Text style={[styles.tapHint, { color: colors.muted }]}>
+          {t("dashboard.tapBar")}
+        </Text>
       </View>
     </View>
   );
@@ -278,6 +286,12 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "500",
     textAlign: "right",
+  },
+  tapHint: {
+    marginTop: 8,
+    fontSize: 10,
+    fontWeight: "600",
+    textAlign: "center",
   },
 });
 

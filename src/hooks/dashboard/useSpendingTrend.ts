@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { Transaction } from "@/src/data/entities";
 import { formatAmountForSummary } from "@/src/utils/amount";
 
-type BarDatum = { label: string; value: number; highlight?: boolean };
+import type { BarDatum } from "@/src/components/dashboard/bar-chart-card.component";
 
 const dayOrder = [6, 0, 1, 2, 3, 4, 5];
 const dayIndexMap = new Map(dayOrder.map((day, index) => [day, index]));
@@ -172,8 +172,7 @@ export function useSpendingTrend(
   );
 
   const totalExpenses = useMemo(
-    () =>
-      expenseTransactions.reduce((total, tx) => total + tx.amount, 0),
+    () => expenseTransactions.reduce((total, tx) => total + tx.amount, 0),
     [expenseTransactions]
   );
 
@@ -185,7 +184,13 @@ export function useSpendingTrend(
         isWithinRange(date, monthStart, monthEnd)
       );
     });
-  }, [activeWeekEnd, activeWeekStart, expenseTransactions, monthEnd, monthStart]);
+  }, [
+    activeWeekEnd,
+    activeWeekStart,
+    expenseTransactions,
+    monthEnd,
+    monthStart,
+  ]);
 
   const weekTotalExpenses = useMemo(
     () => weekExpenseTransactions.reduce((total, tx) => total + tx.amount, 0),
@@ -207,6 +212,9 @@ export function useSpendingTrend(
       return {
         label: t(labelKey),
         value: maxValue > 0 ? value / maxValue : 0,
+        amountLabel: `${t("dashboard.currency")} ${formatAmountForSummary(
+          value
+        )}`,
         highlight: isMax,
       };
     });
@@ -220,9 +228,9 @@ export function useSpendingTrend(
   }, [displayWeekEnd, displayWeekStart]);
 
   const averagePerDay = weekTotalExpenses / Math.max(1, daysInWeek);
-  const averageValueLabel = `${t("dashboard.currency")} ${formatAmountForSummary(
-    averagePerDay
-  )}`;
+  const averageValueLabel = `${t(
+    "dashboard.currency"
+  )} ${formatAmountForSummary(averagePerDay)}`;
 
   const previousWeekStart = useMemo(
     () => addDays(activeWeekStart, -7),
@@ -242,7 +250,13 @@ export function useSpendingTrend(
         );
       })
       .reduce((total, tx) => total + tx.amount, 0);
-  }, [expenseTransactions, monthEnd, monthStart, previousWeekEnd, previousWeekStart]);
+  }, [
+    expenseTransactions,
+    monthEnd,
+    monthStart,
+    previousWeekEnd,
+    previousWeekStart,
+  ]);
 
   const trendDelta =
     previousWeekTotal > 0

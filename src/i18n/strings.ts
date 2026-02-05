@@ -59,6 +59,7 @@ export const strings: Record<Locale, Dictionary> = {
     "dashboard.dayShort.thu": "T",
     "dashboard.dayShort.fri": "F",
     "dashboard.currency": "EGP",
+    "dashboard.tapBar": "Tap a bar to see more details",
 
     "transaction.title.expense": "Add Expense",
     "transaction.title.income": "Add Income",
@@ -89,7 +90,8 @@ export const strings: Record<Locale, Dictionary> = {
     "transaction.error.amount": "Please enter a valid amount.",
     "transaction.error.wallet": "Please select a wallet.",
     "transaction.error.walletsTransfer": "Please select both wallets.",
-    "transaction.error.walletsDifferent": "From and To wallets must be different.",
+    "transaction.error.walletsDifferent":
+      "From and To wallets must be different.",
     "transaction.error.category": "Please select a category.",
     "transaction.error.save": "Could not save transaction. Please try again.",
     "transaction.error.createCategory":
@@ -108,7 +110,8 @@ export const strings: Record<Locale, Dictionary> = {
     "screen.bill.new": "فاتورة جديدة",
     "screen.bill.details": "الفاتورة",
     "screen.ai": "أمين للذكاء الاصطناعي",
-    "placeholder.dashboard": "نظرة عامة على الأرصدة والميزانيات والملخصات الشهرية.",
+    "placeholder.dashboard":
+      "نظرة عامة على الأرصدة والميزانيات والملخصات الشهرية.",
     "placeholder.budgets": "تتبّع حدود الشهر واستعمال الفئات.",
     "placeholder.bills": "الفواتير والاشتراكات القادمة مع تواريخ الاستحقاق.",
     "language.en": "EN",
@@ -152,6 +155,7 @@ export const strings: Record<Locale, Dictionary> = {
     "dashboard.dayShort.thu": "خ",
     "dashboard.dayShort.fri": "ج",
     "dashboard.currency": "ج.م",
+    "dashboard.tapBar": "اضغط على العمود للمزيد من التفاصيل",
 
     "transaction.title.expense": "إضافة مصروف",
     "transaction.title.income": "إضافة دخل",
@@ -177,12 +181,12 @@ export const strings: Record<Locale, Dictionary> = {
     "transaction.loading": "جاري التحميل…",
     "transaction.saving": "جاري الحفظ…",
     "transaction.error": "حدث خطأ",
-    "transaction.error.noWallets":
-      "لا توجد محافظ. الرجاء إنشاء محفظة أولاً.",
+    "transaction.error.noWallets": "لا توجد محافظ. الرجاء إنشاء محفظة أولاً.",
     "transaction.error.amount": "الرجاء إدخال مبلغ صحيح.",
     "transaction.error.wallet": "الرجاء اختيار محفظة.",
     "transaction.error.walletsTransfer": "الرجاء اختيار المحفظتين.",
-    "transaction.error.walletsDifferent": "يجب أن تكون محفظتا التحويل مختلفتين.",
+    "transaction.error.walletsDifferent":
+      "يجب أن تكون محفظتا التحويل مختلفتين.",
     "transaction.error.category": "الرجاء اختيار فئة.",
     "transaction.error.save": "تعذّر حفظ المعاملة. حاول مرة أخرى.",
     "transaction.error.createCategory": "تعذّر إنشاء الفئة. حاول مرة أخرى.",

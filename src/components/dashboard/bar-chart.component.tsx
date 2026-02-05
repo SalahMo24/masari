@@ -1,47 +1,85 @@
-import { StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import Svg, { Line } from "react-native-svg";
 
-type BarDatum = { label: string; value: number; highlight?: boolean };
+import type { BarDatum } from "./bar-chart-card.component";
 
 const BarChart = ({
   barData,
   colors,
 }: {
   barData: BarDatum[];
-  colors: { primary: string; muted: string; border: string };
+  colors: {
+    primary: string;
+    muted: string;
+    border: string;
+    card: string;
+    text: string;
+  };
 }) => {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
   return (
     <View style={styles.barChart}>
       <View style={styles.chartGrid}>
         <GridOverlay color={colors.border} />
       </View>
       <View style={styles.barsRow}>
-        {barData.map((bar) => (
-          <View key={bar.label} style={styles.barItem}>
-            <View
-              style={[
-                styles.barFill,
-                {
-                  backgroundColor: bar.highlight
-                    ? colors.primary
-                    : `${colors.primary}1A`,
-                  height: `${Math.round(bar.value * 100)}%`,
-                },
-              ]}
-            />
-            <Text
-              style={[
-                styles.barLabel,
-                {
-                  color: bar.highlight ? colors.primary : colors.muted,
-                  fontWeight: bar.highlight ? "700" : "500",
-                },
-              ]}
+        {barData.map((bar, index) => {
+          const isSelected = selectedIndex === index;
+          return (
+            <Pressable
+              key={bar.label}
+              onPress={() =>
+                setSelectedIndex((current) =>
+                  current === index ? null : index
+                )
+              }
+              style={styles.barItem}
             >
-              {bar.label}
-            </Text>
-          </View>
-        ))}
+              <View style={styles.chartArea}>
+                {isSelected && (
+                  <View
+                    style={[
+                      styles.tooltip,
+                      {
+                        backgroundColor: colors.card,
+                        borderColor: colors.border,
+                        bottom: `${Math.round(bar.value * 100)}%`,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.tooltipText, { color: colors.text }]}>
+                      {bar.amountLabel}
+                    </Text>
+                  </View>
+                )}
+                <View
+                  style={[
+                    styles.barFill,
+                    {
+                      backgroundColor: bar.highlight
+                        ? colors.primary
+                        : `${colors.primary}1A`,
+                      height: `${Math.round(bar.value * 100)}%`,
+                    },
+                  ]}
+                />
+              </View>
+              <Text
+                style={[
+                  styles.barLabel,
+                  {
+                    color: bar.highlight ? colors.primary : colors.muted,
+                    fontWeight: bar.highlight ? "700" : "500",
+                  },
+                ]}
+              >
+                {bar.label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
@@ -77,7 +115,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     gap: 12,
-    alignItems: "flex-end",
+    alignItems: "stretch",
   },
   barItem: {
     flex: 1,
@@ -85,10 +123,31 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     gap: 6,
   },
+  chartArea: {
+    flex: 1,
+    width: "100%",
+    justifyContent: "flex-end",
+    position: "relative",
+  },
   barFill: {
     width: "100%",
     borderTopLeftRadius: 4,
     borderTopRightRadius: 4,
+  },
+  tooltip: {
+    position: "absolute",
+    alignSelf: "center",
+    width: 65,
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    transform: [{ translateY: -6 }],
+    zIndex: 1,
+  },
+  tooltipText: {
+    fontSize: 10,
+    fontWeight: "600",
   },
   barLabel: {
     fontSize: 10,
