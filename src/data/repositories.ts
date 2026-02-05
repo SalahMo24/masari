@@ -128,6 +128,37 @@ export const budgetRepository = {
     );
     return row ?? null;
   },
+  getByCategoryId: async (_id: string): Promise<Budget | null> => {
+    const db = await ensureReady();
+    const row = await db.getFirstAsync<Budget>(
+      `SELECT * FROM Budget WHERE category_id = ? LIMIT 1;`,
+      _id,
+    );
+    return row ?? null;
+  },
+  create: async ({
+    category_id,
+    monthly_limit,
+  }: Pick<Budget, "category_id" | "monthly_limit">): Promise<Budget> => {
+    const db = await ensureReady();
+    const now = new Date().toISOString();
+    const id = generateId("bud");
+    await db.runAsync(
+      `INSERT INTO Budget (id, category_id, monthly_limit, created_at) VALUES (?, ?, ?, ?);`,
+      id,
+      category_id,
+      monthly_limit,
+      now,
+    );
+    const row = await db.getFirstAsync<Budget>(
+      `SELECT * FROM Budget WHERE id = ? LIMIT 1;`,
+      id,
+    );
+    if (!row) {
+      throw new Error("Failed to create budget");
+    }
+    return row;
+  },
 };
 
 export const transactionRepository = {
