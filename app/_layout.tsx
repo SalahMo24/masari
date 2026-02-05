@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { Platform } from "react-native";
 
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { useI18n } from "@/src/i18n/useI18n";
@@ -31,7 +32,12 @@ function RootStack() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen
         name="(features)/transactions/new"
-        options={{ title: t("screen.transaction.new") }}
+        options={{
+          title: t("screen.transaction.new"),
+          presentation: Platform.OS === "ios" ? "modal" : "card",
+          animation: Platform.OS === "ios" ? "fade" : "slide_from_bottom",
+          contentStyle: { backgroundColor: theme.colors.background },
+        }}
       />
       <Stack.Screen
         name="(features)/transactions/[id]"

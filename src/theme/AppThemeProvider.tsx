@@ -1,6 +1,7 @@
 import { ThemeProvider } from "@react-navigation/native";
+import * as SystemUI from "expo-system-ui";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useColorScheme } from "react-native";
-import React, { createContext, useContext, useMemo, useState } from "react";
 
 import { AppTheme, darkTheme, lightTheme } from "./theme";
 
@@ -28,6 +29,12 @@ export function AppThemeProvider({ children }: AppThemeProviderProps) {
   );
 
   const theme = mode === "dark" ? darkTheme : lightTheme;
+
+  // Set the root view background color to match the theme
+  // This prevents white flashes during navigation transitions
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(theme.colors.background);
+  }, [theme.colors.background]);
 
   const value = useMemo(
     () => ({
