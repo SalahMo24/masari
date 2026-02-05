@@ -221,6 +221,7 @@ export default function NewTransactionScreen() {
       await refreshData();
       router.back();
     } catch (error) {
+      console.error(error);
       Alert.alert(t("transaction.error"), t("transaction.error.save"));
     } finally {
       setSaving(false);

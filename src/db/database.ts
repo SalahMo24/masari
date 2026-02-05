@@ -19,3 +19,12 @@ export async function closeDatabase(): Promise<void> {
     database = null;
   }
 }
+
+export async function resetDatabase(): Promise<void> {
+  if (!__DEV__) {
+    throw new Error("resetDatabase is only allowed in development.");
+  }
+
+  await closeDatabase();
+  await SQLite.deleteDatabaseAsync(DB_NAME);
+}

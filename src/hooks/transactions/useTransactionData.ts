@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
-import { categoryRepository, walletRepository } from "@/src/data/repositories";
 import type { Category, Wallet } from "@/src/data/entities";
+import { categoryRepository, walletRepository } from "@/src/data/repositories";
+import { useCallback, useEffect, useState } from "react";
 
 export interface UseTransactionDataResult {
   wallets: Wallet[];
@@ -26,6 +26,8 @@ export function useTransactionData(): UseTransactionDataResult {
       ]);
       setWallets(w);
       setCategories(c);
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }

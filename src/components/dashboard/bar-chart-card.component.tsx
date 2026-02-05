@@ -16,9 +16,14 @@ const BarChartCard = ({
   barData,
   monoFont,
   rangeLabel,
+  todayValue,
   averageValue,
   trendLabel,
   trendDirection,
+  canGoPrevWeek,
+  canGoNextWeek,
+  onPrevWeek,
+  onNextWeek,
 }: {
   colors: {
     primary: string;
@@ -32,22 +37,30 @@ const BarChartCard = ({
 
   monoFont: string;
   rangeLabel?: string;
+  todayValue?: string;
   averageValue?: string;
   trendLabel?: string;
   trendDirection?: "up" | "down" | "flat";
+  canGoPrevWeek?: boolean;
+  canGoNextWeek?: boolean;
+  onPrevWeek?: () => void;
+  onNextWeek?: () => void;
 }) => {
   const { t } = useI18n();
   const isRtl = I18nManager.isRTL;
   const resolvedRangeLabel = rangeLabel ?? t("dashboard.dateRange");
+  const resolvedTodayValue = todayValue ?? `${t("dashboard.currency")} 0`;
   const resolvedAverageValue = averageValue ?? `${t("dashboard.currency")} 0`;
   const resolvedTrendLabel = trendLabel ?? t("dashboard.trendUp");
   const resolvedTrendDirection = trendDirection ?? "flat";
+  const canGoPrev = canGoPrevWeek ?? false;
+  const canGoNext = canGoNextWeek ?? false;
   const trendIcon =
     resolvedTrendDirection === "down"
       ? "trending-down"
-      : resolvedTrendDirection === "flat"
-        ? "trending-flat"
-        : "trending-up";
+      : resolvedTrendDirection === "up"
+      ? "trending-up"
+      : null;
 
   return (
     <View style={styles.section}>
@@ -56,11 +69,15 @@ const BarChartCard = ({
           {t("dashboard.spendingTrend")}
         </Text>
         <View style={[styles.sectionRowRight]}>
-          <Pressable style={styles.chevronButton}>
+          <Pressable
+            style={styles.chevronButton}
+            onPress={onPrevWeek}
+            disabled={!canGoPrev}
+          >
             <MaterialIcons
               name={isRtl ? "chevron-right" : "chevron-left"}
               size={18}
-              color={colors.primary}
+              color={canGoPrev ? colors.primary : colors.border}
             />
           </Pressable>
           <View style={[styles.rangePill, { backgroundColor: colors.border }]}>
@@ -68,11 +85,15 @@ const BarChartCard = ({
               {resolvedRangeLabel}
             </Text>
           </View>
-          <Pressable style={styles.chevronButton}>
+          <Pressable
+            style={styles.chevronButton}
+            onPress={onNextWeek}
+            disabled={!canGoNext}
+          >
             <MaterialIcons
               name={isRtl ? "chevron-left" : "chevron-right"}
               size={18}
-              color={colors.primary}
+              color={canGoNext ? colors.primary : colors.border}
             />
           </Pressable>
         </View>
@@ -85,7 +106,17 @@ const BarChartCard = ({
         ]}
       >
         <View style={[styles.spendingHeader]}>
-          <View>
+          <View style={styles.todayBlock}>
+            <Text
+              style={[
+                styles.spendingLabel,
+                {
+                  color: colors.muted,
+                },
+              ]}
+            >
+              {t("dashboard.today")}
+            </Text>
             <Text
               style={[
                 styles.spendingValue,
@@ -95,24 +126,38 @@ const BarChartCard = ({
                 },
               ]}
             >
-              {resolvedAverageValue}
-            </Text>
-            <Text
-              style={[
-                styles.spendingLabel,
-                {
-                  color: colors.muted,
-                },
-              ]}
-            >
-              {t("dashboard.avgPerDay")}
+              {resolvedTodayValue}
             </Text>
           </View>
-          <View style={[styles.trendBadge, { backgroundColor: colors.border }]}>
-            <MaterialIcons name={trendIcon} size={14} color={colors.muted} />
-            <Text style={[styles.trendText, { color: colors.muted }]}>
-              {resolvedTrendLabel}
-            </Text>
+          <View style={styles.averageSection}>
+            <View style={styles.averageRow}>
+              <Text style={[styles.averageValue, { color: colors.muted }]}>
+                {t("dashboard.avgPerDay")}
+              </Text>
+              <Text
+                style={[
+                  styles.averageAmount,
+                  {
+                    color: colors.muted,
+                    fontFamily: monoFont,
+                  },
+                ]}
+              >
+                {resolvedAverageValue}
+              </Text>
+            </View>
+            <View style={styles.trendRow}>
+              {trendIcon && (
+                <MaterialIcons
+                  name={trendIcon}
+                  size={14}
+                  color={colors.muted}
+                />
+              )}
+              <Text style={[styles.trendText, { color: colors.muted }]}>
+                {resolvedTrendLabel} {t("dashboard.vsLastWeek")}
+              </Text>
+            </View>
           </View>
         </View>
         <BarChart barData={barData} colors={colors} />
@@ -187,31 +232,52 @@ const styles = StyleSheet.create({
   },
   spendingHeader: {
     flexDirection: "row",
-    alignItems: "flex-end",
+    alignItems: "flex-start",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 16,
+    gap: 12,
+  },
+  todayBlock: {
+    gap: 4,
   },
   spendingValue: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "700",
   },
-  spendingLabel: {
-    fontSize: 10,
-    fontWeight: "600",
-    letterSpacing: 0.8,
-    marginTop: 2,
+  averageSection: {
+    alignItems: "flex-end",
+    gap: 6,
   },
-  trendBadge: {
+  averageRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
   },
-  trendText: {
+  averageValue: {
+    fontSize: 10,
+    fontWeight: "600",
+    textAlign: "right",
+  },
+  averageAmount: {
     fontSize: 12,
     fontWeight: "600",
+    textAlign: "right",
+  },
+  spendingLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+  },
+  trendRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  trendText: {
+    fontSize: 10,
+    fontWeight: "500",
+    textAlign: "right",
   },
 });
 

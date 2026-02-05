@@ -22,7 +22,7 @@ export async function seedDatabase(db: SQLiteDatabase): Promise<void> {
       generateId("wallet"),
       "Cash",
       "cash",
-      3400,
+      0,
       now
     );
     await db.runAsync(
@@ -30,7 +30,7 @@ export async function seedDatabase(db: SQLiteDatabase): Promise<void> {
       generateId("wallet"),
       "Bank",
       "bank",
-      84250,
+      0,
       now
     );
   }

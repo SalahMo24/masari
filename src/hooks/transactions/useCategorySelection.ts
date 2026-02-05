@@ -1,8 +1,8 @@
+import type { Category, ID, TransactionType } from "@/src/data/entities";
+import { categoryRepository } from "@/src/data/repositories";
+import { useI18n } from "@/src/i18n/useI18n";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert } from "react-native";
-import { categoryRepository } from "@/src/data/repositories";
-import type { Category, ID, TransactionType } from "@/src/data/entities";
-import { useI18n } from "@/src/i18n/useI18n";
 
 export interface UseCategorySelectionResult {
   /** Currently selected category ID */
@@ -50,12 +50,16 @@ export function useCategorySelection(
   }, [mode]);
 
   const incomeQuickCategories = useMemo(() => {
-    return categories.filter((c) => INCOME_QUICK_NAMES.has(c.name.toLowerCase()));
+    return categories.filter((c) =>
+      INCOME_QUICK_NAMES.has(c.name.toLowerCase())
+    );
   }, [categories]);
 
   const expenseCategories = useMemo(() => {
     // If a category name matches income quick chips, hide it from expense chips.
-    return categories.filter((c) => !INCOME_QUICK_NAMES.has(c.name.toLowerCase()));
+    return categories.filter(
+      (c) => !INCOME_QUICK_NAMES.has(c.name.toLowerCase())
+    );
   }, [categories]);
 
   const selectedCategory = useMemo(
@@ -86,10 +90,14 @@ export function useCategorySelection(
       });
       setCategories((prev) => [...prev, created]);
       setSelectedCategoryId(created.id);
-    } catch {
-      Alert.alert(t("transaction.error"), t("transaction.error.createCategory"));
+    } catch (error) {
+      console.error(error);
+      Alert.alert(
+        t("transaction.error"),
+        t("transaction.error.createCategory")
+      );
     }
-  }, [createCategoryCandidate, t]);
+  }, [createCategoryCandidate]);
 
   return {
     selectedCategoryId,

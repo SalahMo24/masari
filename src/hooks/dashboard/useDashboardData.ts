@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
 import { useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 
+import type { Category, Transaction, Wallet } from "@/src/data/entities";
 import {
   categoryRepository,
   transactionRepository,
   walletRepository,
 } from "@/src/data/repositories";
-import type { Category, Transaction, Wallet } from "@/src/data/entities";
 
 export interface UseDashboardDataResult {
   wallets: Wallet[];
@@ -36,6 +36,8 @@ export function useDashboardData(): UseDashboardDataResult {
       setWallets(walletData);
       setTransactions(transactionData);
       setCategories(categoryData);
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }

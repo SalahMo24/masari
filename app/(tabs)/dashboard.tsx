@@ -53,9 +53,14 @@ export default function DashboardScreen() {
   const {
     barData,
     rangeLabel,
+    todayValueLabel,
     averageValueLabel,
     trendLabel,
     trendDirection,
+    canGoPrevWeek: canGoPrevTrendWeek,
+    canGoNextWeek: canGoNextTrendWeek,
+    handlePrevWeek: handlePrevTrendWeek,
+    handleNextWeek: handleNextTrendWeek,
     totalExpenses,
     expenseTransactions,
   } = useSpendingTrend(transactions, t);
@@ -128,9 +133,14 @@ export default function DashboardScreen() {
           barData={barData}
           monoFont={monoFont}
           rangeLabel={rangeLabel}
+          todayValue={todayValueLabel}
           averageValue={averageValueLabel}
           trendLabel={trendLabel}
           trendDirection={trendDirection}
+          canGoPrevWeek={canGoPrevTrendWeek}
+          canGoNextWeek={canGoNextTrendWeek}
+          onPrevWeek={handlePrevTrendWeek}
+          onNextWeek={handleNextTrendWeek}
         />
 
         <DonutChartCard
