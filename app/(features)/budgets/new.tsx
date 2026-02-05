@@ -6,15 +6,17 @@ import { Stack, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { endOfMonth, startOfMonth, subMonths } from "date-fns";
 
+import { AmountDisplay, Keypad, type KeypadKey } from "@/src/components/amount";
 import type { Budget, Category, Transaction } from "@/src/data/entities";
 import {
   budgetRepository,
   categoryRepository,
   transactionRepository,
 } from "@/src/data/repositories";
+import { useAmountInput } from "@/src/hooks/amount";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
-import { appendDigit, formatAmountForSummary, parseAmount } from "@/src/utils/amount";
+import { formatAmountForSummary } from "@/src/utils/amount";
 
 const categoryIconMap: Record<string, string> = {
   transportation: "directions-car",
@@ -24,6 +26,21 @@ const categoryIconMap: Record<string, string> = {
   loan: "payments",
 };
 type MaterialIconName = keyof typeof MaterialIcons.glyphMap;
+
+const budgetKeypadKeys: KeypadKey[] = [
+  { type: "digit", value: "1" },
+  { type: "digit", value: "2" },
+  { type: "digit", value: "3" },
+  { type: "digit", value: "4" },
+  { type: "digit", value: "5" },
+  { type: "digit", value: "6" },
+  { type: "digit", value: "7" },
+  { type: "digit", value: "8" },
+  { type: "digit", value: "9" },
+  { type: "spacer" },
+  { type: "zero" },
+  { type: "backspace" },
+] as const;
 
 function normalizeCategoryLabel(name: string, locale: string) {
   if (locale === "ar") return name;
@@ -49,7 +66,24 @@ export default function NewBudgetScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-  const [amountInput, setAmountInput] = useState<string>("");
+  const {
+    parsedAmount,
+    formattedAmount,
+    integerDigitsEntered,
+    decimalDigitsEntered,
+    cursorPart,
+    onPressDigit,
+    onPressBackspace,
+    onLongPressClear,
+    setAmount,
+    reset: resetAmount,
+  } = useAmountInput({
+    allowDecimal: false,
+    allowOperators: false,
+    allowEquals: false,
+    maxDecimalDigits: 0,
+    maxIntegerDigits: 9,
+  });
 
   const refreshData = useCallback(async () => {
     setLoading(true);
@@ -98,11 +132,6 @@ export default function NewBudgetScreen() {
     [budgets, selectedCategoryId]
   );
 
-  const parsedAmount = useMemo(() => parseAmount(amountInput), [amountInput]);
-  const formattedAmount = useMemo(
-    () => formatAmountForSummary(parsedAmount),
-    [parsedAmount]
-  );
   const currencyLabel = t("dashboard.currency");
 
   const today = useMemo(() => new Date(), []);
@@ -165,17 +194,9 @@ export default function NewBudgetScreen() {
     !loading &&
     !existingBudget;
 
-  const onPressDigit = useCallback((digit: string) => {
-    setAmountInput((current) => appendDigit(current, digit));
-  }, []);
-
-  const onBackspace = useCallback(() => {
-    setAmountInput((current) => (current.length ? current.slice(0, -1) : ""));
-  }, []);
-
   const onClearAmount = useCallback(() => {
-    setAmountInput("");
-  }, []);
+    resetAmount();
+  }, [resetAmount]);
 
   const onSelectCategory = useCallback((categoryId: string) => {
     setSelectedCategoryId(categoryId);
@@ -183,8 +204,8 @@ export default function NewBudgetScreen() {
 
   const onApplyPreset = useCallback((value: number) => {
     if (!value || value <= 0) return;
-    setAmountInput(String(Math.round(value)));
-  }, []);
+    setAmount(Math.round(value));
+  }, [setAmount]);
 
   const onSave = useCallback(async () => {
     if (saving) return;
@@ -303,12 +324,24 @@ export default function NewBudgetScreen() {
             </View>
 
             <View style={styles.amountSection}>
-              <Text style={[styles.amountText, { color: colors.text }]}>
-                {formattedAmount}{" "}
-                <Text style={[styles.amountCurrency, { color: colors.muted }]}>
-                  {currencyLabel}
-                </Text>
-              </Text>
+              <AmountDisplay
+                currency={currencyLabel}
+                formattedAmount={formattedAmount}
+                integerDigitsEntered={integerDigitsEntered}
+                decimalDigitsEntered={decimalDigitsEntered}
+                cursorPart={cursorPart}
+                currencyColor={colors.muted}
+                amountColor={colors.text}
+                showCaret={false}
+                currencyPosition="suffix"
+                styles={{
+                  amountBlock: styles.amountBlock,
+                  amountRow: styles.amountRow,
+                  amountContainer: styles.amountContainer,
+                  currency: styles.amountCurrency,
+                  digit: styles.amountText,
+                }}
+              />
               <View style={[styles.amountIndicator, { backgroundColor: `${colors.success}33` }]} />
               {guidanceText ? (
                 <Text style={[styles.guidanceText, { color: colors.muted }]}>
@@ -420,50 +453,24 @@ export default function NewBudgetScreen() {
               )}
             </View>
 
-            <View style={[styles.keypad, { borderTopColor: colors.border }]}>
-              {[
-                ["1", "2", "3"],
-                ["4", "5", "6"],
-                ["7", "8", "9"],
-                ["", "0", "backspace"],
-              ].map((row, rowIndex) => (
-                <View key={`row-${rowIndex}`} style={styles.keypadRow}>
-                  {row.map((key) => {
-                    if (key === "") {
-                      return <View key="spacer" style={styles.keypadKey} />;
-                    }
-                    if (key === "backspace") {
-                      return (
-                        <Pressable
-                          key="backspace"
-                          onPress={onBackspace}
-                          onLongPress={onClearAmount}
-                          delayLongPress={450}
-                          style={({ pressed }) => [
-                            styles.keypadKey,
-                            { backgroundColor: pressed ? `${colors.border}66` : "transparent" },
-                          ]}
-                        >
-                          <MaterialIcons name="backspace" size={22} color={colors.text} />
-                        </Pressable>
-                      );
-                    }
-                    return (
-                      <Pressable
-                        key={key}
-                        onPress={() => onPressDigit(key)}
-                        style={({ pressed }) => [
-                          styles.keypadKey,
-                          { backgroundColor: pressed ? `${colors.border}66` : "transparent" },
-                        ]}
-                      >
-                        <Text style={[styles.keypadText, { color: colors.text }]}>{key}</Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              ))}
-            </View>
+            <Keypad
+              keys={budgetKeypadKeys}
+              columns={3}
+              onDigit={onPressDigit}
+              onBackspace={onPressBackspace}
+              onLongPressClear={onClearAmount}
+              border={colors.border}
+              background="transparent"
+              pressedBackground={`${colors.border}66`}
+              text={colors.text}
+              accent={colors.primary}
+              showKeyBorders={false}
+              styleOverrides={{
+                keypad: [styles.keypad, { borderTopColor: colors.border }],
+                key: styles.keypadKey,
+                keyText: styles.keypadText,
+              }}
+            />
 
             <View style={styles.ctaRow}>
               <Pressable
@@ -548,6 +555,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
+  },
+  amountBlock: {
+    paddingVertical: 0,
+  },
+  amountRow: {
+    paddingHorizontal: 0,
+  },
+  amountContainer: {
+    alignItems: "baseline",
   },
   amountText: {
     fontSize: 44,
@@ -675,7 +691,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   keypadKey: {
-    flex: 1,
     height: 56,
     alignItems: "center",
     justifyContent: "center",

@@ -1,7 +1,6 @@
+import { AmountDisplay, Keypad } from "@/src/components/amount";
 import {
-  AmountDisplay,
   CategoryChips,
-  Keypad,
   NoteSection,
   SaveButton,
   SegmentedControl,
@@ -11,12 +10,8 @@ import {
 } from "@/src/components/transactions";
 import type { TransactionType } from "@/src/data/entities";
 import { transactionRepository } from "@/src/data/repositories";
-import {
-  useAmountInput,
-  useCategorySelection,
-  useTransactionData,
-  useWalletSelection,
-} from "@/src/hooks/transactions";
+import { useAmountInput } from "@/src/hooks/amount";
+import { useCategorySelection, useTransactionData, useWalletSelection } from "@/src/hooks/transactions";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { formatAmountForSummary } from "@/src/utils/amount";
