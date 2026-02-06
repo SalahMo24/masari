@@ -2,8 +2,9 @@ import { TransactionType } from "@/src/data/entities";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
+import Typography from "@/src/components/typography.component";
 const ActivityCard = ({
   icon,
   transactionName,
@@ -51,10 +52,15 @@ const ActivityCard = ({
         <MaterialIcons name={icon} size={22} color={colors.muted} />
       </View>
       <View style={styles.activityBody}>
-        <Text style={[styles.activityTitle, { color: colors.text }]}>
+        <Typography
+          variant="body"
+          weight="700"
+          style={[styles.activityTitle, { color: colors.text }]}
+        >
           {transactionName}
-        </Text>
-        <Text
+        </Typography>
+        <Typography
+          variant="caption"
           style={[
             styles.activityMeta,
             {
@@ -63,10 +69,12 @@ const ActivityCard = ({
           ]}
         >
           {transactionCategory} {transactionDate}
-        </Text>
+        </Typography>
       </View>
       <View style={[styles.activityRight]}>
-        <Text
+        <Typography
+          variant="body"
+          weight="700"
           style={[
             styles.activityAmount,
             {
@@ -77,8 +85,9 @@ const ActivityCard = ({
           ]}
         >
           {amount}
-        </Text>
-        <Text
+        </Typography>
+        <Typography
+          variant="overline"
           style={[
             styles.activitySource,
             {
@@ -87,7 +96,7 @@ const ActivityCard = ({
           ]}
         >
           {source}
-        </Text>
+        </Typography>
       </View>
     </View>
   );
@@ -111,22 +120,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   activityTitle: {
-    fontSize: 14,
-    fontWeight: "700",
   },
   activityMeta: {
-    fontSize: 10,
     marginTop: 2,
   },
   activityRight: {
     alignItems: "flex-end",
   },
   activityAmount: {
-    fontSize: 14,
-    fontWeight: "700",
   },
   activitySource: {
-    fontSize: 10,
     textTransform: "uppercase",
   },
 });

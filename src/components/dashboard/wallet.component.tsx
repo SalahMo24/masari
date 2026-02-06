@@ -2,8 +2,9 @@ import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMemo } from "react";
-import { I18nManager, Platform, StyleSheet, Text, View } from "react-native";
+import { I18nManager, Platform, StyleSheet, View } from "react-native";
 
+import Typography from "@/src/components/typography.component";
 const monoFont = Platform.select({
   ios: "Menlo",
   android: "monospace",
@@ -48,12 +49,16 @@ const Wallet = ({
     >
       <View style={[styles.walletHeader]}>
         <MaterialIcons name={icon} size={20} color={colors.muted} />
-        <Text style={[styles.walletTag, { color: colors.muted }]}>{label}</Text>
+        <Typography variant="overline" style={[styles.walletTag, { color: colors.muted }]}>
+          {label}
+        </Typography>
       </View>
-      <Text style={[styles.walletLabel, { color: colors.muted }]}>
+      <Typography variant="caption" style={[styles.walletLabel, { color: colors.muted }]}>
         {subLabel}
-      </Text>
-      <Text
+      </Typography>
+      <Typography
+        variant="subtitle"
+        weight="700"
         style={[
           styles.walletValue,
           {
@@ -63,7 +68,7 @@ const Wallet = ({
         ]}
       >
         {t("dashboard.currency")} {value}
-      </Text>
+      </Typography>
     </View>
   );
 };
@@ -97,18 +102,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   walletTag: {
-    fontSize: 10,
-    fontWeight: "700",
     letterSpacing: 1,
     textTransform: "uppercase",
   },
   walletLabel: {
-    fontSize: 10,
     marginBottom: 4,
   },
   walletValue: {
-    fontSize: 18,
-    fontWeight: "700",
     letterSpacing: -0.4,
   },
 });

@@ -6,13 +6,13 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 
 import ActivityCard from "@/src/components/dashboard/activity-card.component";
 import BarChartCard from "@/src/components/dashboard/bar-chart-card.component";
 import DonutChartCard from "@/src/components/dashboard/donut-chart-card.component";
+import Typography from "@/src/components/typography.component";
 import Wallet from "@/src/components/dashboard/wallet.component";
 import {
   useCategoryBreakdown,
@@ -102,9 +102,9 @@ export default function DashboardScreen() {
       >
         <View style={styles.section}>
           <View style={[styles.sectionTitleRow]}>
-            <Text style={[styles.sectionTitle, { color: colors.muted }]}>
+            <Typography variant="overline" style={[styles.sectionTitle, { color: colors.muted }]}>
               {t("dashboard.walletSummary")}
-            </Text>
+            </Typography>
             <View
               style={[
                 styles.sectionDivider,
@@ -153,9 +153,9 @@ export default function DashboardScreen() {
 
         <View style={styles.section}>
           <View style={[styles.sectionRow]}>
-            <Text style={[styles.sectionTitle, { color: colors.muted }]}>
+            <Typography variant="overline" style={[styles.sectionTitle, { color: colors.muted }]}>
               {t("dashboard.recentActivity")}
-            </Text>
+            </Typography>
             <View style={styles.sectionRowRight}>
               <Pressable
                 style={styles.chevronButton}
@@ -169,9 +169,9 @@ export default function DashboardScreen() {
                 />
               </Pressable>
               <View style={[styles.rangePill, { backgroundColor: colors.border }]}>
-                <Text style={[styles.rangeText, { color: colors.text }]}>
+                <Typography variant="overline" style={[styles.rangeText, { color: colors.text }]}>
                   {weekLabel}
-                </Text>
+                </Typography>
               </View>
               <Pressable
                 style={styles.chevronButton}
@@ -269,8 +269,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 11,
-    fontWeight: "700",
     letterSpacing: 1.4,
     textTransform: "uppercase",
   },
@@ -343,8 +341,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   rangeText: {
-    fontSize: 10,
-    fontWeight: "700",
     letterSpacing: 1,
     textTransform: "uppercase",
   },

@@ -1,6 +1,7 @@
 import { useI18n } from "@/src/i18n/useI18n";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
+import Typography from "@/src/components/typography.component";
 
 type CategoryDatum = {
   label: string;
@@ -34,9 +35,9 @@ const DonutChartCard = ({
   const resolvedTotalAmount = totalAmount ?? "0";
   return (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: colors.muted }]}>
+      <Typography variant="overline" style={[styles.sectionTitle, { color: colors.muted }]}>
         {t("dashboard.categoryBreakdown")}
-      </Text>
+      </Typography>
       <View
         style={[
           styles.card,
@@ -53,7 +54,8 @@ const DonutChartCard = ({
               trackColor={colors.border}
             />
             <View style={styles.donutCenter}>
-              <Text
+              <Typography
+                variant="overline"
                 style={[
                   styles.donutLabel,
                   {
@@ -62,8 +64,10 @@ const DonutChartCard = ({
                 ]}
               >
                 {t("dashboard.monthly")}
-              </Text>
-              <Text
+              </Typography>
+              <Typography
+                variant="h5"
+                weight="700"
                 style={[
                   styles.donutValue,
                   {
@@ -73,7 +77,7 @@ const DonutChartCard = ({
                 ]}
               >
                 {resolvedTotalAmount}
-              </Text>
+              </Typography>
             </View>
           </View>
         </View>
@@ -88,7 +92,9 @@ const DonutChartCard = ({
                   ]}
                 />
                 <View>
-                  <Text
+                  <Typography
+                    variant="body"
+                    weight="600"
                     style={[
                       styles.categoryLabel,
                       {
@@ -97,8 +103,9 @@ const DonutChartCard = ({
                     ]}
                   >
                     {category.label}
-                  </Text>
-                  <Text
+                  </Typography>
+                  <Typography
+                    variant="overline"
                     style={[
                       styles.categorySubtitle,
                       {
@@ -107,11 +114,13 @@ const DonutChartCard = ({
                     ]}
                   >
                     {category.subtitle}
-                  </Text>
+                  </Typography>
                 </View>
               </View>
               <View style={[styles.categoryRight]}>
-                <Text
+                <Typography
+                  variant="body"
+                  weight="700"
                   style={[
                     styles.categoryAmount,
                     {
@@ -121,8 +130,9 @@ const DonutChartCard = ({
                   ]}
                 >
                   {category.amount}
-                </Text>
-                <Text
+                </Typography>
+                <Typography
+                  variant="caption"
                   style={[
                     styles.categoryPercent,
                     {
@@ -131,7 +141,7 @@ const DonutChartCard = ({
                   ]}
                 >
                   {category.percent}
-                </Text>
+                </Typography>
               </View>
             </View>
           ))}
@@ -201,8 +211,6 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 11,
-    fontWeight: "700",
     letterSpacing: 1.4,
     textTransform: "uppercase",
   },
@@ -258,15 +266,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   donutLabel: {
-    fontSize: 10,
-    fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.8,
     marginBottom: 4,
   },
   donutValue: {
-    fontSize: 20,
-    fontWeight: "700",
   },
   categoryList: {
     borderTopWidth: 1,
@@ -289,11 +293,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   categoryLabel: {
-    fontSize: 14,
-    fontWeight: "600",
   },
   categorySubtitle: {
-    fontSize: 10,
     letterSpacing: 0.6,
     textTransform: "uppercase",
   },
@@ -301,11 +302,8 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   categoryAmount: {
-    fontSize: 14,
-    fontWeight: "700",
   },
   categoryPercent: {
-    fontSize: 10,
   },
 });
 

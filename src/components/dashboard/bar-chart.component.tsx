@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import Svg, { Line } from "react-native-svg";
 
 import type { BarDatum } from "./bar-chart-card.component";
+import Typography from "@/src/components/typography.component";
 
 const BarChart = ({
   barData,
@@ -49,9 +50,13 @@ const BarChart = ({
                       },
                     ]}
                   >
-                    <Text style={[styles.tooltipText, { color: colors.text }]}>
+                    <Typography
+                      variant="caption"
+                      weight="600"
+                      style={[styles.tooltipText, { color: colors.text }]}
+                    >
                       {bar.amountLabel}
-                    </Text>
+                    </Typography>
                   </View>
                 )}
                 <View
@@ -66,17 +71,18 @@ const BarChart = ({
                   ]}
                 />
               </View>
-              <Text
+              <Typography
+                variant="caption"
+                weight={bar.highlight ? "700" : "500"}
                 style={[
                   styles.barLabel,
                   {
                     color: bar.highlight ? colors.primary : colors.muted,
-                    fontWeight: bar.highlight ? "700" : "500",
                   },
                 ]}
               >
                 {bar.label}
-              </Text>
+              </Typography>
             </Pressable>
           );
         })}
@@ -146,11 +152,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   tooltipText: {
-    fontSize: 10,
-    fontWeight: "600",
   },
   barLabel: {
-    fontSize: 10,
   },
 });
 

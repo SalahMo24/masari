@@ -5,10 +5,10 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 import BarChart from "./bar-chart.component";
+import Typography from "@/src/components/typography.component";
 export type BarDatum = {
   label: string;
   value: number;
@@ -70,9 +70,9 @@ const BarChartCard = ({
   return (
     <View style={styles.section}>
       <View style={[styles.sectionRow]}>
-        <Text style={[styles.sectionTitle, { color: colors.muted }]}>
+        <Typography variant="overline" style={[styles.sectionTitle, { color: colors.muted }]}>
           {t("dashboard.spendingTrend")}
-        </Text>
+        </Typography>
         <View style={[styles.sectionRowRight]}>
           <Pressable
             style={styles.chevronButton}
@@ -86,9 +86,9 @@ const BarChartCard = ({
             />
           </Pressable>
           <View style={[styles.rangePill, { backgroundColor: colors.border }]}>
-            <Text style={[styles.rangeText, { color: colors.text }]}>
+            <Typography variant="overline" style={[styles.rangeText, { color: colors.text }]}>
               {resolvedRangeLabel}
-            </Text>
+            </Typography>
           </View>
           <Pressable
             style={styles.chevronButton}
@@ -112,7 +112,8 @@ const BarChartCard = ({
       >
         <View style={[styles.spendingHeader]}>
           <View style={styles.todayBlock}>
-            <Text
+            <Typography
+              variant="overline"
               style={[
                 styles.spendingLabel,
                 {
@@ -121,8 +122,10 @@ const BarChartCard = ({
               ]}
             >
               {t("dashboard.today")}
-            </Text>
-            <Text
+            </Typography>
+            <Typography
+              variant="h3"
+              weight="700"
               style={[
                 styles.spendingValue,
                 {
@@ -132,14 +135,16 @@ const BarChartCard = ({
               ]}
             >
               {resolvedTodayValue}
-            </Text>
+            </Typography>
           </View>
           <View style={styles.averageSection}>
             <View style={styles.averageRow}>
-              <Text style={[styles.averageValue, { color: colors.muted }]}>
+              <Typography variant="caption" style={[styles.averageValue, { color: colors.muted }]}>
                 {t("dashboard.avgPerDay")}
-              </Text>
-              <Text
+              </Typography>
+              <Typography
+                variant="small"
+                weight="600"
                 style={[
                   styles.averageAmount,
                   {
@@ -149,7 +154,7 @@ const BarChartCard = ({
                 ]}
               >
                 {resolvedAverageValue}
-              </Text>
+              </Typography>
             </View>
             <View style={styles.trendRow}>
               {trendIcon && (
@@ -159,16 +164,20 @@ const BarChartCard = ({
                   color={colors.muted}
                 />
               )}
-              <Text style={[styles.trendText, { color: colors.muted }]}>
+              <Typography variant="caption" style={[styles.trendText, { color: colors.muted }]}>
                 {resolvedTrendLabel} {t("dashboard.vsLastWeek")}
-              </Text>
+              </Typography>
             </View>
           </View>
         </View>
         <BarChart barData={barData} colors={colors} />
-        <Text style={[styles.tapHint, { color: colors.muted }]}>
+        <Typography
+          variant="caption"
+          weight="600"
+          style={[styles.tapHint, { color: colors.muted }]}
+        >
           {t("dashboard.tapBar")}
-        </Text>
+        </Typography>
       </View>
     </View>
   );
@@ -185,8 +194,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 11,
-    fontWeight: "700",
     letterSpacing: 1.4,
     textTransform: "uppercase",
   },
@@ -230,8 +237,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   rangeText: {
-    fontSize: 10,
-    fontWeight: "700",
     letterSpacing: 1,
     textTransform: "uppercase",
   },
@@ -249,8 +254,6 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   spendingValue: {
-    fontSize: 28,
-    fontWeight: "700",
   },
   averageSection: {
     alignItems: "flex-end",
@@ -262,18 +265,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   averageValue: {
-    fontSize: 10,
-    fontWeight: "600",
     textAlign: "right",
   },
   averageAmount: {
-    fontSize: 12,
-    fontWeight: "600",
     textAlign: "right",
   },
   spendingLabel: {
-    fontSize: 11,
-    fontWeight: "700",
     letterSpacing: 0.6,
     textTransform: "uppercase",
   },
@@ -283,14 +280,10 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   trendText: {
-    fontSize: 10,
-    fontWeight: "500",
     textAlign: "right",
   },
   tapHint: {
     marginTop: 8,
-    fontSize: 10,
-    fontWeight: "600",
     textAlign: "center",
   },
 });
