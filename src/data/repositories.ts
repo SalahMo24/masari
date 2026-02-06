@@ -132,6 +132,23 @@ export const budgetRepository = {
     }
     return row;
   },
+  updateLimit: async (
+    db: SQLiteDatabase,
+    { id, monthly_limit }: Pick<Budget, "id" | "monthly_limit">,
+  ): Promise<Budget> => {
+    await db.runAsync(`UPDATE Budget SET monthly_limit = ? WHERE id = ?;`, [
+      monthly_limit,
+      id,
+    ]);
+    const row = await db.getFirstAsync<Budget>(
+      `SELECT * FROM Budget WHERE id = ? LIMIT 1;`,
+      [id],
+    );
+    if (!row) {
+      throw new Error("Failed to update budget");
+    }
+    return row;
+  },
 };
 
 export const transactionRepository = {

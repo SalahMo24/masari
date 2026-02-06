@@ -133,9 +133,9 @@ export default function BudgetDetailScreen() {
           onPress={() =>
             budget
               ? router.push({
-                  pathname: "/(features)/budgets/new",
-                  params: { budgetId: budget.id, categoryId: budget.category_id },
-                })
+                  pathname: "/(features)/budgets/edit",
+                  params: { budgetId: budget.id },
+                } as any)
               : null
           }
           colors={colors}
