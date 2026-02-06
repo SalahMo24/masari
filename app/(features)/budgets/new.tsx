@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { endOfMonth, startOfMonth, subMonths } from "date-fns";
 
 import { AmountDisplay, Keypad, type KeypadKey } from "@/src/components/amount";
+import { SaveButton, SAVE_BUTTON_BASE_HEIGHT } from "@/src/components/SaveButton";
 import type { Budget, Category, Transaction } from "@/src/data/entities";
 import {
   budgetRepository,
@@ -15,6 +16,7 @@ import {
 } from "@/src/data/repositories";
 import { useAmountInput } from "@/src/hooks/amount";
 import { useI18n } from "@/src/i18n/useI18n";
+import { palette } from "@/src/theme/theme";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { formatAmountForSummary } from "@/src/utils/amount";
 
@@ -59,6 +61,8 @@ export default function NewBudgetScreen() {
   const { t, locale } = useI18n();
   const router = useRouter();
   const isRtl = I18nManager.isRTL;
+  const insets = useSafeAreaInsets();
+  const saveButtonOffset = SAVE_BUTTON_BASE_HEIGHT + insets.bottom;
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -256,7 +260,7 @@ export default function NewBudgetScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingBottom: saveButtonOffset }]}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.headerButton}>
             <MaterialIcons
@@ -383,7 +387,7 @@ export default function NewBudgetScreen() {
               </View>
             )}
 
-            <View style={[styles.previewCard, { backgroundColor: colors.primary }]}>
+            <View style={[styles.previewCard, { backgroundColor: colors.accent }]}>
               <View style={styles.previewLeft}>
                 <View style={[styles.previewIcon, { backgroundColor: "rgba(255,255,255,0.2)" }]}>
                   <MaterialIcons
@@ -403,7 +407,7 @@ export default function NewBudgetScreen() {
                   </Text>
                 </View>
               </View>
-              <View style={[styles.previewTag, { backgroundColor: colors.success }]}>
+              <View style={[styles.previewTag, { backgroundColor: palette.nileGreen.deep }]}>
                 <Text style={styles.previewTagText}>{t("budget.tag.safe")}</Text>
               </View>
             </View>
@@ -472,22 +476,17 @@ export default function NewBudgetScreen() {
               }}
             />
 
-            <View style={styles.ctaRow}>
-              <Pressable
-                onPress={onSave}
-                disabled={!canSubmit}
-                style={[
-                  styles.ctaButton,
-                  { backgroundColor: canSubmit ? colors.primary : colors.border },
-                ]}
-              >
-                {saving ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.ctaText}>{t("budget.create.cta")}</Text>
-                )}
-              </Pressable>
-            </View>
+            <SaveButton
+              label={t("budget.create.cta")}
+              savingLabel={t("budget.create.saving")}
+              saving={saving}
+              onSave={onSave}
+              accentColor={colors.accent}
+              cardColor={colors.card}
+              borderColor={colors.border}
+              disabled={!canSubmit}
+              disabledColor={colors.border}
+            />
           </>
         )}
       </View>
@@ -498,7 +497,6 @@ export default function NewBudgetScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingBottom: 16,
   },
   header: {
     flexDirection: "row",
@@ -699,20 +697,5 @@ const styles = StyleSheet.create({
   keypadText: {
     fontSize: 26,
     fontWeight: "600",
-  },
-  ctaRow: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-  ctaButton: {
-    borderRadius: 18,
-    paddingVertical: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  ctaText: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "700",
   },
 });

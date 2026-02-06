@@ -2,6 +2,7 @@ import { AmountDisplay, Keypad } from "@/src/components/amount";
 import {
   CategoryChips,
   NoteSection,
+  SAVE_BUTTON_BASE_HEIGHT,
   SaveButton,
   SegmentedControl,
   TransactionHeader,
@@ -11,7 +12,11 @@ import {
 import type { TransactionType } from "@/src/data/entities";
 import { transactionRepository } from "@/src/data/repositories";
 import { useAmountInput } from "@/src/hooks/amount";
-import { useCategorySelection, useTransactionData, useWalletSelection } from "@/src/hooks/transactions";
+import {
+  useCategorySelection,
+  useTransactionData,
+  useWalletSelection,
+} from "@/src/hooks/transactions";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { formatAmountForSummary } from "@/src/utils/amount";
@@ -26,11 +31,16 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 export default function NewTransactionScreen() {
   const theme = useAppTheme();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
+  const saveButtonOffset = SAVE_BUTTON_BASE_HEIGHT + insets.bottom;
   const isRtl = I18nManager.isRTL;
 
   // Data fetching
@@ -191,14 +201,14 @@ export default function NewTransactionScreen() {
         if (!fromWalletId || !toWalletId) {
           Alert.alert(
             t("transaction.error"),
-            t("transaction.error.walletsTransfer")
+            t("transaction.error.walletsTransfer"),
           );
           return;
         }
         if (fromWalletId === toWalletId) {
           Alert.alert(
             t("transaction.error"),
-            t("transaction.error.walletsDifferent")
+            t("transaction.error.walletsDifferent"),
           );
           return;
         }
@@ -254,7 +264,7 @@ export default function NewTransactionScreen() {
             accentColor={accent}
           />
 
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, paddingBottom: saveButtonOffset }}>
             <SegmentedControl
               value={mode}
               onChange={setMode}

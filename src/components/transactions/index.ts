@@ -25,5 +25,5 @@ export type { NoteSectionProps } from "./NoteSection";
 export { TransactionSummary } from "./TransactionSummary";
 export type { TransactionSummaryProps } from "./TransactionSummary";
 
-export { SaveButton } from "./SaveButton";
-export type { SaveButtonProps } from "./SaveButton";
+export { SaveButton, SAVE_BUTTON_BASE_HEIGHT } from "../SaveButton";
+export type { SaveButtonProps } from "../SaveButton";
