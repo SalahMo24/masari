@@ -26,5 +26,16 @@ export async function resetDatabase(): Promise<void> {
   }
 
   await closeDatabase();
+  const sqliteWithList = SQLite as typeof SQLite & {
+    getAllDatabasesAsync?: () => Promise<Array<{ name: string }>>;
+  };
+  const databases = await sqliteWithList.getAllDatabasesAsync?.();
+  const exists = databases
+    ? databases.some((db) => db.name === DB_NAME)
+    : false;
+  if (!exists) {
+    return;
+  }
+
   await SQLite.deleteDatabaseAsync(DB_NAME);
 }

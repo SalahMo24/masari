@@ -19,19 +19,11 @@ export async function seedDatabase(db: SQLiteDatabase): Promise<void> {
   if (!walletCount) {
     await db.runAsync(
       `INSERT INTO Wallet (id, name, type, balance, created_at) VALUES (?, ?, ?, ?, ?);`,
-      generateId("wallet"),
-      "Cash",
-      "cash",
-      0,
-      now
+      [generateId("wallet"), "Cash", "cash", 0, now]
     );
     await db.runAsync(
       `INSERT INTO Wallet (id, name, type, balance, created_at) VALUES (?, ?, ?, ?, ?);`,
-      generateId("wallet"),
-      "Bank",
-      "bank",
-      0,
-      now
+      [generateId("wallet"), "Bank", "bank", 0, now]
     );
   }
 
@@ -59,12 +51,7 @@ export async function seedDatabase(db: SQLiteDatabase): Promise<void> {
     for (const c of categories) {
       await db.runAsync(
         `INSERT INTO Category (id, name, icon, color, is_custom, created_at) VALUES (?, ?, ?, ?, ?, ?);`,
-        generateId("cat"),
-        c.name,
-        c.icon,
-        c.color,
-        c.is_custom,
-        now
+        [generateId("cat"), c.name, c.icon, c.color, c.is_custom, now]
       );
     }
   }

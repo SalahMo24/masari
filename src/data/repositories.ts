@@ -50,7 +50,7 @@ export const walletRepository = {
     const db = await ensureReady();
     const row = await db.getFirstAsync<Wallet>(
       `SELECT * FROM Wallet WHERE id = ? LIMIT 1;`,
-      _id,
+      [_id],
     );
     return row ?? null;
   },
@@ -58,12 +58,11 @@ export const walletRepository = {
     const db = await ensureReady();
     await db.runAsync(
       `UPDATE Wallet SET balance = balance + ? WHERE id = ?;`,
-      delta,
-      id,
+      [delta, id],
     );
     const row = await db.getFirstAsync<Wallet>(
       `SELECT * FROM Wallet WHERE id = ? LIMIT 1;`,
-      id,
+      [id],
     );
     return row ?? null;
   },
@@ -80,7 +79,7 @@ export const categoryRepository = {
     const db = await ensureReady();
     const row = await db.getFirstAsync<Category>(
       `SELECT * FROM Category WHERE id = ? LIMIT 1;`,
-      _id,
+      [_id],
     );
     return row ?? null;
   },
@@ -95,16 +94,11 @@ export const categoryRepository = {
     const id = generateId("cat");
     await db.runAsync(
       `INSERT INTO Category (id, name, icon, color, is_custom, created_at) VALUES (?, ?, ?, ?, ?, ?);`,
-      id,
-      name,
-      icon ?? null,
-      color ?? null,
-      is_custom ? 1 : 0,
-      now,
+      [id, name, icon ?? null, color ?? null, is_custom ? 1 : 0, now],
     );
     const row = await db.getFirstAsync<Category>(
       `SELECT * FROM Category WHERE id = ? LIMIT 1;`,
-      id,
+      [id],
     );
     if (!row) {
       throw new Error("Failed to create category");
@@ -124,7 +118,7 @@ export const budgetRepository = {
     const db = await ensureReady();
     const row = await db.getFirstAsync<Budget>(
       `SELECT * FROM Budget WHERE id = ? LIMIT 1;`,
-      _id,
+      [_id],
     );
     return row ?? null;
   },
@@ -132,7 +126,7 @@ export const budgetRepository = {
     const db = await ensureReady();
     const row = await db.getFirstAsync<Budget>(
       `SELECT * FROM Budget WHERE category_id = ? LIMIT 1;`,
-      _id,
+      [_id],
     );
     return row ?? null;
   },
@@ -145,14 +139,11 @@ export const budgetRepository = {
     const id = generateId("bud");
     await db.runAsync(
       `INSERT INTO Budget (id, category_id, monthly_limit, created_at) VALUES (?, ?, ?, ?);`,
-      id,
-      category_id,
-      monthly_limit,
-      now,
+      [id, category_id, monthly_limit, now],
     );
     const row = await db.getFirstAsync<Budget>(
       `SELECT * FROM Budget WHERE id = ? LIMIT 1;`,
-      id,
+      [id],
     );
     if (!row) {
       throw new Error("Failed to create budget");
@@ -172,7 +163,7 @@ export const transactionRepository = {
     const db = await ensureReady();
     const row = await db.getFirstAsync<Transaction>(
       `SELECT * FROM "Transaction" WHERE id = ? LIMIT 1;`,
-      _id,
+      [_id],
     );
     return row ?? null;
   },
@@ -188,15 +179,17 @@ export const transactionRepository = {
         `INSERT INTO "Transaction"
           (id, amount, type, category_id, wallet_id, target_wallet_id, note, occurred_at, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-        id,
-        tx.amount,
-        tx.type,
-        tx.category_id ?? null,
-        tx.wallet_id ?? null,
-        tx.target_wallet_id ?? null,
-        tx.note ?? null,
-        tx.occurred_at,
-        now,
+        [
+          id,
+          tx.amount,
+          tx.type,
+          tx.category_id ?? null,
+          tx.wallet_id ?? null,
+          tx.target_wallet_id ?? null,
+          tx.note ?? null,
+          tx.occurred_at,
+          now,
+        ],
       );
 
       // Apply wallet balance side-effects.
@@ -206,8 +199,7 @@ export const transactionRepository = {
         }
         await db.runAsync(
           `UPDATE Wallet SET balance = balance - ? WHERE id = ?;`,
-          tx.amount,
-          tx.wallet_id,
+          [tx.amount, tx.wallet_id],
         );
       } else if (tx.type === "income") {
         if (!tx.wallet_id) {
@@ -215,8 +207,7 @@ export const transactionRepository = {
         }
         await db.runAsync(
           `UPDATE Wallet SET balance = balance + ? WHERE id = ?;`,
-          tx.amount,
-          tx.wallet_id,
+          [tx.amount, tx.wallet_id],
         );
       } else if (tx.type === "transfer") {
         if (!tx.wallet_id || !tx.target_wallet_id) {
@@ -227,19 +218,17 @@ export const transactionRepository = {
         }
         await db.runAsync(
           `UPDATE Wallet SET balance = balance - ? WHERE id = ?;`,
-          tx.amount,
-          tx.wallet_id,
+          [tx.amount, tx.wallet_id],
         );
         await db.runAsync(
           `UPDATE Wallet SET balance = balance + ? WHERE id = ?;`,
-          tx.amount,
-          tx.target_wallet_id,
+          [tx.amount, tx.target_wallet_id],
         );
       }
 
       const row = await db.getFirstAsync<Transaction>(
         `SELECT * FROM "Transaction" WHERE id = ? LIMIT 1;`,
-        id,
+        [id],
       );
       if (!row) {
         throw new Error("Failed to create transaction");
@@ -258,7 +247,7 @@ export const billRepository = {
     const db = await ensureReady();
     const row = await db.getFirstAsync<Bill>(
       `SELECT * FROM Bill WHERE id = ? LIMIT 1;`,
-      _id,
+      [_id],
     );
     return row ?? null;
   },
