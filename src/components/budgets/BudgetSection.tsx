@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import Typography from "@/src/components/typography.component";
 
 type BudgetSectionProps = {
   title: string;
@@ -12,7 +13,12 @@ export function BudgetSection({ title, color, children }: BudgetSectionProps) {
     <>
       <View style={styles.sectionHeader}>
         <View style={[styles.sectionDot, { backgroundColor: color }]} />
-        <Text style={[styles.sectionTitle, { color }]}>{title}</Text>
+        <Typography
+          variant="overline"
+          style={[styles.sectionTitle, { color }]}
+        >
+          {title}
+        </Typography>
       </View>
       <View style={styles.section}>{children}</View>
     </>

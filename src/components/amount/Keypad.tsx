@@ -8,6 +8,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import Typography from "@/src/components/typography.component";
 
 export type KeypadKey =
   | { type: "digit"; value: string }
@@ -136,7 +137,8 @@ export function Keypad({
                   { backgroundColor: pressed ? basePressed : background },
                 ]}
               >
-                <Text
+                <Typography
+                  variant="h4"
                   style={[
                     styles.keyText,
                     { color: text },
@@ -144,7 +146,7 @@ export function Keypad({
                   ]}
                 >
                   {value}
-                </Text>
+                </Typography>
               </Pressable>
             );
           }
@@ -162,7 +164,8 @@ export function Keypad({
                   { backgroundColor: pressed ? basePressed : background },
                 ]}
               >
-                <Text
+                <Typography
+                  variant="h4"
                   style={[
                     styles.keyText,
                     { color: isActive ? accent : text },
@@ -170,7 +173,7 @@ export function Keypad({
                   ]}
                 >
                   .
-                </Text>
+                </Typography>
               </Pressable>
             );
           }
@@ -188,7 +191,8 @@ export function Keypad({
                   { backgroundColor: pressed ? basePressed : background },
                 ]}
               >
-                <Text
+                <Typography
+                  variant="h4"
                   style={[
                     styles.keyOp,
                     { color: isActive ? accent : text },
@@ -196,7 +200,7 @@ export function Keypad({
                   ]}
                 >
                   +
-                </Text>
+                </Typography>
               </Pressable>
             );
           }
@@ -214,7 +218,8 @@ export function Keypad({
                   { backgroundColor: pressed ? basePressed : background },
                 ]}
               >
-                <Text
+                <Typography
+                  variant="h4"
                   style={[
                     styles.keyOp,
                     { color: isActive ? accent : text },
@@ -222,7 +227,7 @@ export function Keypad({
                   ]}
                 >
                   -
-                </Text>
+                </Typography>
               </Pressable>
             );
           }
@@ -239,7 +244,8 @@ export function Keypad({
                   { backgroundColor: pressed ? basePressed : background },
                 ]}
               >
-                <Text
+                <Typography
+                  variant="h4"
                   style={[
                     styles.keyOp,
                     { color: accent },
@@ -247,7 +253,7 @@ export function Keypad({
                   ]}
                 >
                   =
-                </Text>
+                </Typography>
               </Pressable>
             );
           }

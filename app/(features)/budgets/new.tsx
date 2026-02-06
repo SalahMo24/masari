@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, I18nManager, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
@@ -19,6 +19,7 @@ import { useI18n } from "@/src/i18n/useI18n";
 import { palette } from "@/src/theme/theme";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { formatAmountForSummary } from "@/src/utils/amount";
+import Typography from "@/src/components/typography.component";
 
 const categoryIconMap: Record<string, string> = {
   transportation: "directions-car",
@@ -269,18 +270,24 @@ export default function NewBudgetScreen() {
               color={colors.text}
             />
           </Pressable>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
+          <Typography
+            variant="h6"
+            style={[styles.headerTitle, { color: colors.text }]}
+          >
             {t("screen.budget.new")}
-          </Text>
+          </Typography>
           <View style={styles.headerButton} />
         </View>
 
         {loading ? (
           <View style={styles.loadingState}>
             <ActivityIndicator color={colors.primary} />
-            <Text style={[styles.loadingText, { color: colors.muted }]}>
+            <Typography
+              variant="caption"
+              style={[styles.loadingText, { color: colors.muted }]}
+            >
               {t("budget.loading")}
-            </Text>
+            </Typography>
           </View>
         ) : (
           <>
@@ -313,14 +320,15 @@ export default function NewBudgetScreen() {
                       >
                         <MaterialIcons name={iconName} size={22} color={iconColor} />
                       </View>
-                      <Text
+                      <Typography
+                        variant="caption"
                         style={[
                           styles.categoryLabel,
                           { color: isSelected ? colors.success : colors.text },
                         ]}
                       >
                         {label}
-                      </Text>
+                      </Typography>
                     </Pressable>
                   );
                 })}
@@ -348,40 +356,58 @@ export default function NewBudgetScreen() {
               />
               <View style={[styles.amountIndicator, { backgroundColor: `${colors.success}33` }]} />
               {guidanceText ? (
-                <Text style={[styles.guidanceText, { color: colors.muted }]}>
+                <Typography
+                  variant="small"
+                  style={[styles.guidanceText, { color: colors.muted }]}
+                >
                   {guidanceText}
-                </Text>
+                </Typography>
               ) : (
-                <Text style={[styles.guidanceText, { color: colors.muted }]}>
+                <Typography
+                  variant="small"
+                  style={[styles.guidanceText, { color: colors.muted }]}
+                >
                   {t("budget.insight.empty")}
-                </Text>
+                </Typography>
               )}
             </View>
 
             {showLowWarning && (
               <View style={[styles.warningBanner, { borderColor: `${colors.warning}66` }]}>
                 <MaterialIcons name="warning-amber" size={18} color={colors.warning} />
-                <Text style={[styles.warningText, { color: colors.text }]}>
+                <Typography
+                  variant="caption"
+                  style={[styles.warningText, { color: colors.text }]}
+                >
                   {t("budget.create.warning.low")}
-                </Text>
+                </Typography>
               </View>
             )}
 
             {existingBudget && (
               <View style={[styles.duplicateBanner, { borderColor: `${colors.warning}66` }]}>
-                <Text style={[styles.duplicateText, { color: colors.text }]}>
+                <Typography
+                  variant="small"
+                  style={[styles.duplicateText, { color: colors.text }]}
+                >
                   {t("budget.create.duplicate").replace("{category}", selectedLabel)}
-                </Text>
+                </Typography>
                 <View style={styles.duplicateActions}>
                   <Pressable onPress={onEditExisting} style={styles.inlineButton}>
-                    <Text style={[styles.inlineButtonText, { color: colors.primary }]}>
+                    <Typography
+                      variant="caption"
+                      style={[styles.inlineButtonText, { color: colors.primary }]}
+                    >
                       {t("budget.create.duplicate.edit")}
-                    </Text>
+                    </Typography>
                   </Pressable>
                   <Pressable onPress={onCancelExisting} style={styles.inlineButton}>
-                    <Text style={[styles.inlineButtonText, { color: colors.muted }]}>
+                    <Typography
+                      variant="caption"
+                      style={[styles.inlineButtonText, { color: colors.muted }]}
+                    >
                       {t("budget.create.duplicate.cancel")}
-                    </Text>
+                    </Typography>
                   </Pressable>
                 </View>
               </View>
@@ -399,16 +425,18 @@ export default function NewBudgetScreen() {
                   />
                 </View>
                 <View>
-                  <Text style={styles.previewTitle}>
+                  <Typography variant="caption" style={styles.previewTitle}>
                     {selectedLabel} • {formattedAmount} {currencyLabel}/mo
-                  </Text>
-                  <Text style={styles.previewSubtitle}>
+                  </Typography>
+                  <Typography variant="caption" style={styles.previewSubtitle}>
                     {t("budget.create.preview.safe")}
-                  </Text>
+                  </Typography>
                 </View>
               </View>
               <View style={[styles.previewTag, { backgroundColor: palette.nileGreen.deep }]}>
-                <Text style={styles.previewTagText}>{t("budget.tag.safe")}</Text>
+                <Typography variant="caption" style={styles.previewTagText}>
+                  {t("budget.tag.safe")}
+                </Typography>
               </View>
             </View>
 
@@ -418,12 +446,15 @@ export default function NewBudgetScreen() {
                   onPress={() => onApplyPreset(selectedLastMonth)}
                   style={[styles.presetChip, { backgroundColor: colors.card, borderColor: colors.border }]}
                 >
-                  <Text style={[styles.presetText, { color: colors.muted }]}>
+                  <Typography
+                    variant="caption"
+                    style={[styles.presetText, { color: colors.muted }]}
+                  >
                     {t("budget.create.chip.lastMonth").replace(
                       "{amount}",
                       formatAmountForSummary(selectedLastMonth)
                     )}
-                  </Text>
+                  </Typography>
                 </Pressable>
               )}
               {selectedAverage > 0 && (
@@ -431,12 +462,15 @@ export default function NewBudgetScreen() {
                   onPress={() => onApplyPreset(selectedAverage)}
                   style={[styles.presetChip, { backgroundColor: colors.card, borderColor: colors.border }]}
                 >
-                  <Text style={[styles.presetText, { color: colors.muted }]}>
+                  <Typography
+                    variant="caption"
+                    style={[styles.presetText, { color: colors.muted }]}
+                  >
                     {t("budget.create.chip.average").replace(
                       "{amount}",
                       formatAmountForSummary(selectedAverage)
                     )}
-                  </Text>
+                  </Typography>
                 </Pressable>
               )}
               {safeSuggestion > 0 && (
@@ -447,12 +481,15 @@ export default function NewBudgetScreen() {
                     { backgroundColor: `${colors.success}12`, borderColor: `${colors.success}33` },
                   ]}
                 >
-                  <Text style={[styles.presetText, { color: colors.success }]}>
+                  <Typography
+                    variant="caption"
+                    style={[styles.presetText, { color: colors.success }]}
+                  >
                     {t("budget.create.chip.safe").replace(
                       "{amount}",
                       formatAmountForSummary(safeSuggestion)
                     )}
-                  </Text>
+                  </Typography>
                 </Pressable>
               )}
             </View>

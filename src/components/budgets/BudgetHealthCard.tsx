@@ -1,5 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import Typography from "@/src/components/typography.component";
 
 type BudgetHealthCardProps = {
   title: string;
@@ -35,16 +36,27 @@ export function BudgetHealthCard({
         ]}
       >
         <View style={styles.healthHeader}>
-          <Text style={[styles.healthLabel, { color: colors.muted }]}>{title}</Text>
+          <Typography
+            variant="overline"
+            style={[styles.healthLabel, { color: colors.muted }]}
+          >
+            {title}
+          </Typography>
           <MaterialIcons name="auto-awesome" size={16} color={colors.success} />
         </View>
         <View style={styles.healthBody}>
-          <Text style={[styles.healthValue, { color: colors.text }]}>
+          <Typography
+            variant="h5"
+            style={[styles.healthValue, { color: colors.text }]}
+          >
             {statusText}
-          </Text>
-          <Text style={[styles.healthReassurance, { color: colors.muted }]}>
+          </Typography>
+          <Typography
+            variant="small"
+            style={[styles.healthReassurance, { color: colors.muted }]}
+          >
             {loading ? loadingLabel : reassuranceText}
-          </Text>
+          </Typography>
         </View>
         <View style={[styles.healthTrack, { backgroundColor: colors.border }]}>
           <View

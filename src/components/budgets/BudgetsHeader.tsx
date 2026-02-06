@@ -1,5 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Typography from "@/src/components/typography.component";
 
 type BudgetsHeaderProps = {
   title: string;
@@ -26,7 +27,12 @@ export function BudgetsHeader({
       <View style={styles.headerIcon}>
         <MaterialIcons name="shield" size={20} color={colors.success} />
       </View>
-      <Text style={[styles.headerTitle, { color: colors.text }]}>{title}</Text>
+      <Typography
+        variant="h6"
+        style={[styles.headerTitle, { color: colors.text }]}
+      >
+        {title}
+      </Typography>
       <Pressable
         style={styles.headerButton}
         onPress={onToggleHide}

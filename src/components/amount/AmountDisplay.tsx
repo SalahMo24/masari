@@ -1,5 +1,6 @@
 import type React from "react";
 import { I18nManager, StyleSheet, Text, View } from "react-native";
+import Typography from "@/src/components/typography.component";
 
 type CurrencyPosition = "prefix" | "suffix";
 
@@ -70,31 +71,46 @@ export function AmountDisplay({
     const char = formattedAmount[i];
     if (showCaret && i === caretIndex) {
       elements.push(
-        <Text key={`caret-${i}`} style={[styles.caret, { color: amountColor }, styleOverrides?.caret]}>
+        <Typography
+          key={`caret-${i}`}
+          variant="h3"
+          style={[styles.caret, { color: amountColor }, styleOverrides?.caret]}
+        >
           |
-        </Text>
+        </Typography>
       );
     }
 
     elements.push(
-      <Text key={`char-${i}`} style={[styles.digit, { color: amountColor }, styleOverrides?.digit]}>
+      <Typography
+        key={`char-${i}`}
+        variant="h3"
+        style={[styles.digit, { color: amountColor }, styleOverrides?.digit]}
+      >
         {char}
-      </Text>
+      </Typography>
     );
   }
 
   if (showCaret && caretIndex >= formattedAmount.length) {
     elements.push(
-      <Text key="caret-end" style={[styles.caret, { color: amountColor }, styleOverrides?.caret]}>
+      <Typography
+        key="caret-end"
+        variant="h3"
+        style={[styles.caret, { color: amountColor }, styleOverrides?.caret]}
+      >
         |
-      </Text>
+      </Typography>
     );
   }
 
   const currencyNode = (
-    <Text style={[styles.currency, { color: currencyColor }, styleOverrides?.currency]}>
+    <Typography
+      variant="caption"
+      style={[styles.currency, { color: currencyColor }, styleOverrides?.currency]}
+    >
       {currency}
-    </Text>
+    </Typography>
   );
 
   return (

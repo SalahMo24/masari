@@ -1,5 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Typography from "@/src/components/typography.component";
 
 type BudgetInsightCardProps = {
   insightText: string;
@@ -39,13 +40,19 @@ export function BudgetInsightCard({
           <MaterialIcons name="insights" size={20} color={colors.success} />
         </View>
         <View style={styles.insightBody}>
-          <Text style={[styles.insightText, { color: colors.text }]}>
+          <Typography
+            variant="small"
+            style={[styles.insightText, { color: colors.text }]}
+          >
             {insightText}
-          </Text>
+          </Typography>
           <Pressable onPress={onPress} style={styles.insightLink}>
-            <Text style={[styles.insightLinkText, { color: colors.success }]}>
+            <Typography
+              variant="caption"
+              style={[styles.insightLinkText, { color: colors.success }]}
+            >
               {ctaLabel}
-            </Text>
+            </Typography>
             <MaterialIcons
               name={isRtl ? "arrow-back-ios" : "arrow-forward-ios"}
               size={12}

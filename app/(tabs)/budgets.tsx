@@ -5,7 +5,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -29,6 +28,7 @@ import { SAFE_PREVIEW_COUNT } from "@/src/hooks/budgets/useBudgetScreenState";
 import { formatPercent } from "@/src/hooks/budgets/budgetFormatting";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
+import Typography from "@/src/components/typography.component";
 
 export default function BudgetsScreen() {
   const theme = useAppTheme();
@@ -296,11 +296,14 @@ export default function BudgetsScreen() {
                     onPress={() => setShowAllSafe((current) => !current)}
                     style={styles.viewAllButton}
                   >
-                    <Text style={[styles.viewAllText, { color: colors.success }]}>
+                    <Typography
+                      variant="small"
+                      style={[styles.viewAllText, { color: colors.success }]}
+                    >
                       {showAllSafe
                         ? t("budget.safe.viewLess")
                         : t("budget.safe.viewAll")}
-                    </Text>
+                    </Typography>
                     <MaterialIcons
                       name={showAllSafe ? "expand-less" : "expand-more"}
                       size={18}

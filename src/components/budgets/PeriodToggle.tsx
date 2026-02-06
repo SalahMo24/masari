@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Typography from "@/src/components/typography.component";
 
 import type { BudgetPeriod } from "@/src/hooks/budgets/useBudgetOverview";
 
@@ -35,7 +36,8 @@ export function PeriodToggle({
             },
           ]}
         >
-          <Text
+          <Typography
+            variant="caption"
             style={[
               styles.periodText,
               {
@@ -45,7 +47,7 @@ export function PeriodToggle({
             ]}
           >
             {currentLabel}
-          </Text>
+          </Typography>
         </Pressable>
         <Pressable
           onPress={() => onChange("previous")}
@@ -57,7 +59,8 @@ export function PeriodToggle({
             },
           ]}
         >
-          <Text
+          <Typography
+            variant="caption"
             style={[
               styles.periodText,
               {
@@ -67,7 +70,7 @@ export function PeriodToggle({
             ]}
           >
             {previousLabel}
-          </Text>
+          </Typography>
         </Pressable>
       </View>
     </View>

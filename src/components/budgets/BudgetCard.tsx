@@ -4,7 +4,6 @@ import {
   LayoutChangeEvent,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 
@@ -16,6 +15,7 @@ import {
   normalizeCategoryLabel,
 } from "@/src/hooks/budgets/budgetFormatting";
 import { formatAmountForSummary } from "@/src/utils/amount";
+import Typography from "@/src/components/typography.component";
 
 type ProgressWidth = Animated.AnimatedInterpolation<string | number> | `${number}%`;
 
@@ -79,11 +79,19 @@ export function BudgetCard({
             <MaterialIcons name={iconName} size={20} color={riskColor} />
           </View>
           <View>
-            <Text style={[styles.cardTitle, { color: colors.text }]}>
+            <Typography
+              variant="subtitle"
+              style={[styles.cardTitle, { color: colors.text }]}
+            >
               {categoryLabel}
-            </Text>
+            </Typography>
             <View style={[styles.riskPill, { backgroundColor: `${riskColor}20` }]}>
-              <Text style={[styles.riskText, { color: riskColor }]}>{riskLabel}</Text>
+              <Typography
+                variant="overline"
+                style={[styles.riskText, { color: riskColor }]}
+              >
+                {riskLabel}
+              </Typography>
             </View>
           </View>
         </View>
@@ -95,13 +103,21 @@ export function BudgetCard({
       </View>
       <View style={styles.cardBody}>
         <View style={styles.cardRow}>
-          <Text style={[styles.cardAmount, { color: colors.text }]}>
+          <Typography
+            variant="caption"
+            style={[styles.cardAmount, { color: colors.text }]}
+          >
             {spentLabel}{" "}
-            <Text style={{ color: colors.muted }}>
+            <Typography variant="caption" style={{ color: colors.muted }}>
               / {limitLabel} {currencyLabel}
-            </Text>
-          </Text>
-          <Text style={[styles.cardPercent, { color: riskColor }]}>{percentLabel}</Text>
+            </Typography>
+          </Typography>
+          <Typography
+            variant="caption"
+            style={[styles.cardPercent, { color: riskColor }]}
+          >
+            {percentLabel}
+          </Typography>
         </View>
         <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
           <Animated.View
@@ -113,7 +129,12 @@ export function BudgetCard({
         </View>
         <View style={styles.hintRow}>
           <MaterialIcons name={hintIcon} size={16} color={colors.muted} />
-          <Text style={[styles.hintText, { color: colors.muted }]}>{hintText}</Text>
+          <Typography
+            variant="caption"
+            style={[styles.hintText, { color: colors.muted }]}
+          >
+            {hintText}
+          </Typography>
         </View>
       </View>
     </Pressable>

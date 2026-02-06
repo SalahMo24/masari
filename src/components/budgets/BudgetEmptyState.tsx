@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Typography from "@/src/components/typography.component";
 
 type BudgetEmptyStateProps = {
   title: string;
@@ -29,15 +30,25 @@ export function BudgetEmptyState({
           { backgroundColor: colors.card, borderColor: colors.border },
         ]}
       >
-        <Text style={[styles.emptyTitle, { color: colors.text }]}>{title}</Text>
-        <Text style={[styles.emptyBody, { color: colors.muted }]}>
+        <Typography
+          variant="subtitle"
+          style={[styles.emptyTitle, { color: colors.text }]}
+        >
+          {title}
+        </Typography>
+        <Typography
+          variant="small"
+          style={[styles.emptyBody, { color: colors.muted }]}
+        >
           {description}
-        </Text>
+        </Typography>
         <Pressable
           style={[styles.emptyButton, { backgroundColor: colors.primary }]}
           onPress={onPress}
         >
-          <Text style={styles.emptyButtonText}>{ctaLabel}</Text>
+          <Typography variant="small" style={styles.emptyButtonText}>
+            {ctaLabel}
+          </Typography>
         </Pressable>
       </View>
     </View>
