@@ -9,12 +9,7 @@ export { closeDatabase, getDatabase, migrate, resetDatabase };
 let migrationsRun = false;
 let seedRun = false;
 
-export async function initializeDatabase(): Promise<SQLiteDatabase> {
-  // if (__DEV__) {
-  //   await resetDatabase();
-  // }
-
-  const db = await getDatabase();
+export async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
   if (!migrationsRun) {
     await migrate(db);
     migrationsRun = true;
@@ -23,5 +18,4 @@ export async function initializeDatabase(): Promise<SQLiteDatabase> {
     await seedDatabase(db);
     seedRun = true;
   }
-  return db;
 }

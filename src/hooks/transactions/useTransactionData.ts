@@ -1,5 +1,6 @@
 import type { Category, Wallet } from "@/src/data/entities";
 import { categoryRepository, walletRepository } from "@/src/data/repositories";
+import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useEffect, useState } from "react";
 
 export interface UseTransactionDataResult {
@@ -13,6 +14,7 @@ export interface UseTransactionDataResult {
  * Hook for fetching and managing transaction data (wallets and categories).
  */
 export function useTransactionData(): UseTransactionDataResult {
+  const db = useSQLiteContext();
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,8 +23,8 @@ export function useTransactionData(): UseTransactionDataResult {
     setLoading(true);
     try {
       const [w, c] = await Promise.all([
-        walletRepository.list(),
-        categoryRepository.list(),
+        walletRepository.list(db),
+        categoryRepository.list(db),
       ]);
       setWallets(w);
       setCategories(c);
@@ -31,7 +33,7 @@ export function useTransactionData(): UseTransactionDataResult {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [db]);
 
   useEffect(() => {
     refreshData();

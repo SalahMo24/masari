@@ -8,6 +8,7 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!database) {
     database = await SQLite.openDatabaseAsync(DB_NAME);
     await database.execAsync("PRAGMA foreign_keys = ON;");
+    await database.execAsync("PRAGMA busy_timeout = 5000;");
   }
 
   return database;

@@ -20,6 +20,7 @@ import { palette } from "@/src/theme/theme";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { formatAmountForSummary } from "@/src/utils/amount";
 import Typography from "@/src/components/typography.component";
+import { useSQLiteContext } from "expo-sqlite";
 
 const categoryIconMap: Record<string, string> = {
   transportation: "directions-car",
@@ -61,6 +62,7 @@ export default function NewBudgetScreen() {
   const theme = useAppTheme();
   const { t, locale } = useI18n();
   const router = useRouter();
+  const db = useSQLiteContext();
   const isRtl = I18nManager.isRTL;
   const insets = useSafeAreaInsets();
   const saveButtonOffset = SAVE_BUTTON_BASE_HEIGHT + insets.bottom;
@@ -93,16 +95,16 @@ export default function NewBudgetScreen() {
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const categoryData = await categoryRepository.list();
-      const budgetData = await budgetRepository.list();
-      const transactionData = await transactionRepository.list();
+      const categoryData = await categoryRepository.list(db);
+      const budgetData = await budgetRepository.list(db);
+      const transactionData = await transactionRepository.list(db);
       setCategories(categoryData);
       setBudgets(budgetData);
       setTransactions(transactionData);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [db]);
 
   useEffect(() => {
     refreshData();
@@ -220,7 +222,7 @@ export default function NewBudgetScreen() {
 
     try {
       setSaving(true);
-      const created = await budgetRepository.create({
+      const created = await budgetRepository.create(db, {
         category_id: selectedCategoryId,
         monthly_limit: parsedAmount,
       });
@@ -234,7 +236,7 @@ export default function NewBudgetScreen() {
     } finally {
       setSaving(false);
     }
-  }, [existingBudget, parsedAmount, router, saving, selectedCategoryId]);
+  }, [db, existingBudget, parsedAmount, router, saving, selectedCategoryId]);
 
   const onEditExisting = useCallback(() => {
     if (!existingBudget) return;

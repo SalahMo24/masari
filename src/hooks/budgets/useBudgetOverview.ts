@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   differenceInCalendarDays,
@@ -6,6 +5,8 @@ import {
   startOfMonth,
   subMonths,
 } from "date-fns";
+import { useSQLiteContext } from "expo-sqlite";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { Budget, Category, Transaction } from "@/src/data/entities";
 import {
@@ -65,6 +66,7 @@ const RISK_THRESHOLDS = {
 };
 
 export function useBudgetOverview(period: BudgetPeriod) {
+  const db = useSQLiteContext();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -74,9 +76,9 @@ export function useBudgetOverview(period: BudgetPeriod) {
     setLoading(true);
     try {
       const [budgetData, categoryData, transactionData] = await Promise.all([
-        budgetRepository.list(),
-        categoryRepository.list(),
-        transactionRepository.list(),
+        budgetRepository.list(db),
+        categoryRepository.list(db),
+        transactionRepository.list(db),
       ]);
       setBudgets(budgetData);
       setCategories(categoryData);
@@ -84,7 +86,7 @@ export function useBudgetOverview(period: BudgetPeriod) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [db]);
 
   useEffect(() => {
     refreshData();

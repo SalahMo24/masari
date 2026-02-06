@@ -1,4 +1,5 @@
-import { initializeDatabase } from "@/src/db";
+import { generateId } from "@/src/utils/id";
+import type { SQLiteDatabase } from "expo-sqlite";
 import type {
   AITokenLedger,
   Bill,
@@ -9,57 +10,36 @@ import type {
   User,
   Wallet,
 } from "./entities";
-import type { SQLiteDatabase } from "expo-sqlite";
-import { generateId } from "@/src/utils/id";
-
-async function ensureReady(): Promise<SQLiteDatabase> {
-  return await initializeDatabase();
-}
-
-async function withDbTransaction<T>(
-  db: SQLiteDatabase,
-  fn: () => Promise<T>,
-): Promise<T> {
-  await db.execAsync("BEGIN;");
-  try {
-    const result = await fn();
-    await db.execAsync("COMMIT;");
-    return result;
-  } catch (err) {
-    await db.execAsync("ROLLBACK;");
-    throw err;
-  }
-}
 
 export const userRepository = {
-  getLocalUser: async (): Promise<User | null> => {
-    const db = await ensureReady();
+  getLocalUser: async (db: SQLiteDatabase): Promise<User | null> => {
     const row = await db.getFirstAsync<User>(`SELECT * FROM "User" LIMIT 1;`);
     return row ?? null;
   },
 };
 
 export const walletRepository = {
-  list: async (): Promise<Wallet[]> => {
-    const db = await ensureReady();
+  list: async (db: SQLiteDatabase): Promise<Wallet[]> => {
     return await db.getAllAsync<Wallet>(
       `SELECT * FROM Wallet ORDER BY created_at ASC;`,
     );
   },
-  getById: async (_id: string): Promise<Wallet | null> => {
-    const db = await ensureReady();
+  getById: async (db: SQLiteDatabase, _id: string): Promise<Wallet | null> => {
     const row = await db.getFirstAsync<Wallet>(
       `SELECT * FROM Wallet WHERE id = ? LIMIT 1;`,
       [_id],
     );
     return row ?? null;
   },
-  updateBalance: async (id: string, delta: number): Promise<Wallet | null> => {
-    const db = await ensureReady();
-    await db.runAsync(
-      `UPDATE Wallet SET balance = balance + ? WHERE id = ?;`,
-      [delta, id],
-    );
+  updateBalance: async (
+    db: SQLiteDatabase,
+    id: string,
+    delta: number,
+  ): Promise<Wallet | null> => {
+    await db.runAsync(`UPDATE Wallet SET balance = balance + ? WHERE id = ?;`, [
+      delta,
+      id,
+    ]);
     const row = await db.getFirstAsync<Wallet>(
       `SELECT * FROM Wallet WHERE id = ? LIMIT 1;`,
       [id],
@@ -69,27 +49,30 @@ export const walletRepository = {
 };
 
 export const categoryRepository = {
-  list: async (): Promise<Category[]> => {
-    const db = await ensureReady();
+  list: async (db: SQLiteDatabase): Promise<Category[]> => {
     return await db.getAllAsync<Category>(
       `SELECT * FROM Category ORDER BY created_at ASC;`,
     );
   },
-  getById: async (_id: string): Promise<Category | null> => {
-    const db = await ensureReady();
+  getById: async (
+    db: SQLiteDatabase,
+    _id: string,
+  ): Promise<Category | null> => {
     const row = await db.getFirstAsync<Category>(
       `SELECT * FROM Category WHERE id = ? LIMIT 1;`,
       [_id],
     );
     return row ?? null;
   },
-  create: async ({
-    name,
-    icon,
-    color,
-    is_custom,
-  }: Pick<Category, "name" | "icon" | "color" | "is_custom">): Promise<Category> => {
-    const db = await ensureReady();
+  create: async (
+    db: SQLiteDatabase,
+    {
+      name,
+      icon,
+      color,
+      is_custom,
+    }: Pick<Category, "name" | "icon" | "color" | "is_custom">,
+  ): Promise<Category> => {
     const now = new Date().toISOString();
     const id = generateId("cat");
     await db.runAsync(
@@ -108,33 +91,32 @@ export const categoryRepository = {
 };
 
 export const budgetRepository = {
-  list: async (): Promise<Budget[]> => {
-    const db = await ensureReady();
+  list: async (db: SQLiteDatabase): Promise<Budget[]> => {
     return await db.getAllAsync<Budget>(
       `SELECT * FROM Budget ORDER BY created_at ASC;`,
     );
   },
-  getById: async (_id: string): Promise<Budget | null> => {
-    const db = await ensureReady();
+  getById: async (db: SQLiteDatabase, _id: string): Promise<Budget | null> => {
     const row = await db.getFirstAsync<Budget>(
       `SELECT * FROM Budget WHERE id = ? LIMIT 1;`,
       [_id],
     );
     return row ?? null;
   },
-  getByCategoryId: async (_id: string): Promise<Budget | null> => {
-    const db = await ensureReady();
+  getByCategoryId: async (
+    db: SQLiteDatabase,
+    _id: string,
+  ): Promise<Budget | null> => {
     const row = await db.getFirstAsync<Budget>(
       `SELECT * FROM Budget WHERE category_id = ? LIMIT 1;`,
       [_id],
     );
     return row ?? null;
   },
-  create: async ({
-    category_id,
-    monthly_limit,
-  }: Pick<Budget, "category_id" | "monthly_limit">): Promise<Budget> => {
-    const db = await ensureReady();
+  create: async (
+    db: SQLiteDatabase,
+    { category_id, monthly_limit }: Pick<Budget, "category_id" | "monthly_limit">,
+  ): Promise<Budget> => {
     const now = new Date().toISOString();
     const id = generateId("bud");
     await db.runAsync(
@@ -153,14 +135,15 @@ export const budgetRepository = {
 };
 
 export const transactionRepository = {
-  list: async (): Promise<Transaction[]> => {
-    const db = await ensureReady();
+  list: async (db: SQLiteDatabase): Promise<Transaction[]> => {
     return await db.getAllAsync<Transaction>(
       `SELECT * FROM "Transaction" ORDER BY occurred_at DESC;`,
     );
   },
-  getById: async (_id: string): Promise<Transaction | null> => {
-    const db = await ensureReady();
+  getById: async (
+    db: SQLiteDatabase,
+    _id: string,
+  ): Promise<Transaction | null> => {
     const row = await db.getFirstAsync<Transaction>(
       `SELECT * FROM "Transaction" WHERE id = ? LIMIT 1;`,
       [_id],
@@ -168,13 +151,15 @@ export const transactionRepository = {
     return row ?? null;
   },
   createAndApply: async (
-    tx: Omit<Transaction, "id" | "created_at"> & Partial<Pick<Transaction, "id">>,
+    db: SQLiteDatabase,
+    tx: Omit<Transaction, "id" | "created_at"> &
+      Partial<Pick<Transaction, "id">>,
   ): Promise<Transaction> => {
-    const db = await ensureReady();
     const now = new Date().toISOString();
     const id = tx.id ?? generateId("tx");
 
-    return await withDbTransaction(db, async () => {
+    let created: Transaction | null = null;
+    await db.withTransactionAsync(async () => {
       await db.runAsync(
         `INSERT INTO "Transaction"
           (id, amount, type, category_id, wallet_id, target_wallet_id, note, occurred_at, created_at)
@@ -230,21 +215,20 @@ export const transactionRepository = {
         `SELECT * FROM "Transaction" WHERE id = ? LIMIT 1;`,
         [id],
       );
-      if (!row) {
-        throw new Error("Failed to create transaction");
-      }
-      return row;
+      created = row ?? null;
     });
+    if (!created) {
+      throw new Error("Failed to create transaction");
+    }
+    return created;
   },
 };
 
 export const billRepository = {
-  list: async (): Promise<Bill[]> => {
-    const db = await ensureReady();
+  list: async (db: SQLiteDatabase): Promise<Bill[]> => {
     return await db.getAllAsync<Bill>(`SELECT * FROM Bill;`);
   },
-  getById: async (_id: string): Promise<Bill | null> => {
-    const db = await ensureReady();
+  getById: async (db: SQLiteDatabase, _id: string): Promise<Bill | null> => {
     const row = await db.getFirstAsync<Bill>(
       `SELECT * FROM Bill WHERE id = ? LIMIT 1;`,
       [_id],
@@ -254,15 +238,15 @@ export const billRepository = {
 };
 
 export const monthlySummaryRepository = {
-  list: async (): Promise<MonthlySummary[]> => {
-    const db = await ensureReady();
-    return await db.getAllAsync<MonthlySummary>(`SELECT * FROM MonthlySummary;`);
+  list: async (db: SQLiteDatabase): Promise<MonthlySummary[]> => {
+    return await db.getAllAsync<MonthlySummary>(
+      `SELECT * FROM MonthlySummary;`,
+    );
   },
 };
 
 export const aiTokenLedgerRepository = {
-  list: async (): Promise<AITokenLedger[]> => {
-    const db = await ensureReady();
+  list: async (db: SQLiteDatabase): Promise<AITokenLedger[]> => {
     return await db.getAllAsync<AITokenLedger>(`SELECT * FROM AITokenLedger;`);
   },
 };

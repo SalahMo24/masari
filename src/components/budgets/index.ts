@@ -1,7 +1,12 @@
 export { BudgetCard } from "./BudgetCard";
+export { BudgetDetailHeader } from "./BudgetDetailHeader";
+export { BudgetDetailInsightCard } from "./BudgetDetailInsightCard";
 export { BudgetEmptyState } from "./BudgetEmptyState";
 export { BudgetHealthCard } from "./BudgetHealthCard";
 export { BudgetInsightCard } from "./BudgetInsightCard";
+export { BudgetPaceSection } from "./BudgetPaceSection";
 export { BudgetSection } from "./BudgetSection";
+export { BudgetStatusCard } from "./BudgetStatusCard";
+export { BudgetTransactionsList } from "./BudgetTransactionsList";
 export { BudgetsHeader } from "./BudgetsHeader";
 export { PeriodToggle } from "./PeriodToggle";

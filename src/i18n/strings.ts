@@ -102,6 +102,28 @@ export const strings: Record<Locale, Dictionary> = {
     "budget.detail.description":
       "Detailed insights are coming soon. You can keep tracking by adding a transaction.",
     "budget.detail.cta": "Add a transaction",
+    "budget.detail.status": "Status",
+    "budget.detail.summary": "{currency} {spent} of {currency} {limit} budget this month",
+    "budget.detail.pace":
+      "At this pace, you'll finish the month with ~{currency} {amount} spent.",
+    "budget.detail.adjust": "Adjust Budget",
+    "budget.detail.insight.title": "Insight",
+    "budget.detail.insight.cta": "View Tips",
+    "budget.detail.insight.more":
+      "You spend {percent} more on {category} than last month.",
+    "budget.detail.insight.less":
+      "You spend {percent} less on {category} than last month.",
+    "budget.detail.insight.onTrack":
+      "Your {category} spending looks on track this month.",
+    "budget.detail.transactions.title": "Recent Transactions",
+    "budget.detail.transactions.seeAll": "See All",
+    "budget.detail.transactions.showLess": "Show Less",
+    "budget.detail.transactions.empty": "No transactions yet.",
+    "budget.detail.transactionShare": "{percent} of budget",
+    "budget.detail.amountPrefix": "-",
+    "budget.detail.today": "Today",
+    "budget.detail.yesterday": "Yesterday",
+    "budget.detail.notFound": "We couldn't find this budget.",
     "budget.create.cta": "Create Budget",
     "budget.create.saving": "Creating…",
     "budget.create.guidance":
@@ -251,6 +273,29 @@ export const strings: Record<Locale, Dictionary> = {
     "budget.detail.description":
       "ستتوفر التفاصيل قريبًا. يمكنك المتابعة بإضافة معاملة.",
     "budget.detail.cta": "إضافة معاملة",
+    "budget.detail.status": "الحالة",
+    "budget.detail.summary":
+      "تم إنفاق {spent} من أصل {limit} {currency} هذا الشهر",
+    "budget.detail.pace":
+      "بهذا المعدل، ستنهي الشهر بإنفاق ~{currency} {amount}.",
+    "budget.detail.adjust": "تعديل الميزانية",
+    "budget.detail.insight.title": "لمحة",
+    "budget.detail.insight.cta": "عرض النصائح",
+    "budget.detail.insight.more":
+      "تنفق {percent} أكثر على {category} مقارنة بالشهر الماضي.",
+    "budget.detail.insight.less":
+      "تنفق {percent} أقل على {category} مقارنة بالشهر الماضي.",
+    "budget.detail.insight.onTrack":
+      "إنفاق {category} يبدو ضمن المسار هذا الشهر.",
+    "budget.detail.transactions.title": "المعاملات الأخيرة",
+    "budget.detail.transactions.seeAll": "عرض الكل",
+    "budget.detail.transactions.showLess": "عرض أقل",
+    "budget.detail.transactions.empty": "لا توجد معاملات بعد.",
+    "budget.detail.transactionShare": "{percent} من الميزانية",
+    "budget.detail.amountPrefix": "-",
+    "budget.detail.today": "اليوم",
+    "budget.detail.yesterday": "أمس",
+    "budget.detail.notFound": "تعذر العثور على هذه الميزانية.",
     "budget.create.cta": "إنشاء ميزانية",
     "budget.create.saving": "جارٍ الإنشاء…",
     "budget.create.guidance":

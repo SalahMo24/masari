@@ -1,6 +1,7 @@
 import type { Category, ID, TransactionType } from "@/src/data/entities";
 import { categoryRepository } from "@/src/data/repositories";
 import { useI18n } from "@/src/i18n/useI18n";
+import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert } from "react-native";
 
@@ -34,6 +35,7 @@ export function useCategorySelection(
   note: string
 ): UseCategorySelectionResult {
   const { t } = useI18n();
+  const db = useSQLiteContext();
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [selectedCategoryId, setSelectedCategoryId] = useState<ID | null>(null);
 
@@ -82,7 +84,7 @@ export function useCategorySelection(
   const onCreateCategory = useCallback(async () => {
     if (!createCategoryCandidate) return;
     try {
-      const created = await categoryRepository.create({
+      const created = await categoryRepository.create(db, {
         name: createCategoryCandidate,
         icon: null,
         color: null,
@@ -97,7 +99,7 @@ export function useCategorySelection(
         t("transaction.error.createCategory")
       );
     }
-  }, [createCategoryCandidate]);
+  }, [createCategoryCandidate, db, t]);
 
   return {
     selectedCategoryId,

@@ -1,6 +1,8 @@
 import { Stack } from "expo-router";
+import { SQLiteProvider, type SQLiteDatabase } from "expo-sqlite";
 import { Platform } from "react-native";
 
+import { initializeDatabase } from "@/src/db";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { useI18n } from "@/src/i18n/useI18n";
 import { AppThemeProvider } from "@/src/theme/AppThemeProvider";
@@ -10,7 +12,9 @@ export default function RootLayout() {
   return (
     <I18nProvider>
       <AppThemeProvider>
-        <RootStack />
+        <SQLiteProvider databaseName="masari.db" onInit={initializeSqlite}>
+          <RootStack />
+        </SQLiteProvider>
       </AppThemeProvider>
     </I18nProvider>
   );
@@ -62,4 +66,11 @@ function RootStack() {
       />
     </Stack>
   );
+}
+
+async function initializeSqlite(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync("PRAGMA foreign_keys = ON;");
+  await db.execAsync("PRAGMA busy_timeout = 5000;");
+  await db.execAsync("PRAGMA journal_mode = WAL;");
+  await initializeDatabase(db);
 }

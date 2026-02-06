@@ -1,4 +1,5 @@
 import { useFocusEffect } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useEffect, useState } from "react";
 
 import type { Category, Transaction, Wallet } from "@/src/data/entities";
@@ -20,6 +21,7 @@ export interface UseDashboardDataResult {
  * Fetch dashboard data and refetch on screen focus.
  */
 export function useDashboardData(): UseDashboardDataResult {
+  const db = useSQLiteContext();
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -29,9 +31,9 @@ export function useDashboardData(): UseDashboardDataResult {
     setLoading(true);
     try {
       const [walletData, transactionData, categoryData] = await Promise.all([
-        walletRepository.list(),
-        transactionRepository.list(),
-        categoryRepository.list(),
+        walletRepository.list(db),
+        transactionRepository.list(db),
+        categoryRepository.list(db),
       ]);
       setWallets(walletData);
       setTransactions(transactionData);
@@ -41,7 +43,7 @@ export function useDashboardData(): UseDashboardDataResult {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [db]);
 
   useEffect(() => {
     refreshData();

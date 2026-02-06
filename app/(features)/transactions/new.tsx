@@ -21,6 +21,7 @@ import {
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { formatAmountForSummary } from "@/src/utils/amount";
+import { useSQLiteContext } from "expo-sqlite";
 import { Stack, router } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -39,6 +40,7 @@ import {
 export default function NewTransactionScreen() {
   const theme = useAppTheme();
   const { t } = useI18n();
+  const db = useSQLiteContext();
   const insets = useSafeAreaInsets();
   const saveButtonOffset = SAVE_BUTTON_BASE_HEIGHT + insets.bottom - 30;
   const isRtl = I18nManager.isRTL;
@@ -174,7 +176,7 @@ export default function NewTransactionScreen() {
           Alert.alert(t("transaction.error"), t("transaction.error.category"));
           return;
         }
-        await transactionRepository.createAndApply({
+        await transactionRepository.createAndApply(db, {
           amount: parsedAmount,
           type: "expense",
           category_id: selectedCategoryId,
@@ -188,7 +190,7 @@ export default function NewTransactionScreen() {
           Alert.alert(t("transaction.error"), t("transaction.error.wallet"));
           return;
         }
-        await transactionRepository.createAndApply({
+        await transactionRepository.createAndApply(db, {
           amount: parsedAmount,
           type: "income",
           category_id: selectedCategoryId,
@@ -212,7 +214,7 @@ export default function NewTransactionScreen() {
           );
           return;
         }
-        await transactionRepository.createAndApply({
+        await transactionRepository.createAndApply(db, {
           amount: parsedAmount,
           type: "transfer",
           category_id: null,
@@ -232,6 +234,7 @@ export default function NewTransactionScreen() {
       setSaving(false);
     }
   }, [
+    db,
     ensureWalletsReady,
     fromWalletId,
     mode,
