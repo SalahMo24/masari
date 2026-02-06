@@ -1,5 +1,6 @@
 import type React from "react";
-import { I18nManager, StyleSheet, Text, View } from "react-native";
+import { I18nManager, StyleSheet, View } from "react-native";
+import Typography from "@/src/components/typography.component";
 
 export interface AmountDisplayProps {
   currency: string;
@@ -53,33 +54,39 @@ export function AmountDisplay({
     const char = formattedAmount[i];
     if (i === caretIndex) {
       elements.push(
-        <Text key={`caret-${i}`} style={[styles.caret, { color: amountColor }]}>
+        <Typography
+          key={`caret-${i}`}
+          style={[styles.caret, { color: amountColor }]}
+        >
           |
-        </Text>
+        </Typography>
       );
     }
 
     elements.push(
-      <Text key={`char-${i}`} style={[styles.digit, { color: amountColor }]}>
+      <Typography
+        key={`char-${i}`}
+        style={[styles.digit, { color: amountColor }]}
+      >
         {char}
-      </Text>
+      </Typography>
     );
   }
 
   if (caretIndex >= formattedAmount.length) {
     elements.push(
-      <Text key="caret-end" style={[styles.caret, { color: amountColor }]}>
+      <Typography key="caret-end" style={[styles.caret, { color: amountColor }]}>
         |
-      </Text>
+      </Typography>
     );
   }
 
   return (
     <View style={styles.amountBlock}>
       <View style={styles.amountRow}>
-        <Text style={[styles.currency, { color: currencyColor }]}>
+        <Typography style={[styles.currency, { color: currencyColor }]}>
           {currency}
-        </Text>
+        </Typography>
         <View
           style={[
             styles.amountContainer,

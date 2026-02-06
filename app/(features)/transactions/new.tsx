@@ -9,6 +9,7 @@ import {
   TransactionSummary,
   WalletSection,
 } from "@/src/components/transactions";
+import Typography from "@/src/components/typography.component";
 import type { TransactionType } from "@/src/data/entities";
 import { transactionRepository } from "@/src/data/repositories";
 import { useAmountInput } from "@/src/hooks/amount";
@@ -28,7 +29,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Text,
   View,
 } from "react-native";
 import {
@@ -40,7 +40,7 @@ export default function NewTransactionScreen() {
   const theme = useAppTheme();
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
-  const saveButtonOffset = SAVE_BUTTON_BASE_HEIGHT + insets.bottom;
+  const saveButtonOffset = SAVE_BUTTON_BASE_HEIGHT + insets.bottom - 30;
   const isRtl = I18nManager.isRTL;
 
   // Data fetching
@@ -298,11 +298,12 @@ export default function NewTransactionScreen() {
               keyboardShouldPersistTaps="handled"
             >
               {loading ? (
-                <Text
+                <Typography
+                  variant="small"
                   style={{ color: theme.colors.mutedText, textAlign: "center" }}
                 >
                   {t("transaction.loading")}
-                </Text>
+                </Typography>
               ) : null}
 
               <WalletSection

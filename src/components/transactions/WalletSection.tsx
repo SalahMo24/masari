@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import type { ID, TransactionType, Wallet } from "@/src/data/entities";
 import { WalletSelector } from "./WalletSelector";
+import Typography from "@/src/components/typography.component";
 
 export interface WalletSectionProps {
   mode: TransactionType;
@@ -51,9 +52,9 @@ export function WalletSection({
   if (mode === "expense") {
     return (
       <View style={styles.section}>
-        <Text style={[styles.sectionLabel, { color: mutedTextColor }]}>
+        <Typography style={[styles.sectionLabel, { color: mutedTextColor }]}>
           {paidFromLabel}
-        </Text>
+        </Typography>
         <WalletSelector
           wallets={wallets}
           selectedId={walletId}
@@ -70,9 +71,9 @@ export function WalletSection({
   if (mode === "income") {
     return (
       <View style={styles.section}>
-        <Text style={[styles.sectionLabel, { color: mutedTextColor }]}>
+        <Typography style={[styles.sectionLabel, { color: mutedTextColor }]}>
           {receivedIntoLabel}
-        </Text>
+        </Typography>
         <WalletSelector
           wallets={wallets}
           selectedId={walletId}
@@ -91,9 +92,9 @@ export function WalletSection({
   return (
     <View style={styles.transferSection}>
       <View style={styles.section}>
-        <Text style={[styles.sectionLabel, { color: mutedTextColor }]}>
+        <Typography style={[styles.sectionLabel, { color: mutedTextColor }]}>
           {fromLabel}
-        </Text>
+        </Typography>
         <WalletSelector
           wallets={wallets}
           selectedId={fromWalletId}
@@ -105,9 +106,9 @@ export function WalletSection({
         />
       </View>
       <View style={styles.section}>
-        <Text style={[styles.sectionLabel, { color: mutedTextColor }]}>
+        <Typography style={[styles.sectionLabel, { color: mutedTextColor }]}>
           {toLabel}
-        </Text>
+        </Typography>
         <WalletSelector
           wallets={wallets}
           selectedId={toWalletId}
@@ -118,14 +119,14 @@ export function WalletSection({
           muted={mutedTextColor}
         />
       </View>
-      <Text style={[styles.transferHint, { color: mutedTextColor }]}>
+      <Typography style={[styles.transferHint, { color: mutedTextColor }]}>
         <Ionicons
           name="information-circle-outline"
           size={12}
           color={mutedTextColor}
         />{" "}
         {transferHint}
-      </Text>
+      </Typography>
     </View>
   );
 }

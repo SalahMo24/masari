@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import type { TransactionType } from "@/src/data/entities";
+import Typography from "@/src/components/typography.component";
 
 export interface NoteSectionProps {
   mode: TransactionType;
@@ -41,9 +42,9 @@ export function NoteSection({
 
   return (
     <View style={styles.section}>
-      <Text style={[styles.questionLabel, { color: textColor }]}>
+      <Typography style={[styles.questionLabel, { color: textColor }]}>
         {whatForLabel}
-      </Text>
+      </Typography>
       <TextInput
         value={note}
         onChangeText={onNoteChange}
@@ -73,11 +74,11 @@ export function NoteSection({
           ]}
         >
           <Ionicons name="add-circle" size={16} color={accentColor} />
-          <Text style={[styles.createCategoryText, { color: accentColor }]}>
+          <Typography style={[styles.createCategoryText, { color: accentColor }]}>
             {createCategoryLabel} {"'"}
             {createCategoryCandidate}
             {"'"}
-          </Text>
+          </Typography>
         </Pressable>
       ) : null}
     </View>

@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Typography from "@/src/components/typography.component";
 
 export interface TransactionHeaderProps {
   title: string;
@@ -33,7 +34,9 @@ export function TransactionHeader({
       >
         <Ionicons name="close" size={22} color={textColor} />
       </Pressable>
-      <Text style={[styles.headerTitle, { color: textColor }]}>{title}</Text>
+      <Typography style={[styles.headerTitle, { color: textColor }]}>
+        {title}
+      </Typography>
       <Pressable
         onPress={onHelp}
         hitSlop={10}
@@ -41,7 +44,9 @@ export function TransactionHeader({
         accessibilityRole="button"
         accessibilityLabel={helpLabel}
       >
-        <Text style={[styles.helpText, { color: accentColor }]}>{helpLabel}</Text>
+        <Typography style={[styles.helpText, { color: accentColor }]}>
+          {helpLabel}
+        </Typography>
       </Pressable>
     </View>
   );

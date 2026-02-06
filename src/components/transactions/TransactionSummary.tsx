@@ -1,5 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import type { TransactionType } from "@/src/data/entities";
+import Typography from "@/src/components/typography.component";
 
 export interface TransactionSummaryProps {
   summary: string;
@@ -16,15 +17,17 @@ export function TransactionSummary({
 }: TransactionSummaryProps) {
   return (
     <View style={styles.summaryWrap}>
-      <Text style={styles.summary}>
+      <Typography style={styles.summary}>
         {mode === "expense" ? (
-          <Text style={{ color: dangerColor, fontWeight: "800" }}>
+          <Typography style={{ color: dangerColor, fontWeight: "800" }}>
             {summary}
-          </Text>
+          </Typography>
         ) : (
-          <Text style={{ color: accentColor, fontWeight: "800" }}>{summary}</Text>
+          <Typography style={{ color: accentColor, fontWeight: "800" }}>
+            {summary}
+          </Typography>
         )}
-      </Text>
+      </Typography>
     </View>
   );
 }

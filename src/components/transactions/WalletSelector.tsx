@@ -1,5 +1,6 @@
 import type { ID, Wallet } from "@/src/data/entities";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Typography from "@/src/components/typography.component";
 
 export interface WalletSelectorProps {
   wallets: Wallet[];
@@ -36,14 +37,14 @@ export function WalletSelector({
               pressed && { opacity: 0.85 },
             ]}
           >
-            <Text
+            <Typography
               style={[
                 styles.walletPillText,
                 { color: active ? activeText ?? text : muted },
               ]}
             >
               {w.name}
-            </Text>
+            </Typography>
           </Pressable>
         );
       })}

@@ -1,5 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Typography from "@/src/components/typography.component";
 
 export interface KeypadProps {
   onDigit: (digit: string) => void;
@@ -91,7 +92,9 @@ export function Keypad({
                   { backgroundColor: pressed ? `${background}88` : background },
                 ]}
               >
-                <Text style={[styles.keyText, { color: text }]}>{value}</Text>
+                <Typography style={[styles.keyText, { color: text }]}>
+                  {value}
+                </Typography>
               </Pressable>
             );
           }
@@ -109,9 +112,11 @@ export function Keypad({
                   { backgroundColor: pressed ? `${background}88` : background },
                 ]}
               >
-                <Text style={[styles.keyText, { color: isActive ? accent : text }]}>
+                <Typography
+                  style={[styles.keyText, { color: isActive ? accent : text }]}
+                >
                   .
-                </Text>
+                </Typography>
               </Pressable>
             );
           }
@@ -129,9 +134,11 @@ export function Keypad({
                   { backgroundColor: pressed ? `${background}88` : background },
                 ]}
               >
-                <Text style={[styles.keyOp, { color: isActive ? accent : text }]}>
+                <Typography
+                  style={[styles.keyOp, { color: isActive ? accent : text }]}
+                >
                   +
-                </Text>
+                </Typography>
               </Pressable>
             );
           }
@@ -149,9 +156,11 @@ export function Keypad({
                   { backgroundColor: pressed ? `${background}88` : background },
                 ]}
               >
-                <Text style={[styles.keyOp, { color: isActive ? accent : text }]}>
+                <Typography
+                  style={[styles.keyOp, { color: isActive ? accent : text }]}
+                >
                   -
-                </Text>
+                </Typography>
               </Pressable>
             );
           }
@@ -168,7 +177,9 @@ export function Keypad({
                   { backgroundColor: pressed ? `${background}88` : background },
                 ]}
               >
-                <Text style={[styles.keyOp, { color: accent }]}>=</Text>
+                <Typography style={[styles.keyOp, { color: accent }]}>
+                  =
+                </Typography>
               </Pressable>
             );
           }

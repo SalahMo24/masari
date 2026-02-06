@@ -1,5 +1,6 @@
+import Typography from "@/src/components/typography.component";
 import type { Category, ID } from "@/src/data/entities";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 export interface CategoryChipsProps {
   categories: Category[];
@@ -45,13 +46,7 @@ export function CategoryChips({
               active && styles.chipActive,
             ]}
           >
-            <View
-              style={[
-                styles.chipDot,
-                { backgroundColor: muted, opacity: active ? 0 : 1 },
-              ]}
-            />
-            <Text
+            <Typography
               style={[
                 styles.chipText,
                 {
@@ -61,7 +56,7 @@ export function CategoryChips({
               ]}
             >
               {c.name}
-            </Text>
+            </Typography>
           </Pressable>
         );
       })}

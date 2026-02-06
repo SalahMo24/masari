@@ -1,5 +1,6 @@
 import type { TransactionType } from "@/src/data/entities";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import Typography from "@/src/components/typography.component";
 
 export interface SegmentedControlProps {
   value: TransactionType;
@@ -40,7 +41,7 @@ export function SegmentedControl({
               pressed && { opacity: 0.9 },
             ]}
           >
-            <Text
+            <Typography
               style={[
                 styles.segmentText,
                 { color: active ? activeText : text },
@@ -48,7 +49,7 @@ export function SegmentedControl({
               numberOfLines={1}
             >
               {item.label}
-            </Text>
+            </Typography>
           </Pressable>
         );
       })}

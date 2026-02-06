@@ -1,5 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Typography from "@/src/components/typography.component";
 
 export const SAVE_BUTTON_BASE_HEIGHT = 80;
 
@@ -52,7 +53,9 @@ export function SaveButton({
           },
         ]}
       >
-        <Text style={styles.ctaText}>{saving ? savingLabel : label}</Text>
+        <Typography style={styles.ctaText}>
+          {saving ? savingLabel : label}
+        </Typography>
       </Pressable>
     </View>
   );
