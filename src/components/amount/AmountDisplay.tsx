@@ -1,6 +1,6 @@
+import Typography from "@/src/components/typography.component";
 import type React from "react";
 import { I18nManager, StyleSheet, Text, View } from "react-native";
-import Typography from "@/src/components/typography.component";
 
 type CurrencyPosition = "prefix" | "suffix";
 
@@ -77,7 +77,7 @@ export function AmountDisplay({
           style={[styles.caret, { color: amountColor }, styleOverrides?.caret]}
         >
           |
-        </Typography>
+        </Typography>,
       );
     }
 
@@ -88,7 +88,7 @@ export function AmountDisplay({
         style={[styles.digit, { color: amountColor }, styleOverrides?.digit]}
       >
         {char}
-      </Typography>
+      </Typography>,
     );
   }
 
@@ -100,14 +100,18 @@ export function AmountDisplay({
         style={[styles.caret, { color: amountColor }, styleOverrides?.caret]}
       >
         |
-      </Typography>
+      </Typography>,
     );
   }
 
   const currencyNode = (
     <Typography
       variant="caption"
-      style={[styles.currency, { color: currencyColor }, styleOverrides?.currency]}
+      style={[
+        styles.currency,
+        { color: currencyColor },
+        styleOverrides?.currency,
+      ]}
     >
       {currency}
     </Typography>
@@ -134,7 +138,7 @@ export function AmountDisplay({
 
 const styles = StyleSheet.create({
   amountBlock: {
-    paddingVertical: 18,
+    // paddingVertical: 12,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -159,9 +163,11 @@ const styles = StyleSheet.create({
     fontSize: 56,
     fontWeight: "900",
     letterSpacing: -1,
+    paddingVertical: 4,
   },
   caret: {
     fontSize: 56,
     fontWeight: "200",
+    paddingVertical: 4,
   },
 });

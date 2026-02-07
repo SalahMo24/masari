@@ -242,6 +242,52 @@ export const transactionRepository = {
 };
 
 export const billRepository = {
+  create: async (
+    db: SQLiteDatabase,
+    {
+      name,
+      amount,
+      frequency,
+      category_id,
+      wallet_id,
+      next_due_date,
+      active,
+      paid,
+      id,
+    }: Pick<
+      Bill,
+      "name" | "amount" | "frequency" | "category_id" | "wallet_id" | "next_due_date"
+    > &
+      Partial<Pick<Bill, "id" | "active" | "paid">>
+  ): Promise<Bill> => {
+    const billId = id ?? generateId("bill");
+    const isActive = active ?? true;
+    const isPaid = paid ?? false;
+    await db.runAsync(
+      `INSERT INTO Bill
+        (id, name, amount, frequency, category_id, wallet_id, next_due_date, active, paid)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+      [
+        billId,
+        name,
+        amount,
+        frequency,
+        category_id ?? null,
+        wallet_id ?? null,
+        next_due_date,
+        isActive ? 1 : 0,
+        isPaid ? 1 : 0,
+      ]
+    );
+    const row = await db.getFirstAsync<Bill>(
+      `SELECT * FROM Bill WHERE id = ? LIMIT 1;`,
+      [billId]
+    );
+    if (!row) {
+      throw new Error("Failed to create bill");
+    }
+    return row;
+  },
   list: async (db: SQLiteDatabase): Promise<Bill[]> => {
     return await db.getAllAsync<Bill>(
       `SELECT * FROM Bill ORDER BY next_due_date ASC;`,
