@@ -243,12 +243,46 @@ export const transactionRepository = {
 
 export const billRepository = {
   list: async (db: SQLiteDatabase): Promise<Bill[]> => {
-    return await db.getAllAsync<Bill>(`SELECT * FROM Bill;`);
+    return await db.getAllAsync<Bill>(
+      `SELECT * FROM Bill ORDER BY next_due_date ASC;`,
+    );
   },
   getById: async (db: SQLiteDatabase, _id: string): Promise<Bill | null> => {
     const row = await db.getFirstAsync<Bill>(
       `SELECT * FROM Bill WHERE id = ? LIMIT 1;`,
       [_id],
+    );
+    return row ?? null;
+  },
+  setPaid: async (
+    db: SQLiteDatabase,
+    { id, paid }: Pick<Bill, "id" | "paid">,
+  ): Promise<Bill | null> => {
+    await db.runAsync(`UPDATE Bill SET paid = ? WHERE id = ?;`, [
+      paid ? 1 : 0,
+      id,
+    ]);
+    const row = await db.getFirstAsync<Bill>(
+      `SELECT * FROM Bill WHERE id = ? LIMIT 1;`,
+      [id],
+    );
+    return row ?? null;
+  },
+  updateSchedule: async (
+    db: SQLiteDatabase,
+    {
+      id,
+      next_due_date,
+      paid,
+    }: Pick<Bill, "id" | "next_due_date" | "paid">,
+  ): Promise<Bill | null> => {
+    await db.runAsync(
+      `UPDATE Bill SET next_due_date = ?, paid = ? WHERE id = ?;`,
+      [next_due_date, paid ? 1 : 0, id],
+    );
+    const row = await db.getFirstAsync<Bill>(
+      `SELECT * FROM Bill WHERE id = ? LIMIT 1;`,
+      [id],
     );
     return row ?? null;
   },

@@ -80,6 +80,13 @@ const migrations: Migration[] = [
       );`,
     ],
   },
+  {
+    version: 2,
+    statements: [
+      `ALTER TABLE Bill ADD COLUMN paid INTEGER DEFAULT 0;`,
+      `UPDATE Bill SET paid = 0 WHERE paid IS NULL;`,
+    ],
+  },
 ];
 
 async function getUserVersion(db: SQLiteDatabase): Promise<number> {

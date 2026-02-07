@@ -56,6 +56,7 @@ export interface Bill {
   wallet_id: ID | null;
   next_due_date: string;
   active: boolean;
+  paid: boolean;
 }
 
 export interface MonthlySummary {
