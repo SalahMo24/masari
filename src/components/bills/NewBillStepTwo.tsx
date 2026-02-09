@@ -2,9 +2,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import DueDateCalendar from "@/src/components/bills/DueDateCalendar";
-import { WalletSelector } from "@/src/components/transactions";
 import Typography from "@/src/components/typography.component";
-import type { BillFrequency, ID, Wallet } from "@/src/data/entities";
+import type { BillFrequency } from "@/src/data/entities";
 
 type NewBillStepTwoColors = {
   primary: string;
@@ -23,8 +22,6 @@ type NewBillStepTwoLabels = {
   dueTitle: string;
   dueSummary: string;
   repeatSummary: string;
-  paymentTitle: string;
-  walletEmpty: string;
   saving: string;
   add: string;
 };
@@ -34,9 +31,6 @@ type NewBillStepTwoProps = {
   onSelectFrequency: (value: BillFrequency) => void;
   dueDay: number;
   onSelectDueDay: (day: number) => void;
-  wallets: Wallet[];
-  walletId: ID | null;
-  onSelectWallet: (id: ID) => void;
   summaryLabel: string;
   onSave: () => void;
   saving: boolean;
@@ -50,9 +44,6 @@ export default function NewBillStepTwo({
   onSelectFrequency,
   dueDay,
   onSelectDueDay,
-  wallets,
-  walletId,
-  onSelectWallet,
   summaryLabel,
   onSave,
   saving,
@@ -132,27 +123,6 @@ export default function NewBillStepTwo({
           </Typography>
         </View>
 
-        <View style={styles.inputGroup}>
-          <Typography variant="subtitle" color={colors.text}>
-            {labels.paymentTitle}
-          </Typography>
-          {wallets.length === 0 ? (
-            <Typography variant="caption" color={colors.muted}>
-              {labels.walletEmpty}
-            </Typography>
-          ) : (
-            <WalletSelector
-              wallets={wallets}
-              selectedId={walletId}
-              onSelect={onSelectWallet}
-              borderColor={colors.border}
-              activeBg={colors.primary}
-              text={colors.text}
-              muted={colors.muted}
-              activeText={colors.background}
-            />
-          )}
-        </View>
       </ScrollView>
 
       <View

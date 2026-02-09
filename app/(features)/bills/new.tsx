@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import {
   I18nManager,
   StyleSheet,
@@ -17,6 +17,7 @@ import { useNewBillLabels } from "@/src/hooks/bills/useNewBillLabels";
 import { useTransactionData } from "@/src/hooks/transactions";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
+import { ensureBillCategories, isBillCategory } from "@/src/utils/bills/categories";
 import { useSQLiteContext } from "expo-sqlite";
 
 export default function NewBillScreen() {
@@ -28,7 +29,30 @@ export default function NewBillScreen() {
   const isRtl = I18nManager.isRTL;
   const today = useMemo(() => new Date(), []);
 
-  const { wallets, categories, loading } = useTransactionData();
+  const { categories, loading, refreshData } = useTransactionData();
+
+  useEffect(() => {
+    let active = true;
+    const syncCategories = async () => {
+      try {
+        const created = await ensureBillCategories(db);
+        if (created && active) {
+          await refreshData();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    syncCategories();
+    return () => {
+      active = false;
+    };
+  }, [db, refreshData]);
+
+  const billCategories = useMemo(
+    () => categories.filter((category) => isBillCategory(category)),
+    [categories],
+  );
 
   const {
     parsedAmount,
@@ -66,8 +90,6 @@ export default function NewBillScreen() {
     setName,
     selectedCategoryId,
     setSelectedCategoryId,
-    walletId,
-    setWalletId,
     frequency,
     setFrequency,
     dueDay,
@@ -80,8 +102,7 @@ export default function NewBillScreen() {
     t,
     db,
     router,
-    categories,
-    wallets,
+    categories: billCategories,
     parsedAmount,
     today,
   });
@@ -119,7 +140,7 @@ export default function NewBillScreen() {
           <NewBillStepOne
             name={name}
             onChangeName={setName}
-            categories={categories}
+            categories={billCategories}
             selectedCategoryId={selectedCategoryId}
             onSelectCategory={(id) => setSelectedCategoryId(id)}
             currency={currency}
@@ -147,9 +168,6 @@ export default function NewBillScreen() {
             onSelectFrequency={(value) => setFrequency(value)}
             dueDay={dueDay}
             onSelectDueDay={(day) => setDueDay(day)}
-            wallets={wallets}
-            walletId={walletId}
-            onSelectWallet={(id) => setWalletId(id)}
             summaryLabel={summaryLabel}
             onSave={onSave}
             saving={saving}
@@ -163,8 +181,6 @@ export default function NewBillScreen() {
               dueTitle: t("bill.new.field.due"),
               dueSummary: t("bill.new.summary.due").replace("{day}", String(dueDay)),
               repeatSummary: t("bill.new.summary.repeat").replace("{day}", String(dueDay)),
-              paymentTitle: t("bill.new.field.payment"),
-              walletEmpty: t("bill.new.error.walletEmpty"),
               saving: t("bill.new.cta.saving"),
               add: t("bill.new.cta.add"),
             }}

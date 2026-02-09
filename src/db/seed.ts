@@ -39,6 +39,9 @@ export async function seedDatabase(db: SQLiteDatabase): Promise<void> {
       { name: "groceries", icon: null, color: null, is_custom: 0 },
       { name: "dining", icon: null, color: null, is_custom: 0 },
       { name: "bills", icon: null, color: null, is_custom: 0 },
+      { name: "subscription", icon: null, color: null, is_custom: 0 },
+      { name: "utilities", icon: null, color: null, is_custom: 0 },
+      { name: "rent", icon: null, color: null, is_custom: 0 },
       { name: "loan", icon: null, color: null, is_custom: 0 },
       // Income-ish quick chips
       { name: "salary", icon: null, color: null, is_custom: 0 },

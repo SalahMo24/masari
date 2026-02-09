@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
 import type { SQLiteDatabase } from "expo-sqlite";
 
-import type { BillFrequency, Category, ID, Wallet } from "@/src/data/entities";
+import type { BillFrequency, Category, ID } from "@/src/data/entities";
 import { billRepository } from "@/src/data/repositories";
 import { computeNextDueDate } from "@/src/utils/bills/dates";
 
@@ -11,7 +11,6 @@ type UseNewBillFormParams = {
   db: SQLiteDatabase;
   router: { back: () => void };
   categories: Category[];
-  wallets: Wallet[];
   parsedAmount: number;
   today: Date;
 };
@@ -21,14 +20,12 @@ export function useNewBillForm({
   db,
   router,
   categories,
-  wallets,
   parsedAmount,
   today,
 }: UseNewBillFormParams) {
   const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<ID | null>(null);
-  const [walletId, setWalletId] = useState<ID | null>(null);
   const [frequency, setFrequency] = useState<BillFrequency>("monthly");
   const [dueDay, setDueDay] = useState<number>(Math.min(28, today.getDate()));
   const [saving, setSaving] = useState(false);
@@ -38,12 +35,6 @@ export function useNewBillForm({
       setSelectedCategoryId(categories[0]?.id ?? null);
     }
   }, [categories, selectedCategoryId]);
-
-  useEffect(() => {
-    if (!walletId && wallets.length) {
-      setWalletId(wallets[0]?.id ?? null);
-    }
-  }, [walletId, wallets]);
 
   const onBack = useCallback(() => {
     if (step === 2) {
@@ -75,10 +66,6 @@ export function useNewBillForm({
       Alert.alert(t("bill.new.error.title"), t("bill.new.error.category"));
       return;
     }
-    if (!walletId) {
-      Alert.alert(t("bill.new.error.title"), t("bill.new.error.wallet"));
-      return;
-    }
     if (!parsedAmount || parsedAmount <= 0) {
       Alert.alert(t("bill.new.error.title"), t("bill.new.error.amount"));
       return;
@@ -96,7 +83,7 @@ export function useNewBillForm({
         amount: parsedAmount,
         frequency,
         category_id: selectedCategoryId,
-        wallet_id: walletId,
+        wallet_id: null,
         next_due_date: nextDueDate.toISOString(),
         active: true,
         paid: false,
@@ -119,7 +106,6 @@ export function useNewBillForm({
     selectedCategoryId,
     t,
     today,
-    walletId,
   ]);
 
   return {
@@ -128,8 +114,6 @@ export function useNewBillForm({
     setName,
     selectedCategoryId,
     setSelectedCategoryId,
-    walletId,
-    setWalletId,
     frequency,
     setFrequency,
     dueDay,

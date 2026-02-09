@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
   I18nManager,
@@ -9,9 +9,13 @@ import {
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import MarkPaidModal from "@/src/components/bills/MarkPaidModal";
 import Typography from "@/src/components/typography.component";
+import type { Bill, ID } from "@/src/data/entities";
 import { useBillsOverview } from "@/src/hooks/bills";
+import { useTransactionData } from "@/src/hooks/transactions";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { formatAmountForSummary } from "@/src/utils/amount";
@@ -31,6 +35,7 @@ export default function BillsScreen() {
   const theme = useAppTheme();
   const { t, locale } = useI18n();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const {
     monthLabel,
@@ -43,6 +48,12 @@ export default function BillsScreen() {
     savingsEstimate,
     markBillPaid,
   } = useBillsOverview(locale);
+  const { wallets } = useTransactionData();
+
+  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const [selectedWalletId, setSelectedWalletId] = useState<ID | null>(null);
+  const [markPaidVisible, setMarkPaidVisible] = useState(false);
+  const [paidToday, setPaidToday] = useState(true);
 
   const colors = useMemo(
     () => ({
@@ -78,6 +89,35 @@ export default function BillsScreen() {
   const summaryMuted = theme.dark ? colors.muted : "rgba(255,255,255,0.7)";
 
   const isEmpty = upcomingBills.length === 0 && paidBills.length === 0;
+
+  useEffect(() => {
+    if (!markPaidVisible || selectedWalletId || wallets.length === 0) return;
+    setSelectedWalletId(wallets[0]?.id ?? null);
+  }, [markPaidVisible, selectedWalletId, wallets]);
+
+  const openMarkPaidModal = (bill: Bill) => {
+    setSelectedBill(bill);
+    setSelectedWalletId(bill.wallet_id ?? wallets[0]?.id ?? null);
+    setPaidToday(true);
+    setMarkPaidVisible(true);
+  };
+
+  const closeMarkPaidModal = () => {
+    setMarkPaidVisible(false);
+    setSelectedBill(null);
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!selectedBill || !selectedWalletId) return;
+    const success = await markBillPaid(
+      selectedBill,
+      selectedWalletId,
+      paidToday ? new Date() : new Date(),
+    );
+    if (success) {
+      closeMarkPaidModal();
+    }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -225,8 +265,7 @@ export default function BillsScreen() {
                     "{date}",
                     formatShortDate(bill.next_due_date, locale),
                   );
-                  const canMarkPaid = Boolean(bill.wallet_id);
-                  const markPaidColor = canMarkPaid ? colors.background : colors.muted;
+                  const markPaidColor = colors.background;
                   return (
                     <View
                       key={bill.id}
@@ -266,11 +305,10 @@ export default function BillsScreen() {
                         style={[
                           styles.markPaidButton,
                           {
-                            backgroundColor: canMarkPaid ? colors.primary : colors.border,
+                            backgroundColor: colors.primary,
                           },
                         ]}
-                        disabled={!canMarkPaid}
-                        onPress={() => markBillPaid(bill)}
+                        onPress={() => openMarkPaidModal(bill)}
                       >
                         <MaterialIcons name="check-circle" size={16} color={markPaidColor} />
                         <Typography variant="caption" color={markPaidColor} weight="700">
@@ -347,6 +385,29 @@ export default function BillsScreen() {
       >
         <MaterialIcons name="add" size={26} color={colors.background} />
       </Pressable>
+
+      <MarkPaidModal
+        visible={markPaidVisible}
+        bill={selectedBill}
+        wallets={wallets}
+        selectedWalletId={selectedWalletId}
+        onSelectWallet={setSelectedWalletId}
+        onClose={closeMarkPaidModal}
+        onConfirm={handleConfirmPayment}
+        paidToday={paidToday}
+        onTogglePaidToday={setPaidToday}
+        currency={currencyLabel}
+        insetsBottom={insets.bottom}
+        colors={colors}
+        labels={{
+          prompt: t("bill.pay.prompt"),
+          paidToday: t("bill.pay.date.today"),
+          changeDate: t("bill.pay.date.change"),
+          confirm: t("bill.pay.confirm"),
+          walletAvailable: t("bill.pay.wallet.available"),
+          walletEmpty: t("bill.pay.wallet.empty"),
+        }}
+      />
     </View>
   );
 }

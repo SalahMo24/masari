@@ -9,7 +9,7 @@ import {
 } from "date-fns";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { Bill } from "@/src/data/entities";
+import type { Bill, ID } from "@/src/data/entities";
 import { billRepository, transactionRepository } from "@/src/data/repositories";
 
 type BillsOverview = {
@@ -23,7 +23,7 @@ type BillsOverview = {
   activeBillsCount: number;
   savingsEstimate: number | null;
   refresh: () => Promise<void>;
-  markBillPaid: (bill: Bill) => Promise<boolean>;
+  markBillPaid: (bill: Bill, walletId?: ID | null, occurredAt?: Date) => Promise<boolean>;
 };
 
 const coerceBill = (bill: Bill): Bill => ({
@@ -148,17 +148,18 @@ export function useBillsOverview(locale: string): BillsOverview {
   }, [activeBills]);
 
   const markBillPaid = useCallback(
-    async (bill: Bill) => {
-      if (!bill.wallet_id) return false;
+    async (bill: Bill, walletId?: ID | null, occurredAt?: Date) => {
+      const resolvedWalletId = walletId ?? bill.wallet_id;
+      if (!resolvedWalletId) return false;
       try {
         await transactionRepository.createAndApply(db, {
           amount: bill.amount,
           type: "expense",
           category_id: bill.category_id ?? null,
-          wallet_id: bill.wallet_id,
+          wallet_id: resolvedWalletId,
           target_wallet_id: null,
           note: bill.name,
-          occurred_at: new Date().toISOString(),
+          occurred_at: (occurredAt ?? new Date()).toISOString(),
         });
         await billRepository.setPaid(db, { id: bill.id, paid: true });
         await refresh();
