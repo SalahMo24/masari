@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import {
   I18nManager,
   Platform,
@@ -34,6 +35,7 @@ export default function DashboardScreen() {
   const theme = useAppTheme();
   const { t } = useI18n();
   const isRtl = I18nManager.isRTL;
+  const router = useRouter();
 
   const colors = useMemo(
     () => ({
@@ -79,6 +81,13 @@ export default function DashboardScreen() {
     handleNextWeek,
     recentActivity,
   } = useWeeklyActivity(transactions, categories, wallets, t);
+
+  const handleCategoryPress = (categoryId: string) => {
+    router.push({
+      pathname: "/(features)/categories/[id]",
+      params: { id: categoryId },
+    } as any);
+  };
 
   const walletTotals = useMemo(() => {
     return wallets.reduce(
@@ -149,6 +158,7 @@ export default function DashboardScreen() {
           spendingSegments={spendingSegments}
           monoFont={monoFont}
           totalAmount={totalAmountLabel}
+          onCategoryPress={handleCategoryPress}
         />
 
         <View style={styles.section}>

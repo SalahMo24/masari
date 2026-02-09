@@ -1,9 +1,10 @@
 import { useI18n } from "@/src/i18n/useI18n";
-import { Platform, StyleSheet, View } from "react-native";
+import { Platform, Pressable, StyleSheet, View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import Typography from "@/src/components/typography.component";
 
 type CategoryDatum = {
+  id: string;
   label: string;
   subtitle: string;
   amount: string;
@@ -17,6 +18,7 @@ const DonutChartCard = ({
   spendingSegments,
   monoFont,
   totalAmount,
+  onCategoryPress,
 }: {
   colors: {
     primary: string;
@@ -30,6 +32,7 @@ const DonutChartCard = ({
   spendingSegments: { percent: number; color: string }[];
   monoFont: string;
   totalAmount?: string;
+  onCategoryPress?: (categoryId: string) => void;
 }) => {
   const { t } = useI18n();
   const resolvedTotalAmount = totalAmount ?? "0";
@@ -83,7 +86,15 @@ const DonutChartCard = ({
         </View>
         <View style={[styles.categoryList, { borderTopColor: colors.border }]}>
           {categories.map((category) => (
-            <View key={category.label} style={[styles.categoryRow]}>
+            <Pressable
+              key={category.id}
+              onPress={() => onCategoryPress?.(category.id)}
+              disabled={!onCategoryPress}
+              style={({ pressed }) => [
+                styles.categoryRow,
+                pressed ? styles.categoryRowPressed : null,
+              ]}
+            >
               <View style={[styles.categoryLeft]}>
                 <View
                   style={[
@@ -143,7 +154,7 @@ const DonutChartCard = ({
                   {category.percent}
                 </Typography>
               </View>
-            </View>
+            </Pressable>
           ))}
         </View>
       </View>
@@ -281,6 +292,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  categoryRowPressed: {
+    opacity: 0.7,
   },
   categoryLeft: {
     flexDirection: "row",

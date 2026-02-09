@@ -4,6 +4,7 @@ import type { Category, Transaction } from "@/src/data/entities";
 import { formatAmountForSummary } from "@/src/utils/amount";
 
 type CategoryDatum = {
+  id: string;
   label: string;
   subtitle: string;
   amount: string;
@@ -57,6 +58,7 @@ export function useCategoryBreakdown(
   const categoryData = useMemo<CategoryDatum[]>(
     () =>
       topCategoryTotals.map((item) => ({
+        id: item.key,
         label: item.category?.name ?? t("transaction.category.none"),
         subtitle: t("dashboard.monthly"),
         amount: `${t("dashboard.currency")} ${formatAmountForSummary(item.amount)}`,
