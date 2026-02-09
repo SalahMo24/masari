@@ -3,6 +3,8 @@ import type { SQLiteDatabase } from "expo-sqlite";
 import type {
   AITokenLedger,
   Bill,
+  BillPayment,
+  BillPaymentStatus,
   Budget,
   Category,
   MonthlySummary,
@@ -331,6 +333,88 @@ export const billRepository = {
       [id],
     );
     return row ?? null;
+  },
+  updateAmount: async (
+    db: SQLiteDatabase,
+    { id, amount }: Pick<Bill, "id" | "amount">,
+  ): Promise<Bill | null> => {
+    await db.runAsync(`UPDATE Bill SET amount = ? WHERE id = ?;`, [amount, id]);
+    const row = await db.getFirstAsync<Bill>(
+      `SELECT * FROM Bill WHERE id = ? LIMIT 1;`,
+      [id],
+    );
+    return row ?? null;
+  },
+  setActive: async (
+    db: SQLiteDatabase,
+    { id, active }: Pick<Bill, "id" | "active">,
+  ): Promise<Bill | null> => {
+    await db.runAsync(`UPDATE Bill SET active = ? WHERE id = ?;`, [
+      active ? 1 : 0,
+      id,
+    ]);
+    const row = await db.getFirstAsync<Bill>(
+      `SELECT * FROM Bill WHERE id = ? LIMIT 1;`,
+      [id],
+    );
+    return row ?? null;
+  },
+};
+
+export const billPaymentRepository = {
+  listByBillId: async (
+    db: SQLiteDatabase,
+    billId: string,
+    limit?: number,
+  ): Promise<BillPayment[]> => {
+    if (limit && limit > 0) {
+      return await db.getAllAsync<BillPayment>(
+        `SELECT * FROM BillPayment WHERE bill_id = ? ORDER BY paid_at DESC LIMIT ?;`,
+        [billId, limit],
+      );
+    }
+    return await db.getAllAsync<BillPayment>(
+      `SELECT * FROM BillPayment WHERE bill_id = ? ORDER BY paid_at DESC;`,
+      [billId],
+    );
+  },
+  create: async (
+    db: SQLiteDatabase,
+    {
+      bill_id,
+      amount,
+      wallet_id,
+      status,
+      paid_at,
+      id,
+    }: Pick<BillPayment, "bill_id" | "amount" | "wallet_id" | "paid_at"> &
+      Partial<Pick<BillPayment, "id" | "status">>,
+  ): Promise<BillPayment> => {
+    const now = new Date().toISOString();
+    const paymentId = id ?? generateId("billpay");
+    const paymentStatus: BillPaymentStatus = status ?? "cleared";
+    await db.runAsync(
+      `INSERT INTO BillPayment
+        (id, bill_id, amount, wallet_id, status, paid_at, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?);`,
+      [
+        paymentId,
+        bill_id,
+        amount,
+        wallet_id ?? null,
+        paymentStatus,
+        paid_at,
+        now,
+      ],
+    );
+    const row = await db.getFirstAsync<BillPayment>(
+      `SELECT * FROM BillPayment WHERE id = ? LIMIT 1;`,
+      [paymentId],
+    );
+    if (!row) {
+      throw new Error("Failed to create bill payment");
+    }
+    return row;
   },
 };
 

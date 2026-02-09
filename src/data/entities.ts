@@ -3,6 +3,7 @@ export type ID = string;
 export type WalletType = "cash" | "bank";
 export type TransactionType = "income" | "expense" | "transfer";
 export type BillFrequency = "monthly" | "quarterly" | "yearly";
+export type BillPaymentStatus = "cleared" | "pending";
 
 export interface User {
   id: ID;
@@ -57,6 +58,16 @@ export interface Bill {
   next_due_date: string;
   active: boolean;
   paid: boolean;
+}
+
+export interface BillPayment {
+  id: ID;
+  bill_id: ID;
+  amount: number;
+  wallet_id: ID | null;
+  status: BillPaymentStatus;
+  paid_at: string;
+  created_at: string;
 }
 
 export interface MonthlySummary {

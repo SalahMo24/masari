@@ -87,6 +87,22 @@ const migrations: Migration[] = [
       `UPDATE Bill SET paid = 0 WHERE paid IS NULL;`,
     ],
   },
+  {
+    version: 3,
+    statements: [
+      `CREATE TABLE IF NOT EXISTS BillPayment (
+        id TEXT PRIMARY KEY,
+        bill_id TEXT,
+        amount REAL,
+        wallet_id TEXT,
+        status TEXT DEFAULT 'cleared',
+        paid_at TEXT,
+        created_at TEXT,
+        FOREIGN KEY(bill_id) REFERENCES Bill(id),
+        FOREIGN KEY(wallet_id) REFERENCES Wallet(id)
+      );`,
+    ],
+  },
 ];
 
 async function getUserVersion(db: SQLiteDatabase): Promise<number> {

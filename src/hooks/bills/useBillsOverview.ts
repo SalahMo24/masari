@@ -10,7 +10,11 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { Bill, ID } from "@/src/data/entities";
-import { billRepository, transactionRepository } from "@/src/data/repositories";
+import {
+  billPaymentRepository,
+  billRepository,
+  transactionRepository,
+} from "@/src/data/repositories";
 
 type BillsOverview = {
   loading: boolean;
@@ -160,6 +164,13 @@ export function useBillsOverview(locale: string): BillsOverview {
           target_wallet_id: null,
           note: bill.name,
           occurred_at: (occurredAt ?? new Date()).toISOString(),
+        });
+        await billPaymentRepository.create(db, {
+          bill_id: bill.id,
+          amount: bill.amount,
+          wallet_id: resolvedWalletId,
+          paid_at: (occurredAt ?? new Date()).toISOString(),
+          status: "cleared",
         });
         await billRepository.setPaid(db, { id: bill.id, paid: true });
         await refresh();
