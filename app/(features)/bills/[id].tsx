@@ -1,3 +1,12 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import { addMonths } from "date-fns";
+import {
+  Stack,
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
@@ -9,19 +18,15 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  Stack,
-  useFocusEffect,
-  useLocalSearchParams,
-  useRouter,
-} from "expo-router";
-import { MaterialIcons } from "@expo/vector-icons";
-import { addMonths } from "date-fns";
-import { useSQLiteContext } from "expo-sqlite";
 
-import Typography from "@/src/components/typography.component";
 import { Keypad, type KeypadKey } from "@/src/components/amount/Keypad";
-import type { Bill, BillPayment, BillFrequency, Wallet } from "@/src/data/entities";
+import Typography from "@/src/components/typography.component";
+import type {
+  Bill,
+  BillFrequency,
+  BillPayment,
+  Wallet,
+} from "@/src/data/entities";
 import {
   billPaymentRepository,
   billRepository,
@@ -53,7 +58,10 @@ const normalizeBill = (bill: Bill): Bill => ({
   paid: Boolean(bill.paid),
 });
 
-const formatFrequency = (frequency: BillFrequency, t: (key: string) => string) => {
+const formatFrequency = (
+  frequency: BillFrequency,
+  t: (key: string) => string,
+) => {
   if (frequency === "quarterly") return t("bill.new.frequency.quarterly");
   if (frequency === "yearly") return t("bill.new.frequency.yearly");
   return t("bill.new.frequency.monthly");
@@ -156,8 +164,7 @@ export default function BillDetailScreen() {
 
   const cutoffDate = useMemo(() => addMonths(new Date(), -12), []);
   const recentPayments = useMemo(
-    () =>
-      payments.filter((payment) => new Date(payment.paid_at) >= cutoffDate),
+    () => payments.filter((payment) => new Date(payment.paid_at) >= cutoffDate),
     [cutoffDate, payments],
   );
 
@@ -236,7 +243,10 @@ export default function BillDetailScreen() {
       await refresh();
     } catch (error) {
       console.error(error);
-      Alert.alert(t("bill.detail.adjust.error.title"), t("bill.detail.adjust.error.body"));
+      Alert.alert(
+        t("bill.detail.adjust.error.title"),
+        t("bill.detail.adjust.error.body"),
+      );
     } finally {
       setSavingAmount(false);
     }
@@ -305,10 +315,7 @@ export default function BillDetailScreen() {
         >
           <Pressable
             onPress={() => router.back()}
-            style={[
-              styles.headerButton,
-              { flexDirection: isRtl ? "row-reverse" : "row" },
-            ]}
+            style={[styles.headerButton]}
           >
             <MaterialIcons
               name={isRtl ? "chevron-right" : "chevron-left"}
@@ -319,14 +326,17 @@ export default function BillDetailScreen() {
               {t("tab.bills")}
             </Typography>
           </Pressable>
-          <Typography variant="subtitle" weight="700" color={colors.text}>
-            {t("screen.bill.details")}
-          </Typography>
-          <Pressable style={styles.headerButton}>
-            <Typography variant="subtitle" color={colors.primary} weight="600">
-              {t("bill.detail.edit")}
+          <View style={styles.headerTitle}>
+            <Typography
+              style={{ textAlign: "center" }}
+              variant="subtitle"
+              weight="700"
+              color={colors.text}
+            >
+              {t("screen.bill.details")}
             </Typography>
-          </Pressable>
+          </View>
+          <View style={styles.headerSpacer} />
         </View>
 
         <ScrollView
@@ -345,7 +355,11 @@ export default function BillDetailScreen() {
             <Typography variant="h4" weight="700" color={colors.text}>
               {bill.name}
             </Typography>
-            <Typography variant="overline" color={colors.muted} style={styles.upper}>
+            <Typography
+              variant="overline"
+              color={colors.muted}
+              style={styles.upper}
+            >
               {t("bill.detail.totalPaid")}
             </Typography>
             <Typography
@@ -363,16 +377,15 @@ export default function BillDetailScreen() {
               <Typography variant="overline" color={colors.muted}>
                 {t("bill.detail.status.label")}
               </Typography>
-              <View
-                style={[
-                  styles.statusRow,
-                  { flexDirection: isRtl ? "row-reverse" : "row" },
-                ]}
-              >
+              <View style={[styles.statusRow, { flexDirection: "row" }]}>
                 <View
                   style={[
                     styles.statusDot,
-                    { backgroundColor: bill.active ? colors.success : colors.muted },
+                    {
+                      backgroundColor: bill.active
+                        ? colors.success
+                        : colors.muted,
+                    },
                   ]}
                 />
                 <Typography
@@ -402,7 +415,11 @@ export default function BillDetailScreen() {
                 { borderColor: `${colors.primary}33` },
               ]}
             >
-              <MaterialIcons name="edit-note" size={20} color={colors.primary} />
+              <MaterialIcons
+                name="edit-note"
+                size={20}
+                color={colors.primary}
+              />
               <Typography
                 variant="subtitle"
                 weight="700"
@@ -413,17 +430,14 @@ export default function BillDetailScreen() {
             </Pressable>
             <Pressable
               onPress={onToggleActive}
-              style={[
-                styles.actionButton,
-                { borderColor: colors.border },
-              ]}
+              style={[styles.actionButton, { borderColor: colors.border }]}
             >
-              <MaterialIcons name="power-settings-new" size={20} color={colors.muted} />
-              <Typography
-                variant="subtitle"
-                weight="700"
+              <MaterialIcons
+                name="power-settings-new"
+                size={20}
                 color={colors.muted}
-              >
+              />
+              <Typography variant="subtitle" weight="700" color={colors.muted}>
                 {bill.active
                   ? t("bill.detail.action.deactivate")
                   : t("bill.detail.action.activate")}
@@ -460,17 +474,21 @@ export default function BillDetailScreen() {
                 return (
                   <View
                     key={payment.id}
-                    style={[styles.historyCard, { backgroundColor: colors.card }]}
+                    style={[
+                      styles.historyCard,
+                      { backgroundColor: colors.card },
+                    ]}
                   >
                     <View style={styles.historyContent}>
-                      <Typography variant="subtitle" weight="700" color={colors.text}>
+                      <Typography
+                        variant="subtitle"
+                        weight="700"
+                        color={colors.text}
+                      >
                         {dateLabel}
                       </Typography>
                       <View
-                        style={[
-                          styles.historyMeta,
-                          { flexDirection: isRtl ? "row-reverse" : "row" },
-                        ]}
+                        style={[styles.historyMeta, { flexDirection: "row" }]}
                       >
                         <MaterialIcons
                           name={paymentIconName(payment)}
@@ -483,7 +501,11 @@ export default function BillDetailScreen() {
                       </View>
                     </View>
                     <View style={styles.historyAmount}>
-                      <Typography variant="subtitle" weight="700" color={colors.text}>
+                      <Typography
+                        variant="subtitle"
+                        weight="700"
+                        color={colors.text}
+                      >
                         {currency} {formatAmountForSummary(payment.amount)}
                       </Typography>
                       <View
@@ -492,7 +514,11 @@ export default function BillDetailScreen() {
                           { backgroundColor: `${colors.success}1A` },
                         ]}
                       >
-                        <Typography variant="caption" color={colors.success} weight="700">
+                        <Typography
+                          variant="caption"
+                          color={colors.success}
+                          weight="700"
+                        >
                           {statusLabelText}
                         </Typography>
                       </View>
@@ -503,7 +529,11 @@ export default function BillDetailScreen() {
             )}
 
             <Pressable style={styles.historyButton}>
-              <Typography variant="subtitle" weight="700" color={colors.primary}>
+              <Typography
+                variant="subtitle"
+                weight="700"
+                color={colors.primary}
+              >
                 {t("bill.detail.history.viewOlder")}
               </Typography>
             </Pressable>
@@ -518,8 +548,13 @@ export default function BillDetailScreen() {
         onRequestClose={() => setAdjustOpen(false)}
       >
         <View style={styles.modalRoot}>
-          <Pressable style={styles.modalBackdrop} onPress={() => setAdjustOpen(false)} />
-          <View style={[styles.modalSheet, { backgroundColor: colors.background }]}>
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setAdjustOpen(false)}
+          />
+          <View
+            style={[styles.modalSheet, { backgroundColor: colors.background }]}
+          >
             <View style={styles.modalHeader}>
               <Typography variant="overline" color={colors.muted}>
                 {t("bill.detail.adjust.title")}
@@ -533,7 +568,11 @@ export default function BillDetailScreen() {
                 onPress={() => setAdjustOpen(false)}
                 style={[styles.modalButton, { borderColor: colors.border }]}
               >
-                <Typography variant="subtitle" weight="700" color={colors.muted}>
+                <Typography
+                  variant="subtitle"
+                  weight="700"
+                  color={colors.muted}
+                >
                   {t("bill.detail.adjust.cancel")}
                 </Typography>
               </Pressable>
@@ -549,7 +588,11 @@ export default function BillDetailScreen() {
                 ]}
                 disabled={savingAmount}
               >
-                <Typography variant="subtitle" weight="700" color={colors.background}>
+                <Typography
+                  variant="subtitle"
+                  weight="700"
+                  color={colors.background}
+                >
                   {t("bill.detail.adjust.save")}
                 </Typography>
               </Pressable>
@@ -596,6 +639,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
+    minWidth: 72,
+  },
+  headerTitle: {
+    flex: 1,
+    alignItems: "center",
+  },
+  headerSpacer: {
     minWidth: 72,
   },
   content: {

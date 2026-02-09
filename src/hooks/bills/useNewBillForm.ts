@@ -77,7 +77,9 @@ export function useNewBillForm({
 
     try {
       setSaving(true);
-      const nextDueDate = computeNextDueDate(today, dueDay, frequency);
+      const nextDueDate = computeNextDueDate(today, dueDay, frequency, {
+        allowPastDueCurrentMonth: true,
+      });
       await billRepository.create(db, {
         name: name.trim(),
         amount: parsedAmount,

@@ -26,9 +26,13 @@ export const computeNextDueDate = (
   today: Date,
   day: number,
   frequency: BillFrequency,
+  options?: { allowPastDueCurrentMonth?: boolean },
 ) => {
   let candidate = setDayForMonth(today, day);
   const startToday = startOfDay(today);
+  if (options?.allowPastDueCurrentMonth && candidate < startToday) {
+    return candidate;
+  }
   while (candidate < startToday) {
     candidate = advanceDate(candidate, frequency, day);
   }

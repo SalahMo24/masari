@@ -1,15 +1,9 @@
+import { addMonths, addYears, endOfMonth, startOfDay } from "date-fns";
 import { useFocusEffect } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import {
-  addMonths,
-  addYears,
-  endOfMonth,
-  isWithinInterval,
-  startOfMonth,
-} from "date-fns";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { Bill, ID } from "@/src/data/entities";
+import type { Bill, BillFrequency, ID } from "@/src/data/entities";
 import {
   billPaymentRepository,
   billRepository,
@@ -22,12 +16,22 @@ type BillsOverview = {
   totalAmount: number;
   remainingAmount: number;
   progressPercent: number;
-  upcomingBills: Bill[];
-  paidBills: Bill[];
+  billsByFrequency: Record<
+    BillFrequency,
+    {
+      unpaid: Bill[];
+      paid: Bill[];
+    }
+  >;
+  frequenciesWithBills: BillFrequency[];
   activeBillsCount: number;
   savingsEstimate: number | null;
   refresh: () => Promise<void>;
-  markBillPaid: (bill: Bill, walletId?: ID | null, occurredAt?: Date) => Promise<boolean>;
+  markBillPaid: (
+    bill: Bill,
+    walletId?: ID | null,
+    occurredAt?: Date,
+  ) => Promise<boolean>;
 };
 
 const coerceBill = (bill: Bill): Bill => ({
@@ -42,31 +46,37 @@ const advanceDueDate = (date: Date, frequency: Bill["frequency"]) => {
   return addMonths(date, 1);
 };
 
+const getPeriodEnd = (date: Date, frequency: Bill["frequency"]) => {
+  if (frequency === "monthly") return endOfMonth(date);
+  if (frequency === "quarterly") return endOfMonth(addMonths(date, 2));
+  return endOfMonth(addMonths(date, 11));
+};
+
 export function useBillsOverview(locale: string): BillsOverview {
   const db = useSQLiteContext();
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const today = useMemo(() => new Date(), []);
-  const monthStart = useMemo(() => startOfMonth(today), [today]);
-  const monthEnd = useMemo(() => endOfMonth(today), [today]);
+  const [anchorDate, setAnchorDate] = useState(() => new Date());
   const monthLabel = useMemo(
     () =>
-      new Intl.DateTimeFormat(locale, { month: "long" }).format(today),
-    [locale, today],
+      new Intl.DateTimeFormat(locale, { month: "long" }).format(anchorDate),
+    [anchorDate, locale],
   );
 
   const rollForwardIfNeeded = useCallback(
-    async (bill: Bill): Promise<Bill> => {
+    async (bill: Bill, referenceDate: Date): Promise<Bill> => {
       const normalized = coerceBill(bill);
       if (!normalized.active) return normalized;
 
       const originalDate = new Date(normalized.next_due_date);
       let nextDate = originalDate;
+      let periodEnd = getPeriodEnd(nextDate, normalized.frequency);
+      const referenceDay = startOfDay(referenceDate);
       let updated = false;
 
-      while (nextDate < monthStart) {
+      while (referenceDay > periodEnd) {
         nextDate = advanceDueDate(nextDate, normalized.frequency);
+        periodEnd = getPeriodEnd(nextDate, normalized.frequency);
         updated = true;
       }
 
@@ -81,15 +91,17 @@ export function useBillsOverview(locale: string): BillsOverview {
 
       return { ...normalized, next_due_date: nextIso, paid: false };
     },
-    [db, monthStart],
+    [db],
   );
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
+      const now = new Date();
+      setAnchorDate(now);
       const billData = await billRepository.list(db);
       const normalizedBills = await Promise.all(
-        billData.map((bill) => rollForwardIfNeeded(bill)),
+        billData.map((bill) => rollForwardIfNeeded(bill, now)),
       );
       setBills(normalizedBills);
     } catch (error) {
@@ -110,30 +122,43 @@ export function useBillsOverview(locale: string): BillsOverview {
     }, [refresh]),
   );
 
-  const monthBills = useMemo(() => {
-    return bills.filter((bill) => {
-      if (!bill.active) return false;
-      const dueDate = new Date(bill.next_due_date);
-      return isWithinInterval(dueDate, { start: monthStart, end: monthEnd });
-    });
-  }, [bills, monthEnd, monthStart]);
+  const activeBills = useMemo(
+    () => bills.filter((bill) => bill.active),
+    [bills],
+  );
 
-  const upcomingBills = useMemo(
-    () => monthBills.filter((bill) => !bill.paid),
-    [monthBills],
-  );
-  const paidBills = useMemo(
-    () => monthBills.filter((bill) => bill.paid),
-    [monthBills],
-  );
+  const billsByFrequency = useMemo(() => {
+    const buckets: BillsOverview["billsByFrequency"] = {
+      monthly: { unpaid: [], paid: [] },
+      quarterly: { unpaid: [], paid: [] },
+      yearly: { unpaid: [], paid: [] },
+    };
+    activeBills.forEach((bill) => {
+      const key = bill.paid ? "paid" : "unpaid";
+      buckets[bill.frequency][key].push(bill);
+    });
+    return buckets;
+  }, [activeBills]);
+
+  const frequenciesWithBills = useMemo(() => {
+    const allFrequencies: BillFrequency[] = ["monthly", "quarterly", "yearly"];
+    return allFrequencies.filter((frequency) => {
+      const group = billsByFrequency[frequency];
+      return group.paid.length + group.unpaid.length > 0;
+    });
+  }, [billsByFrequency]);
 
   const totalAmount = useMemo(
-    () => monthBills.reduce((sum, bill) => sum + bill.amount, 0),
-    [monthBills],
+    () => activeBills.reduce((sum, bill) => sum + bill.amount, 0),
+    [activeBills],
   );
   const remainingAmount = useMemo(
-    () => upcomingBills.reduce((sum, bill) => sum + bill.amount, 0),
-    [upcomingBills],
+    () =>
+      activeBills.reduce(
+        (sum, bill) => sum + (bill.paid ? 0 : bill.amount),
+        0,
+      ),
+    [activeBills],
   );
   const progressPercent = useMemo(() => {
     if (totalAmount <= 0) return 0;
@@ -141,10 +166,6 @@ export function useBillsOverview(locale: string): BillsOverview {
     return Math.min(100, Math.round((paidAmount / totalAmount) * 100));
   }, [remainingAmount, totalAmount]);
 
-  const activeBills = useMemo(
-    () => bills.filter((bill) => bill.active),
-    [bills],
-  );
   const activeBillsCount = activeBills.length;
   const savingsEstimate = useMemo(() => {
     if (activeBills.length < 2) return null;
@@ -189,8 +210,8 @@ export function useBillsOverview(locale: string): BillsOverview {
     totalAmount,
     remainingAmount,
     progressPercent,
-    upcomingBills,
-    paidBills,
+    billsByFrequency,
+    frequenciesWithBills,
     activeBillsCount,
     savingsEstimate,
     refresh,

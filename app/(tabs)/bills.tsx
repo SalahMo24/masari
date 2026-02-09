@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import MarkPaidModal from "@/src/components/bills/MarkPaidModal";
 import Typography from "@/src/components/typography.component";
-import type { Bill, ID } from "@/src/data/entities";
+import type { Bill, BillFrequency, ID } from "@/src/data/entities";
 import { useBillsOverview } from "@/src/hooks/bills";
 import { useTransactionData } from "@/src/hooks/transactions";
 import { useI18n } from "@/src/i18n/useI18n";
@@ -39,11 +39,8 @@ export default function BillsScreen() {
 
   const {
     monthLabel,
-    totalAmount,
-    remainingAmount,
-    progressPercent,
-    upcomingBills,
-    paidBills,
+    billsByFrequency,
+    frequenciesWithBills,
     activeBillsCount,
     savingsEstimate,
     markBillPaid,
@@ -54,6 +51,8 @@ export default function BillsScreen() {
   const [selectedWalletId, setSelectedWalletId] = useState<ID | null>(null);
   const [markPaidVisible, setMarkPaidVisible] = useState(false);
   const [paidToday, setPaidToday] = useState(true);
+  const [selectedFrequency, setSelectedFrequency] =
+    useState<BillFrequency | null>(null);
 
   const colors = useMemo(
     () => ({
@@ -71,13 +70,46 @@ export default function BillsScreen() {
 
   const currencyLabel = t("dashboard.currency");
   const summaryTitle = t("bills.summary.title").replace("{month}", monthLabel);
+  const frequencyLabels: Record<BillFrequency, string> = {
+    monthly: t("bill.new.frequency.monthly"),
+    quarterly: t("bill.new.frequency.quarterly"),
+    yearly: t("bill.new.frequency.yearly"),
+  };
+
+  const activeFrequency = useMemo(
+    () => selectedFrequency ?? frequenciesWithBills[0] ?? null,
+    [frequenciesWithBills, selectedFrequency],
+  );
+  const activeGroup = useMemo(() => {
+    if (!activeFrequency) return { unpaid: [], paid: [] };
+    return billsByFrequency[activeFrequency];
+  }, [activeFrequency, billsByFrequency]);
+
+  const totalAmount = useMemo(
+    () =>
+      [...activeGroup.unpaid, ...activeGroup.paid].reduce(
+        (sum, bill) => sum + bill.amount,
+        0,
+      ),
+    [activeGroup],
+  );
+  const remainingAmount = useMemo(
+    () => activeGroup.unpaid.reduce((sum, bill) => sum + bill.amount, 0),
+    [activeGroup],
+  );
+  const progressPercent = useMemo(() => {
+    if (totalAmount <= 0) return 0;
+    const paidAmount = Math.max(0, totalAmount - remainingAmount);
+    return Math.min(100, Math.round((paidAmount / totalAmount) * 100));
+  }, [remainingAmount, totalAmount]);
+
   const totalLabel = `${currencyLabel} ${formatAmountForSummary(totalAmount)}`;
   const remainingLabel = `${currencyLabel} ${formatAmountForSummary(
     remainingAmount,
   )}`;
   const pendingLabel = t("bills.pending").replace(
     "{count}",
-    String(upcomingBills.length),
+    String(activeGroup.unpaid.length),
   );
   const showTip = activeBillsCount >= 2 && savingsEstimate !== null;
   const tipAmountLabel = savingsEstimate
@@ -88,7 +120,20 @@ export default function BillsScreen() {
   const summaryText = theme.dark ? colors.text : colors.background;
   const summaryMuted = theme.dark ? colors.muted : "rgba(255,255,255,0.7)";
 
-  const isEmpty = upcomingBills.length === 0 && paidBills.length === 0;
+  const isEmpty = frequenciesWithBills.length === 0;
+
+  useEffect(() => {
+    if (frequenciesWithBills.length === 0) {
+      setSelectedFrequency(null);
+      return;
+    }
+    if (
+      !selectedFrequency ||
+      !frequenciesWithBills.includes(selectedFrequency)
+    ) {
+      setSelectedFrequency(frequenciesWithBills[0]);
+    }
+  }, [frequenciesWithBills, selectedFrequency]);
 
   useEffect(() => {
     if (!markPaidVisible || selectedWalletId || wallets.length === 0) return;
@@ -241,12 +286,60 @@ export default function BillsScreen() {
           </View>
         ) : (
           <>
+            {frequenciesWithBills.length > 1 && (
+              <View style={styles.section}>
+                <View
+                  style={[
+                    styles.tabs,
+                    {
+                      backgroundColor: theme.dark ? colors.card : colors.border,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  {frequenciesWithBills.map((frequency) => {
+                    const isActive = frequency === activeFrequency;
+                    return (
+                      <Pressable
+                        key={frequency}
+                        style={[
+                          styles.tabButton,
+                          {
+                            backgroundColor: isActive
+                              ? colors.primary
+                              : "transparent",
+                          },
+                        ]}
+                        onPress={() => setSelectedFrequency(frequency)}
+                      >
+                        <Typography
+                          variant="caption"
+                          color={isActive ? colors.background : colors.text}
+                          weight="700"
+                        >
+                          {frequencyLabels[frequency]}
+                        </Typography>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
+
+            {activeFrequency && frequenciesWithBills.length === 1 && (
+              <View style={styles.section}>
+                <Typography variant="overline" color={colors.muted}>
+                  {frequencyLabels[activeFrequency]}
+                </Typography>
+              </View>
+            )}
+
             <View style={styles.section}>
               <View style={styles.sectionHeaderRow}>
                 <Typography variant="overline" color={colors.muted}>
                   {t("bills.section.upcoming")}
                 </Typography>
-                {upcomingBills.length > 0 && (
+                {activeGroup.unpaid.length > 0 && (
                   <View
                     style={[
                       styles.pendingPill,
@@ -260,7 +353,7 @@ export default function BillsScreen() {
                 )}
               </View>
               <View style={styles.billList}>
-                {upcomingBills.map((bill) => {
+                {activeGroup.unpaid.map((bill) => {
                   const dueLabel = t("bills.detail.due").replace(
                     "{date}",
                     formatShortDate(bill.next_due_date, locale),
@@ -328,7 +421,7 @@ export default function BillsScreen() {
                 </Typography>
               </View>
               <View style={styles.billList}>
-                {paidBills.map((bill) => {
+                {activeGroup.paid.map((bill) => {
                   const paidLabel = t("bills.detail.paid").replace(
                     "{date}",
                     formatShortDate(bill.next_due_date, locale),
@@ -501,6 +594,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 8,
+  },
+  tabs: {
+    flexDirection: "row",
+    borderRadius: 999,
+    padding: 4,
+    borderWidth: 1,
+    gap: 6,
+  },
+  tabButton: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 6,
+    borderRadius: 999,
   },
   pendingPill: {
     paddingHorizontal: 8,
