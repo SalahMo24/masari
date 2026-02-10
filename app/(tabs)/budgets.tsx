@@ -1,5 +1,6 @@
-import { useLayoutEffect, useMemo } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { useMemo } from "react";
 import {
   I18nManager,
   Pressable,
@@ -7,7 +8,6 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 
 import {
   BudgetCard,
@@ -17,17 +17,17 @@ import {
   BudgetSection,
   PeriodToggle,
 } from "@/src/components/budgets";
+import Typography from "@/src/components/typography.component";
 import {
   useBudgetCardAnimation,
   useBudgetHints,
   useBudgetInsight,
   useBudgetScreenState,
 } from "@/src/hooks/budgets";
-import { SAFE_PREVIEW_COUNT } from "@/src/hooks/budgets/useBudgetScreenState";
 import { formatPercent } from "@/src/hooks/budgets/budgetFormatting";
+import { SAFE_PREVIEW_COUNT } from "@/src/hooks/budgets/useBudgetScreenState";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
-import Typography from "@/src/components/typography.component";
 
 export default function BudgetsScreen() {
   const theme = useAppTheme();
@@ -40,7 +40,9 @@ export default function BudgetsScreen() {
   }>();
   const pendingBudgetId = useMemo(() => {
     if (!createdBudgetId) return null;
-    return Array.isArray(createdBudgetId) ? createdBudgetId[0] : createdBudgetId;
+    return Array.isArray(createdBudgetId)
+      ? createdBudgetId[0]
+      : createdBudgetId;
   }, [createdBudgetId]);
 
   const {
@@ -86,7 +88,7 @@ export default function BudgetsScreen() {
       card: theme.colors.card,
       border: theme.colors.border,
     }),
-    [theme]
+    [theme],
   );
 
   const spentPercent = formatPercent(totals.percentUsed);
@@ -94,10 +96,10 @@ export default function BudgetsScreen() {
   const statusText =
     locale === "ar"
       ? `${spentPercent}% ${t("budget.health.spent")} · ${remainingPercent}% ${t(
-          "budget.health.remaining"
+          "budget.health.remaining",
         )}`
       : `${spentPercent}% ${t("budget.health.spent")} · ${remainingPercent}% ${t(
-          "budget.health.remaining"
+          "budget.health.remaining",
         )}`;
   const reassuranceText =
     spentPercent >= 85
@@ -108,50 +110,6 @@ export default function BudgetsScreen() {
   const currencyLabel = t("dashboard.currency");
   const hiddenAmountLabel = t("budget.amount.hidden");
   const showSafeToggle = groupedByRisk.safe.length > SAFE_PREVIEW_COUNT;
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: t("budget.overview.title"),
-      headerLeft: () => (
-        <View style={styles.headerIcon}>
-          <MaterialIcons name="shield" size={20} color={colors.success} />
-        </View>
-      ),
-      headerRight: () => (
-        <View style={styles.headerActions}>
-          <Pressable
-            style={styles.headerButton}
-            onPress={() => setHideAmounts((current) => !current)}
-            accessibilityRole="button"
-            accessibilityLabel={t("budget.toggle.visibility")}
-          >
-            <MaterialIcons
-              name={hideAmounts ? "visibility-off" : "visibility"}
-              size={20}
-              color={colors.muted}
-            />
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [styles.headerButton, pressed && styles.headerButtonPressed]}
-            onPress={() => router.push("/(features)/profile" as Parameters<typeof router.push>[0])}
-            accessibilityLabel={t("profile.title")}
-            accessibilityRole="button"
-          >
-            <MaterialIcons name="settings" size={20} color={colors.text} />
-          </Pressable>
-        </View>
-      ),
-    });
-  }, [
-    colors.muted,
-    colors.success,
-    colors.text,
-    hideAmounts,
-    navigation,
-    router,
-    setHideAmounts,
-    t,
-  ]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -215,7 +173,10 @@ export default function BudgetsScreen() {
         ) : (
           <>
             {groupedByRisk.atRisk.length > 0 && (
-              <BudgetSection title={t("budget.section.atRisk")} color={colors.warning}>
+              <BudgetSection
+                title={t("budget.section.atRisk")}
+                color={colors.warning}
+              >
                 {groupedByRisk.atRisk.map((item) => {
                   const hint = buildHint(item);
                   return (
@@ -233,7 +194,7 @@ export default function BudgetsScreen() {
                       isRtl={isRtl}
                       progressWidth={getProgressWidth(
                         item.budgetId,
-                        item.progressPercent
+                        item.progressPercent,
                       )}
                       onPress={(budgetId) =>
                         router.push(`/(features)/budgets/${budgetId}`)
@@ -252,7 +213,10 @@ export default function BudgetsScreen() {
             )}
 
             {groupedByRisk.caution.length > 0 && (
-              <BudgetSection title={t("budget.section.caution")} color={colors.accent}>
+              <BudgetSection
+                title={t("budget.section.caution")}
+                color={colors.accent}
+              >
                 {groupedByRisk.caution.map((item) => {
                   const hint = buildHint(item);
                   return (
@@ -270,7 +234,7 @@ export default function BudgetsScreen() {
                       isRtl={isRtl}
                       progressWidth={getProgressWidth(
                         item.budgetId,
-                        item.progressPercent
+                        item.progressPercent,
                       )}
                       onPress={(budgetId) =>
                         router.push(`/(features)/budgets/${budgetId}`)
@@ -289,7 +253,10 @@ export default function BudgetsScreen() {
             )}
 
             {groupedByRisk.safe.length > 0 && (
-              <BudgetSection title={t("budget.section.safe")} color={colors.success}>
+              <BudgetSection
+                title={t("budget.section.safe")}
+                color={colors.success}
+              >
                 {visibleSafe.map((item) => {
                   const hint = buildHint(item);
                   return (
@@ -307,7 +274,7 @@ export default function BudgetsScreen() {
                       isRtl={isRtl}
                       progressWidth={getProgressWidth(
                         item.budgetId,
-                        item.progressPercent
+                        item.progressPercent,
                       )}
                       onPress={(budgetId) =>
                         router.push(`/(features)/budgets/${budgetId}`)

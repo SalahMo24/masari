@@ -1,8 +1,9 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { I18nManager, Pressable, StyleSheet, View } from "react-native";
 
-import type { MaterialIconName } from "@/src/hooks/budgets/budgetTypes";
 import Typography from "@/src/components/typography.component";
+import type { MaterialIconName } from "@/src/hooks/budgets/budgetTypes";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type BudgetDetailHeaderProps = {
   title: string;
@@ -25,12 +26,17 @@ export function BudgetDetailHeader({
   colors,
 }: BudgetDetailHeaderProps) {
   const isRtl = I18nManager.isRTL;
+  const { top } = useSafeAreaInsets();
 
   return (
     <View
       style={[
         styles.header,
-        { backgroundColor: colors.background, borderBottomColor: colors.border },
+        {
+          backgroundColor: colors.background,
+          borderBottomColor: colors.border,
+          paddingTop: top,
+        },
       ]}
     >
       <Pressable onPress={onBack} style={styles.iconButton}>
@@ -40,7 +46,7 @@ export function BudgetDetailHeader({
           color={colors.text}
         />
       </Pressable>
-      <View style={styles.titleRow}>
+      <View style={[styles.titleRow, { paddingTop: top - 5 }]}>
         <MaterialIcons name={iconName} size={20} color={colors.primary} />
         <Typography
           variant="subtitle"
@@ -49,9 +55,6 @@ export function BudgetDetailHeader({
           {title}
         </Typography>
       </View>
-      <Pressable onPress={onMore} style={styles.iconButton}>
-        <MaterialIcons name="more-vert" size={22} color={colors.text} />
-      </Pressable>
     </View>
   );
 }
@@ -62,14 +65,16 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     borderBottomWidth: 1,
   },
   titleRow: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    flex: 1,
     justifyContent: "center",
   },
   title: {

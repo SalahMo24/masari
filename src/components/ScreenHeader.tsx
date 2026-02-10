@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { StyleSheet, View } from "react-native";
 
 import Typography from "@/src/components/typography.component";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export type ScreenHeaderColors = {
   text: string;
@@ -24,16 +25,22 @@ export function ScreenHeader({
   right,
   showBorder = false,
 }: ScreenHeaderProps) {
+  const { top } = useSafeAreaInsets();
   return (
     <View
       style={[
         styles.header,
-        showBorder && colors.border !== undefined && { borderBottomColor: colors.border, borderBottomWidth: 1 },
+        showBorder &&
+          colors.border !== undefined && {
+            borderBottomColor: colors.border,
+            borderBottomWidth: 1,
+          },
+        { paddingTop: top },
       ]}
     >
       <View style={styles.leftSlot}>{left ?? null}</View>
       <Typography
-        variant="h3"
+        variant="h5"
         weight="700"
         color={colors.text}
         style={styles.title}

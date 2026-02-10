@@ -2,11 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Tabs, router } from "expo-router";
 import type { ReactNode } from "react";
 import type { PressableProps } from "react-native";
-import {
-  Platform,
-  Pressable,
-  TouchableOpacity,
-} from "react-native";
+import { Platform, Pressable, TouchableOpacity } from "react-native";
 
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
@@ -89,7 +85,9 @@ function SettingsHeaderButton({
 }) {
   return (
     <Pressable
-      onPress={() => router.push("/(features)/profile" as Parameters<typeof router.push>[0])}
+      onPress={() =>
+        router.push("/(features)/profile" as Parameters<typeof router.push>[0])
+      }
       style={({ pressed }) => ({
         width: 40,
         height: 40,
@@ -150,6 +148,13 @@ export default function TabsLayout() {
         options={{
           title: t("tab.budgets"),
           tabBarIcon: makeTabIcon("pie-chart"),
+          headerRight: () => (
+            <SettingsHeaderButton
+              label={t("profile.title")}
+              textColor={theme.colors.text}
+              borderColor={theme.colors.border}
+            />
+          ),
         }}
       />
 
