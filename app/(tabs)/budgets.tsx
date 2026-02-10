@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useLayoutEffect, useMemo } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
   I18nManager,
@@ -7,7 +7,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 
 import {
   BudgetCard,
@@ -15,7 +15,6 @@ import {
   BudgetHealthCard,
   BudgetInsightCard,
   BudgetSection,
-  BudgetsHeader,
   PeriodToggle,
 } from "@/src/components/budgets";
 import {
@@ -34,6 +33,7 @@ export default function BudgetsScreen() {
   const theme = useAppTheme();
   const { t, locale } = useI18n();
   const router = useRouter();
+  const navigation = useNavigation();
   const isRtl = I18nManager.isRTL;
   const { createdBudgetId } = useLocalSearchParams<{
     createdBudgetId?: string | string[];
@@ -109,6 +109,50 @@ export default function BudgetsScreen() {
   const hiddenAmountLabel = t("budget.amount.hidden");
   const showSafeToggle = groupedByRisk.safe.length > SAFE_PREVIEW_COUNT;
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: t("budget.overview.title"),
+      headerLeft: () => (
+        <View style={styles.headerIcon}>
+          <MaterialIcons name="shield" size={20} color={colors.success} />
+        </View>
+      ),
+      headerRight: () => (
+        <View style={styles.headerActions}>
+          <Pressable
+            style={styles.headerButton}
+            onPress={() => setHideAmounts((current) => !current)}
+            accessibilityRole="button"
+            accessibilityLabel={t("budget.toggle.visibility")}
+          >
+            <MaterialIcons
+              name={hideAmounts ? "visibility-off" : "visibility"}
+              size={20}
+              color={colors.muted}
+            />
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [styles.headerButton, pressed && styles.headerButtonPressed]}
+            onPress={() => router.push("/(features)/profile" as Parameters<typeof router.push>[0])}
+            accessibilityLabel={t("profile.title")}
+            accessibilityRole="button"
+          >
+            <MaterialIcons name="settings" size={20} color={colors.text} />
+          </Pressable>
+        </View>
+      ),
+    });
+  }, [
+    colors.muted,
+    colors.success,
+    colors.text,
+    hideAmounts,
+    navigation,
+    router,
+    setHideAmounts,
+    t,
+  ]);
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
@@ -117,19 +161,6 @@ export default function BudgetsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <BudgetsHeader
-          title={t("budget.overview.title")}
-          toggleLabel={t("budget.toggle.visibility")}
-          hideAmounts={hideAmounts}
-          onToggleHide={() => setHideAmounts((current) => !current)}
-          colors={{
-            text: colors.text,
-            muted: colors.muted,
-            border: colors.border,
-            success: colors.success,
-          }}
-        />
-
         <PeriodToggle
           period={period}
           onChange={setPeriod}
@@ -336,6 +367,26 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 160,
+  },
+  headerIcon: {
+    width: 40,
+    alignItems: "flex-start",
+    justifyContent: "center",
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  headerButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerButtonPressed: {
+    opacity: 0.7,
   },
   viewAllButton: {
     flexDirection: "row",

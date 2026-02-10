@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import { I18nManager, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 
 import {
   BudgetDetailHeader,
@@ -20,6 +20,7 @@ export default function BudgetDetailScreen() {
   const theme = useAppTheme();
   const { t, locale } = useI18n();
   const router = useRouter();
+  const navigation = useNavigation();
   const isRtl = I18nManager.isRTL;
   const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const budgetId = Array.isArray(id) ? id[0] : id ?? null;
@@ -63,6 +64,20 @@ export default function BudgetDetailScreen() {
     : t("budget.detail.title");
   const headerIcon = getCategoryIconName(category?.name ?? "category", category?.icon ?? null);
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      header: () => (
+        <BudgetDetailHeader
+          title={headerTitle}
+          iconName={headerIcon}
+          onBack={() => router.back()}
+          onMore={() => null}
+          colors={colors}
+        />
+      ),
+    });
+  }, [colors, headerIcon, headerTitle, navigation, router]);
+
   const statusLabel = t("budget.detail.status");
   const statusValue =
     statusLevel === "atRisk"
@@ -86,12 +101,6 @@ export default function BudgetDetailScreen() {
   if (!loading && !budget) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <BudgetDetailHeader
-          title={t("budget.detail.title")}
-          iconName="category"
-          onBack={() => router.back()}
-          colors={colors}
-        />
         <View style={styles.emptyState}>
           <Typography variant="body" style={[styles.emptyText, { color: colors.muted }]}>
             {t("budget.detail.notFound")}
@@ -103,13 +112,6 @@ export default function BudgetDetailScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <BudgetDetailHeader
-        title={headerTitle}
-        iconName={headerIcon}
-        onBack={() => router.back()}
-        onMore={() => null}
-        colors={colors}
-      />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}

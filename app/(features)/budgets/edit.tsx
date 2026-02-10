@@ -2,9 +2,9 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { endOfMonth, startOfMonth } from "date-fns";
 import * as Haptics from "expo-haptics";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   I18nManager,
@@ -15,10 +15,10 @@ import {
 } from "react-native";
 import {
   SafeAreaView,
-  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
 import { AmountDisplay, Keypad, type KeypadKey } from "@/src/components/amount";
+import { ScreenHeader } from "@/src/components/ScreenHeader";
 import Typography from "@/src/components/typography.component";
 import type { Budget, Category, Transaction } from "@/src/data/entities";
 import {
@@ -70,9 +70,8 @@ export default function EditBudgetScreen() {
   const theme = useAppTheme();
   const { t, locale } = useI18n();
   const router = useRouter();
+  const navigation = useNavigation();
   const db = useSQLiteContext();
-  const insets = useSafeAreaInsets();
-  const isRtl = I18nManager.isRTL;
   const { budgetId: rawBudgetId } = useLocalSearchParams<{
     budgetId?: string | string[];
   }>();
@@ -96,7 +95,6 @@ export default function EditBudgetScreen() {
     cursorPart,
     onPressDigit,
     onPressBackspace,
-    onLongPressClear,
     setAmount,
     reset: resetAmount,
   } = useAmountInput({
@@ -218,6 +216,9 @@ export default function EditBudgetScreen() {
     category?.name ?? "category",
     category?.icon ?? null,
   );
+  const headerTitle = category
+    ? t("budget.edit.title").replace("{category}", categoryLabel)
+    : t("screen.budget.edit");
 
   const spentCopy = useMemo(() => {
     if (!budget) return t("budget.loading");
@@ -304,27 +305,31 @@ export default function EditBudgetScreen() {
     }
   }, [budget, budgetId, canSubmit, db, parsedAmount, router]);
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      header: () => (
+        <ScreenHeader
+          title={headerTitle}
+          colors={{ text: colors.text }}
+          left={
+            <Pressable onPress={() => router.back()} style={styles.headerButton}>
+              <MaterialIcons
+                name={I18nManager.isRTL ? "arrow-forward-ios" : "arrow-back-ios"}
+                size={22}
+                color={colors.text}
+              />
+            </Pressable>
+          }
+        />
+      ),
+    });
+  }, [colors.text, headerTitle, navigation, router]);
+
   if (!loading && !budget) {
     return (
       <SafeAreaView
         style={[styles.container, { backgroundColor: colors.background }]}
       >
-        <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.headerButton}>
-            <MaterialIcons
-              name={isRtl ? "arrow-forward-ios" : "arrow-back-ios"}
-              size={22}
-              color={colors.text}
-            />
-          </Pressable>
-          <Typography
-            variant="h6"
-            style={[styles.headerTitle, { color: colors.text }]}
-          >
-            {t("screen.budget.edit")}
-          </Typography>
-          <View style={styles.headerButton} />
-        </View>
         <View style={styles.emptyState}>
           <Typography
             variant="body"
@@ -341,25 +346,6 @@ export default function EditBudgetScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.headerButton}>
-          <MaterialIcons
-            name={isRtl ? "arrow-forward-ios" : "arrow-back-ios"}
-            size={22}
-            color={colors.text}
-          />
-        </Pressable>
-        <Typography
-          variant="h6"
-          style={[styles.headerTitle, { color: colors.text }]}
-        >
-          {category
-            ? t("budget.edit.title").replace("{category}", categoryLabel)
-            : t("screen.budget.edit")}
-        </Typography>
-        <View style={styles.headerButton} />
-      </View>
-
       {loading ? (
         <View style={styles.loadingState}>
           <ActivityIndicator color={colors.primary} />
@@ -589,22 +575,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
   headerButton: {
     width: 40,
+    height: 40,
     alignItems: "center",
     justifyContent: "center",
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 18,
-    fontWeight: "700",
   },
   loadingState: {
     flex: 1,

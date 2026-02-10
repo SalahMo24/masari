@@ -8,5 +8,4 @@ export { BudgetPaceSection } from "./BudgetPaceSection";
 export { BudgetSection } from "./BudgetSection";
 export { BudgetStatusCard } from "./BudgetStatusCard";
 export { BudgetTransactionsList } from "./BudgetTransactionsList";
-export { BudgetsHeader } from "./BudgetsHeader";
 export { PeriodToggle } from "./PeriodToggle";

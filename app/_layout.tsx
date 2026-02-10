@@ -57,12 +57,20 @@ function RootStack() {
         options={{ title: t("screen.budget.details") }}
       />
       <Stack.Screen
+        name="(features)/budgets/edit"
+        options={{ title: t("screen.budget.edit") }}
+      />
+      <Stack.Screen
         name="(features)/bills/new"
         options={{ title: t("screen.bill.new") }}
       />
       <Stack.Screen
         name="(features)/bills/[id]"
         options={{ title: t("screen.bill.details") }}
+      />
+      <Stack.Screen
+        name="(features)/profile"
+        options={{ title: t("profile.title") }}
       />
     </Stack>
   );

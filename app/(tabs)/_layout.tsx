@@ -5,14 +5,10 @@ import type { PressableProps } from "react-native";
 import {
   Platform,
   Pressable,
-  Switch,
-  Text,
   TouchableOpacity,
-  View,
 } from "react-native";
 
 import { useI18n } from "@/src/i18n/useI18n";
-import { useThemeMode } from "@/src/theme/AppThemeProvider";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 
 type TabIconProps = {
@@ -82,10 +78,38 @@ function FabTabButton({
   );
 }
 
+function SettingsHeaderButton({
+  label,
+  textColor,
+  borderColor,
+}: {
+  label: string;
+  textColor: string;
+  borderColor: string;
+}) {
+  return (
+    <Pressable
+      onPress={() => router.push("/(features)/profile" as Parameters<typeof router.push>[0])}
+      style={({ pressed }) => ({
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: pressed ? borderColor : "transparent",
+      })}
+      hitSlop={8}
+      accessibilityLabel={label}
+      accessibilityRole="button"
+    >
+      <Ionicons name="settings" size={22} color={textColor} />
+    </Pressable>
+  );
+}
+
 export default function TabsLayout() {
   const theme = useAppTheme();
-  const { mode, setMode } = useThemeMode();
-  const { locale, toggleLocale, t } = useI18n();
+  const { t } = useI18n();
 
   return (
     <Tabs
@@ -99,49 +123,6 @@ export default function TabsLayout() {
           letterSpacing: -0.3,
         },
         headerTintColor: theme.colors.text,
-        headerRight: () => (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            <Pressable
-              onPress={toggleLocale}
-              style={({ pressed }) => ({
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                backgroundColor: pressed
-                  ? theme.colors.border
-                  : theme.colors.card,
-              })}
-              hitSlop={8}
-            >
-              <Text
-                style={{
-                  color: theme.colors.text,
-                  fontSize: 12,
-                  fontWeight: "600",
-                }}
-              >
-                {t(locale === "ar" ? "language.ar" : "language.en")}
-              </Text>
-            </Pressable>
-            <Switch
-              value={mode === "dark"}
-              onValueChange={(value) => setMode(value ? "dark" : "light")}
-              trackColor={{
-                false: theme.colors.border,
-                true: theme.colors.accent,
-              }}
-              thumbColor={theme.colors.card}
-            />
-          </View>
-        ),
         tabBarActiveTintColor: theme.colors.accent,
         tabBarInactiveTintColor: theme.colors.mutedText,
         tabBarStyle: {
@@ -155,6 +136,13 @@ export default function TabsLayout() {
         options={{
           title: t("dashboard.brand"),
           tabBarIcon: makeTabIcon("home"),
+          headerRight: () => (
+            <SettingsHeaderButton
+              label={t("profile.title")}
+              textColor={theme.colors.text}
+              borderColor={theme.colors.border}
+            />
+          ),
         }}
       />
       <Tabs.Screen
@@ -191,7 +179,17 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="bills"
-        options={{ title: t("tab.bills"), tabBarIcon: makeTabIcon("receipt") }}
+        options={{
+          title: t("tab.bills"),
+          tabBarIcon: makeTabIcon("receipt"),
+          headerRight: () => (
+            <SettingsHeaderButton
+              label={t("profile.title")}
+              textColor={theme.colors.text}
+              borderColor={theme.colors.border}
+            />
+          ),
+        }}
       />
       <Tabs.Screen
         name="ameen"

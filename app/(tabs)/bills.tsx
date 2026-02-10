@@ -171,15 +171,6 @@ export default function BillsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Typography variant="h3" weight="700" color={colors.text}>
-            {t("tab.bills")}
-          </Typography>
-          <Pressable style={styles.headerButton}>
-            <MaterialIcons name="more-horiz" size={22} color={colors.text} />
-          </Pressable>
-        </View>
-
         <View style={styles.section}>
           <View style={[styles.summaryCard, { backgroundColor: summaryBackground }]}>
             <View style={styles.summaryHeaderRow}>
@@ -514,21 +505,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 160,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 14,
-    paddingBottom: 6,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  headerButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
   },
   section: {
     paddingHorizontal: 20,
