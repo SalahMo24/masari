@@ -5,6 +5,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { DevSettings, I18nManager } from "react-native";
@@ -47,6 +48,8 @@ function syncLayoutDirection(locale: Locale) {
 
 export function I18nProvider({ children }: I18nProviderProps) {
   const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const previousLocaleRef = useRef<Locale | null>(null);
 
   useEffect(() => {
     let isActive = true;
@@ -58,7 +61,12 @@ export function I18nProvider({ children }: I18nProviderProps) {
         }
         setLocale((current) => (current === saved ? current : saved));
       })
-      .catch(() => null);
+      .catch(() => null)
+      .finally(() => {
+        if (isActive) {
+          setIsHydrated(true);
+        }
+      });
 
     return () => {
       isActive = false;
@@ -66,16 +74,46 @@ export function I18nProvider({ children }: I18nProviderProps) {
   }, []);
 
   useEffect(() => {
-    AsyncStorage.setItem(LOCALE_STORAGE_KEY, locale).catch(() => null);
-    syncLayoutDirection(locale);
-  }, [locale]);
+    if (!isHydrated) {
+      return;
+    }
+
+    let isActive = true;
+
+    const persistAndSyncDirection = async () => {
+      try {
+        // Persist before triggering a potential app reload for RTL changes.
+        await AsyncStorage.setItem(LOCALE_STORAGE_KEY, locale);
+      } catch {
+        // Best effort persistence; still sync direction so UI remains correct.
+      }
+
+      if (isActive) {
+        const previousLocale = previousLocaleRef.current;
+        const shouldSyncDirection =
+          previousLocale !== null && previousLocale !== locale;
+
+        if (shouldSyncDirection) {
+          syncLayoutDirection(locale);
+        }
+
+        previousLocaleRef.current = locale;
+      }
+    };
+
+    persistAndSyncDirection();
+
+    return () => {
+      isActive = false;
+    };
+  }, [isHydrated, locale]);
 
   const setLocaleAndPersist = useCallback((nextLocale: Locale) => {
     setLocale(nextLocale);
   }, []);
 
   const value = useMemo<I18nContextValue>(() => {
-    const dictionary = strings[locale] ?? DEFAULT_LOCALE;
+    const dictionary = strings[locale] ?? strings[DEFAULT_LOCALE];
     return {
       locale,
       setLocale: setLocaleAndPersist,

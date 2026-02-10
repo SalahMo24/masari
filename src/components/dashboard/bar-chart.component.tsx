@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Svg, { Line } from "react-native-svg";
 
-import type { BarDatum } from "./bar-chart-card.component";
 import Typography from "@/src/components/typography.component";
+import type { BarDatum } from "./bar-chart-card.component";
 
 const BarChart = ({
   barData,
@@ -30,10 +30,10 @@ const BarChart = ({
           const isSelected = selectedIndex === index;
           return (
             <Pressable
-              key={bar.label}
+              key={bar.id}
               onPress={() =>
                 setSelectedIndex((current) =>
-                  current === index ? null : index
+                  current === index ? null : index,
                 )
               }
               style={styles.barItem}
@@ -151,10 +151,8 @@ const styles = StyleSheet.create({
     transform: [{ translateY: -6 }],
     zIndex: 1,
   },
-  tooltipText: {
-  },
-  barLabel: {
-  },
+  tooltipText: {},
+  barLabel: {},
 });
 
 export default BarChart;

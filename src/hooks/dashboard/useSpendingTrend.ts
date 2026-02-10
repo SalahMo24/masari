@@ -21,7 +21,7 @@ const dayLabelKeys = [
 
 const formatShortDate = (date: Date) =>
   new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(
-    date
+    date,
   );
 
 const formatRangeLabel = (start: Date, end: Date) => {
@@ -111,20 +111,20 @@ export interface UseSpendingTrendResult {
 
 export function useSpendingTrend(
   transactions: Transaction[],
-  t: (key: string) => string
+  t: (key: string) => string,
 ): UseSpendingTrendResult {
   const today = useMemo(() => new Date(), []);
   const monthStart = useMemo(() => startOfMonth(today), [today]);
   const monthEnd = useMemo(() => endOfMonth(today), [today]);
   const weekStarts = useMemo(
     () => getWeekStartsInMonth(monthStart, monthEnd),
-    [monthStart, monthEnd]
+    [monthStart, monthEnd],
   );
 
   const initialWeekIndex = useMemo(() => {
     const currentWeekStart = startOfWeek(today, weekStartDay).getTime();
     const index = weekStarts.findIndex(
-      (weekStart) => weekStart.getTime() === currentWeekStart
+      (weekStart) => weekStart.getTime() === currentWeekStart,
     );
     return index === -1 ? weekStarts.length - 1 : index;
   }, [today, weekStarts]);
@@ -133,19 +133,19 @@ export function useSpendingTrend(
   const activeWeekStart = weekStarts[weekIndex] ?? monthStart;
   const activeWeekEnd = useMemo(
     () => endOfWeek(activeWeekStart),
-    [activeWeekStart]
+    [activeWeekStart],
   );
   const displayWeekStart = useMemo(
     () => clampDate(activeWeekStart, monthStart, monthEnd),
-    [activeWeekStart, monthStart, monthEnd]
+    [activeWeekStart, monthStart, monthEnd],
   );
   const displayWeekEnd = useMemo(
     () => clampDate(activeWeekEnd, monthStart, monthEnd),
-    [activeWeekEnd, monthStart, monthEnd]
+    [activeWeekEnd, monthStart, monthEnd],
   );
   const weekLabel = useMemo(
     () => formatRangeLabel(displayWeekStart, displayWeekEnd),
-    [displayWeekEnd, displayWeekStart]
+    [displayWeekEnd, displayWeekStart],
   );
   const canGoPrevWeek = weekIndex > 0;
   const canGoNextWeek = weekIndex < weekStarts.length - 1;
@@ -161,19 +161,19 @@ export function useSpendingTrend(
   const monthTransactions = useMemo(
     () =>
       transactions.filter((tx) =>
-        isWithinRange(new Date(tx.occurred_at), monthStart, monthEnd)
+        isWithinRange(new Date(tx.occurred_at), monthStart, monthEnd),
       ),
-    [transactions, monthStart, monthEnd]
+    [transactions, monthStart, monthEnd],
   );
 
   const expenseTransactions = useMemo(
     () => monthTransactions.filter((tx) => tx.type === "expense"),
-    [monthTransactions]
+    [monthTransactions],
   );
 
   const totalExpenses = useMemo(
     () => expenseTransactions.reduce((total, tx) => total + tx.amount, 0),
-    [expenseTransactions]
+    [expenseTransactions],
   );
 
   const weekExpenseTransactions = useMemo(() => {
@@ -194,7 +194,7 @@ export function useSpendingTrend(
 
   const weekTotalExpenses = useMemo(
     () => weekExpenseTransactions.reduce((total, tx) => total + tx.amount, 0),
-    [weekExpenseTransactions]
+    [weekExpenseTransactions],
   );
 
   const barData = useMemo<BarDatum[]>(() => {
@@ -210,10 +210,11 @@ export function useSpendingTrend(
       const labelKey = dayLabelKeys[index];
       const isMax = maxValue > 0 && value === maxValue;
       return {
+        id: dayIndexMap.get(index)?.toString() ?? "",
         label: t(labelKey),
         value: maxValue > 0 ? value / maxValue : 0,
         amountLabel: `${t("dashboard.currency")} ${formatAmountForSummary(
-          value
+          value,
         )}`,
         highlight: isMax,
       };
@@ -229,16 +230,16 @@ export function useSpendingTrend(
 
   const averagePerDay = weekTotalExpenses / Math.max(1, daysInWeek);
   const averageValueLabel = `${t(
-    "dashboard.currency"
+    "dashboard.currency",
   )} ${formatAmountForSummary(averagePerDay)}`;
 
   const previousWeekStart = useMemo(
     () => addDays(activeWeekStart, -7),
-    [activeWeekStart]
+    [activeWeekStart],
   );
   const previousWeekEnd = useMemo(
     () => endOfWeek(previousWeekStart),
-    [previousWeekStart]
+    [previousWeekStart],
   );
   const previousWeekTotal = useMemo(() => {
     return expenseTransactions
@@ -278,7 +279,7 @@ export function useSpendingTrend(
       .reduce((total, tx) => total + tx.amount, 0);
   }, [todayEnd, todayStart, transactions]);
   const todayValueLabel = `${t("dashboard.currency")} ${formatAmountForSummary(
-    todayTotal
+    todayTotal,
   )}`;
 
   return {

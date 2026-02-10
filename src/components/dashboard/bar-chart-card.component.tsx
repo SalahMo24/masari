@@ -1,3 +1,4 @@
+import Typography from "@/src/components/typography.component";
 import { useI18n } from "@/src/i18n/useI18n";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
@@ -8,8 +9,8 @@ import {
   View,
 } from "react-native";
 import BarChart from "./bar-chart.component";
-import Typography from "@/src/components/typography.component";
 export type BarDatum = {
+  id: string;
   label: string;
   value: number;
   amountLabel: string;
@@ -64,13 +65,16 @@ const BarChartCard = ({
     resolvedTrendDirection === "down"
       ? "trending-down"
       : resolvedTrendDirection === "up"
-      ? "trending-up"
-      : null;
+        ? "trending-up"
+        : null;
 
   return (
     <View style={styles.section}>
       <View style={[styles.sectionRow]}>
-        <Typography variant="overline" style={[styles.sectionTitle, { color: colors.muted }]}>
+        <Typography
+          variant="overline"
+          style={[styles.sectionTitle, { color: colors.muted }]}
+        >
           {t("dashboard.spendingTrend")}
         </Typography>
         <View style={[styles.sectionRowRight]}>
@@ -86,7 +90,10 @@ const BarChartCard = ({
             />
           </Pressable>
           <View style={[styles.rangePill, { backgroundColor: colors.border }]}>
-            <Typography variant="overline" style={[styles.rangeText, { color: colors.text }]}>
+            <Typography
+              variant="overline"
+              style={[styles.rangeText, { color: colors.text }]}
+            >
               {resolvedRangeLabel}
             </Typography>
           </View>
@@ -139,7 +146,10 @@ const BarChartCard = ({
           </View>
           <View style={styles.averageSection}>
             <View style={styles.averageRow}>
-              <Typography variant="caption" style={[styles.averageValue, { color: colors.muted }]}>
+              <Typography
+                variant="caption"
+                style={[styles.averageValue, { color: colors.muted }]}
+              >
                 {t("dashboard.avgPerDay")}
               </Typography>
               <Typography
@@ -164,7 +174,10 @@ const BarChartCard = ({
                   color={colors.muted}
                 />
               )}
-              <Typography variant="caption" style={[styles.trendText, { color: colors.muted }]}>
+              <Typography
+                variant="caption"
+                style={[styles.trendText, { color: colors.muted }]}
+              >
                 {resolvedTrendLabel} {t("dashboard.vsLastWeek")}
               </Typography>
             </View>
@@ -253,8 +266,7 @@ const styles = StyleSheet.create({
   todayBlock: {
     gap: 4,
   },
-  spendingValue: {
-  },
+  spendingValue: {},
   averageSection: {
     alignItems: "flex-end",
     gap: 6,
