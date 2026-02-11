@@ -1,7 +1,7 @@
+import Typography from "@/src/components/typography.component";
+import type { TransactionType } from "@/src/data/entities";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
-import type { TransactionType } from "@/src/data/entities";
-import Typography from "@/src/components/typography.component";
 
 export interface NoteSectionProps {
   mode: TransactionType;
@@ -74,7 +74,9 @@ export function NoteSection({
           ]}
         >
           <Ionicons name="add-circle" size={16} color={accentColor} />
-          <Typography style={[styles.createCategoryText, { color: accentColor }]}>
+          <Typography
+            style={[styles.createCategoryText, { color: accentColor }]}
+          >
             {createCategoryLabel} {"'"}
             {createCategoryCandidate}
             {"'"}
