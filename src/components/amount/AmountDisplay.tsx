@@ -21,6 +21,8 @@ export interface AmountDisplayProps {
   cursorPart: "int" | "dec";
   currencyColor: string;
   amountColor: string;
+  /** When in arithmetic mode, show tag below amount (e.g. "10 +") */
+  arithmeticTag?: { leftFormatted: string; operator: "+" | "-" } | null;
   showCaret?: boolean;
   currencyPosition?: CurrencyPosition;
   styles?: AmountDisplayStyleOverrides;
@@ -34,6 +36,7 @@ export function AmountDisplay({
   cursorPart,
   currencyColor,
   amountColor,
+  arithmeticTag,
   showCaret = true,
   currencyPosition = "prefix",
   styles: styleOverrides,
@@ -132,6 +135,14 @@ export function AmountDisplay({
         </View>
         {currencyPosition === "suffix" && currencyNode}
       </View>
+      {arithmeticTag ? (
+        <Typography
+          variant="caption"
+          style={[styles.arithmeticTag, { color: currencyColor }]}
+        >
+          {arithmeticTag.leftFormatted} {arithmeticTag.operator}
+        </Typography>
+      ) : null}
     </View>
   );
 }
@@ -141,6 +152,11 @@ const styles = StyleSheet.create({
     // paddingVertical: 12,
     alignItems: "center",
     justifyContent: "center",
+  },
+  arithmeticTag: {
+    marginTop: 4,
+    textAlign: "center",
+    opacity: 0.8,
   },
   amountRow: {
     flexDirection: "row",

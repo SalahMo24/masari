@@ -61,6 +61,7 @@ export default function NewTransactionScreen() {
     decimalDigitsEntered,
     cursorPart,
     operator,
+    arithmeticTag,
     onPressDigit,
     onPressDotToggle,
     onPressBackspace,
@@ -288,6 +289,7 @@ export default function NewTransactionScreen() {
               integerDigitsEntered={integerDigitsEntered}
               decimalDigitsEntered={decimalDigitsEntered}
               cursorPart={cursorPart}
+              arithmeticTag={arithmeticTag}
               currencyColor={theme.colors.mutedText}
               amountColor={
                 mode === "income" ? theme.colors.success : theme.colors.text

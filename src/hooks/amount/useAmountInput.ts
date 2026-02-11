@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { formatAmountForSummary } from "@/src/utils/amount";
 
 export type CursorPart = "int" | "dec";
 export type Operator = "+" | "-";
@@ -27,6 +28,8 @@ export interface UseAmountInputResult {
   cursorPart: CursorPart;
   /** Currently selected operator for the next operation */
   operator: Operator;
+  /** Tag to show below amount when in arithmetic mode (e.g. "10 +") */
+  arithmeticTag: { leftFormatted: string; operator: Operator } | null;
   /** Handler for digit key press */
   onPressDigit: (digit: string) => void;
   /** Toggle editing between integer and decimal part */
@@ -120,6 +123,14 @@ export function useAmountInput(strategy?: AmountInputStrategy): UseAmountInputRe
     if (maxDecimalDigits <= 0) return 0;
     return Math.min(decPart.length, maxDecimalDigits);
   }, [decPart.length, maxDecimalDigits]);
+
+  const arithmeticTag = useMemo((): { leftFormatted: string; operator: Operator } | null => {
+    if (accumulator === null || pendingOp === null) return null;
+    return {
+      leftFormatted: formatAmountForSummary(accumulator),
+      operator: pendingOp,
+    };
+  }, [accumulator, pendingOp]);
 
   const clearEntry = useCallback(() => {
     setIntPart("");
@@ -296,6 +307,7 @@ export function useAmountInput(strategy?: AmountInputStrategy): UseAmountInputRe
     decimalDigitsEntered,
     cursorPart,
     operator,
+    arithmeticTag,
     onPressDigit,
     onPressDotToggle,
     onPressBackspace,
