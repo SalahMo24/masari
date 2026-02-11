@@ -5,7 +5,6 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { DevSettings, I18nManager } from "react-native";
@@ -49,7 +48,6 @@ function syncLayoutDirection(locale: Locale) {
 export function I18nProvider({ children }: I18nProviderProps) {
   const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE);
   const [isHydrated, setIsHydrated] = useState(false);
-  const previousLocaleRef = useRef<Locale | null>(null);
 
   useEffect(() => {
     let isActive = true;
@@ -89,15 +87,8 @@ export function I18nProvider({ children }: I18nProviderProps) {
       }
 
       if (isActive) {
-        const previousLocale = previousLocaleRef.current;
-        const shouldSyncDirection =
-          previousLocale !== null && previousLocale !== locale;
-
-        if (shouldSyncDirection) {
-          syncLayoutDirection(locale);
-        }
-
-        previousLocaleRef.current = locale;
+        // Always enforce direction after hydration so initial load is correct.
+        syncLayoutDirection(locale);
       }
     };
 
