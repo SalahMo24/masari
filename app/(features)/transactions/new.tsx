@@ -21,8 +21,8 @@ import {
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { formatAmountForSummary } from "@/src/utils/amount";
-import { useSQLiteContext } from "expo-sqlite";
 import { Stack, router } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useMemo, useState } from "react";
 import {
   Alert,
@@ -268,7 +268,15 @@ export default function NewTransactionScreen() {
             accentColor={accent}
           />
 
-          <View style={{ flex: 1, paddingBottom: saveButtonOffset }}>
+          <View
+            style={{
+              flex: 1,
+              paddingBottom: saveButtonOffset,
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+            }}
+          >
             <SegmentedControl
               value={mode}
               onChange={setMode}
