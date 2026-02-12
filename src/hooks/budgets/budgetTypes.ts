@@ -1,4 +1,4 @@
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 
 import type { BudgetOverviewCategory } from "./useBudgetOverview";
 

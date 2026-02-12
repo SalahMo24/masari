@@ -1,6 +1,6 @@
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 import { useMemo } from "react";
 import { I18nManager, Platform, StyleSheet, View } from "react-native";
 

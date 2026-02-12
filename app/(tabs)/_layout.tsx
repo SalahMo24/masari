@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@/src/components/icons/legacyVectorIcons";
 import { Tabs, router } from "expo-router";
 import type { ReactNode } from "react";
 import type { PressableProps } from "react-native";

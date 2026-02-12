@@ -1,6 +1,6 @@
 import Typography from "@/src/components/typography.component";
 import { useI18n } from "@/src/i18n/useI18n";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 import {
   I18nManager,
   Platform,

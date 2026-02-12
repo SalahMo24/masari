@@ -1,4 +1,4 @@
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import DueDateCalendar from "@/src/components/bills/DueDateCalendar";

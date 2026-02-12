@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 import {
   I18nManager,
   Platform,

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 import { useRouter } from "expo-router";
 import {
   I18nManager,

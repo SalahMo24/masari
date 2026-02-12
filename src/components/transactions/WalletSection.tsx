@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@/src/components/icons/legacyVectorIcons";
 import { StyleSheet, View } from "react-native";
 import type { ID, TransactionType, Wallet } from "@/src/data/entities";
 import { WalletSelector } from "./WalletSelector";

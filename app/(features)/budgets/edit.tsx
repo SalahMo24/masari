@@ -1,4 +1,4 @@
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 import { useFocusEffect } from "@react-navigation/native";
 import { endOfMonth, startOfMonth } from "date-fns";
 import * as Haptics from "expo-haptics";

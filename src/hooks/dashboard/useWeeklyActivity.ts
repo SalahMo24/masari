@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 
 import type { Category, Transaction, Wallet } from "@/src/data/entities";
 import { formatAmountForSummary } from "@/src/utils/amount";

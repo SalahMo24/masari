@@ -1,6 +1,6 @@
 import Typography from "@/src/components/typography.component";
 import type { TransactionMonthCell } from "@/src/hooks/transactions/useTransactionDatePicker";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 import {
   I18nManager,
   Modal,

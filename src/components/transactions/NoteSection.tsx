@@ -1,6 +1,6 @@
 import Typography from "@/src/components/typography.component";
 import type { TransactionType } from "@/src/data/entities";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@/src/components/icons/legacyVectorIcons";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 
 export interface NoteSectionProps {

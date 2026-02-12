@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 
 import BillStepper from "@/src/components/bills/BillStepper";
 import Typography from "@/src/components/typography.component";

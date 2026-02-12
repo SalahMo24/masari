@@ -1,6 +1,6 @@
 import Typography from "@/src/components/typography.component";
 import type { Category, ID } from "@/src/data/entities";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 import { useMemo, useState } from "react";
 import {
   Modal,
