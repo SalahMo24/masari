@@ -25,5 +25,11 @@ export type { NoteSectionProps } from "./NoteSection";
 export { TransactionSummary } from "./TransactionSummary";
 export type { TransactionSummaryProps } from "./TransactionSummary";
 
+export { TransactionDatePicker } from "./TransactionDatePicker";
+export type { TransactionDatePickerProps } from "./TransactionDatePicker";
+
+export { TransactionCategoryPicker } from "./TransactionCategoryPicker";
+export type { TransactionCategoryPickerProps } from "./TransactionCategoryPicker";
+
 export { SaveButton, SAVE_BUTTON_BASE_HEIGHT } from "../SaveButton";
 export type { SaveButtonProps } from "../SaveButton";

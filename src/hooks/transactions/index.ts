@@ -9,3 +9,9 @@ export type { UseWalletSelectionResult } from "./useWalletSelection";
 
 export { useCategorySelection } from "./useCategorySelection";
 export type { UseCategorySelectionResult } from "./useCategorySelection";
+
+export { useTransactionDatePicker } from "./useTransactionDatePicker";
+export type {
+  TransactionMonthCell,
+  UseTransactionDatePickerResult,
+} from "./useTransactionDatePicker";

@@ -1,10 +1,11 @@
 import { AmountDisplay, Keypad } from "@/src/components/amount";
 import {
-  CategoryChips,
   NoteSection,
   SAVE_BUTTON_BASE_HEIGHT,
   SaveButton,
   SegmentedControl,
+  TransactionCategoryPicker,
+  TransactionDatePicker,
   TransactionHeader,
   TransactionSummary,
   WalletSection,
@@ -16,6 +17,7 @@ import { useAmountInput } from "@/src/hooks/amount";
 import {
   useCategorySelection,
   useTransactionData,
+  useTransactionDatePicker,
   useWalletSelection,
 } from "@/src/hooks/transactions";
 import { useI18n } from "@/src/i18n/useI18n";
@@ -39,7 +41,7 @@ import {
 
 export default function NewTransactionScreen() {
   const theme = useAppTheme();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const db = useSQLiteContext();
   const insets = useSafeAreaInsets();
   const saveButtonOffset = SAVE_BUTTON_BASE_HEIGHT + insets.bottom - 30;
@@ -52,6 +54,30 @@ export default function NewTransactionScreen() {
   const [mode, setMode] = useState<TransactionType>("expense");
   const [note, setNote] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const {
+    isDatePickerVisible,
+    selectedDateLabel,
+    monthLabel,
+    weekdayLabels,
+    monthCells,
+    quickDates,
+    disableNextMonth,
+    occurredAt,
+    isFutureDateSelected,
+    openDatePicker,
+    closeDatePicker,
+    confirmDate,
+    onSelectQuickDate,
+    onPrevMonth,
+    onNextMonth,
+    onSelectDraftDate,
+  } = useTransactionDatePicker({
+    locale,
+    labels: {
+      today: t("transaction.date.today"),
+      yesterday: t("transaction.date.yesterday"),
+    },
+  });
 
   // Amount input
   const {
@@ -113,12 +139,12 @@ export default function NewTransactionScreen() {
     if (mode === "transfer") {
       const fromName = fromWallet?.name ?? t("transaction.wallet.unknown");
       const toName = toWallet?.name ?? t("transaction.wallet.unknown");
-      return `${fromName} ${isRtl ? "⬅" : "➔"} ${toName} • ${amountText}`;
+      return `${fromName} ${isRtl ? "⬅" : "➔"} ${toName} • ${amountText} • ${selectedDateLabel}`;
     }
     const sign = mode === "expense" ? "-" : "+";
     const cat = selectedCategory?.name ?? t("transaction.category.none");
     const wName = activeWallet?.name ?? t("transaction.wallet.unknown");
-    return `${sign} ${amountText} • ${cat} • ${wName}`;
+    return `${sign} ${amountText} • ${cat} • ${wName} • ${selectedDateLabel}`;
   }, [
     activeWallet?.name,
     currency,
@@ -127,9 +153,26 @@ export default function NewTransactionScreen() {
     mode,
     parsedAmount,
     selectedCategory?.name,
+    selectedDateLabel,
     t,
     toWallet?.name,
   ]);
+
+  const categoryPickerCategories = useMemo(() => {
+    if (mode === "expense") {
+      return expenseCategories;
+    }
+    if (mode === "income") {
+      const seen = new Set<string>();
+      const merged = [...incomeQuickCategories, ...expenseCategories];
+      return merged.filter((category) => {
+        if (seen.has(category.id)) return false;
+        seen.add(category.id);
+        return true;
+      });
+    }
+    return [];
+  }, [expenseCategories, incomeQuickCategories, mode]);
 
   const saveLabel = useMemo(() => {
     if (mode === "transfer") return t("transaction.cta.transfer");
@@ -163,7 +206,10 @@ export default function NewTransactionScreen() {
       return;
     }
 
-    const now = new Date().toISOString();
+    if (isFutureDateSelected) {
+      Alert.alert(t("transaction.error"), t("transaction.error.futureDate"));
+      return;
+    }
 
     try {
       setSaving(true);
@@ -184,7 +230,7 @@ export default function NewTransactionScreen() {
           wallet_id: walletId,
           target_wallet_id: null,
           note: note.trim() ? note.trim() : null,
-          occurred_at: now,
+          occurred_at: occurredAt,
         });
       } else if (mode === "income") {
         if (!walletId) {
@@ -198,7 +244,7 @@ export default function NewTransactionScreen() {
           wallet_id: walletId,
           target_wallet_id: null,
           note: note.trim() ? note.trim() : null,
-          occurred_at: now,
+          occurred_at: occurredAt,
         });
       } else {
         if (!fromWalletId || !toWalletId) {
@@ -222,7 +268,7 @@ export default function NewTransactionScreen() {
           wallet_id: fromWalletId,
           target_wallet_id: toWalletId,
           note: null,
-          occurred_at: now,
+          occurred_at: occurredAt,
         });
       }
 
@@ -240,9 +286,11 @@ export default function NewTransactionScreen() {
     fromWalletId,
     mode,
     note,
+    occurredAt,
     parsedAmount,
     refreshData,
     saving,
+    isFutureDateSelected,
     selectedCategoryId,
     t,
     toWalletId,
@@ -340,6 +388,28 @@ export default function NewTransactionScreen() {
                 successColor={theme.colors.success}
               />
 
+              {mode !== "transfer" ? (
+                <TransactionCategoryPicker
+                  selectedId={selectedCategoryId}
+                  categories={categoryPickerCategories}
+                  onSelect={setSelectedCategoryId}
+                  colors={{
+                    text: theme.colors.text,
+                    mutedText: theme.colors.mutedText,
+                    border: theme.colors.border,
+                    card: theme.colors.card,
+                    background: theme.colors.background,
+                    accent: theme.colors.accent,
+                  }}
+                  labels={{
+                    triggerPlaceholder: t("transaction.category.none"),
+                    pickTitle: t("transaction.category.pickTitle"),
+                    close: t("transaction.close"),
+                    empty: t("transaction.category.empty"),
+                  }}
+                />
+              ) : null}
+
               <NoteSection
                 mode={mode}
                 note={note}
@@ -355,35 +425,6 @@ export default function NewTransactionScreen() {
                 cardColor={theme.colors.card}
                 accentColor={accent}
               />
-
-              {mode === "expense" ? (
-                <CategoryChips
-                  categories={expenseCategories}
-                  selectedId={selectedCategoryId}
-                  onSelect={setSelectedCategoryId}
-                  accent={theme.colors.success}
-                  border={theme.colors.border}
-                  text={theme.colors.text}
-                  muted={theme.colors.mutedText}
-                  card={theme.colors.card}
-                />
-              ) : null}
-
-              {mode === "income" ? (
-                <View style={{ paddingTop: 6 }}>
-                  <CategoryChips
-                    categories={incomeQuickCategories}
-                    selectedId={selectedCategoryId}
-                    onSelect={setSelectedCategoryId}
-                    accent={theme.colors.success}
-                    border={theme.colors.border}
-                    text={theme.colors.text}
-                    muted={theme.colors.mutedText}
-                    card={theme.colors.card}
-                    wrap
-                  />
-                </View>
-              ) : null}
             </ScrollView>
 
             <TransactionSummary
@@ -391,6 +432,40 @@ export default function NewTransactionScreen() {
               mode={mode}
               dangerColor={theme.colors.danger}
               accentColor={accent}
+            />
+
+            <TransactionDatePicker
+              insetsBottom={insets.bottom}
+              isVisible={isDatePickerVisible}
+              selectedDateLabel={selectedDateLabel}
+              monthLabel={monthLabel}
+              weekdayLabels={weekdayLabels}
+              monthCells={monthCells}
+              quickDates={quickDates}
+              disableNextMonth={disableNextMonth}
+              onOpen={openDatePicker}
+              onClose={closeDatePicker}
+              onConfirm={confirmDate}
+              onSelectQuickDate={onSelectQuickDate}
+              onPrevMonth={onPrevMonth}
+              onNextMonth={onNextMonth}
+              onSelectDate={onSelectDraftDate}
+              colors={{
+                text: theme.colors.text,
+                mutedText: theme.colors.mutedText,
+                border: theme.colors.border,
+                card: theme.colors.card,
+                background: theme.colors.background,
+                accent: theme.colors.accent,
+              }}
+              labels={{
+                pickTitle: t("transaction.date.pickTitle"),
+                previousMonth: t("transaction.date.previousMonth"),
+                nextMonth: t("transaction.date.nextMonth"),
+                cancel: t("transaction.date.cancel"),
+                confirm: t("transaction.date.confirm"),
+                openCalendar: t("transaction.date.openCalendar"),
+              }}
             />
 
             <Keypad
