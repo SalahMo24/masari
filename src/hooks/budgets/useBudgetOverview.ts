@@ -22,6 +22,7 @@ export type BudgetOverviewCategory = {
   budgetId: string;
   categoryId: string;
   name: string;
+  isCustom: boolean;
   icon: string | null;
   color: string | null;
   limit: number;
@@ -38,6 +39,7 @@ type Insight =
       categoryId: string;
       budgetId: string;
       categoryName: string;
+      categoryIsCustom: boolean;
       deltaPercent: number;
     }
   | {
@@ -165,6 +167,7 @@ export function useBudgetOverview(period: BudgetPeriod) {
           budgetId: budget.id,
           categoryId: budget.category_id,
           name: category?.name ?? "Uncategorized",
+          isCustom: category?.is_custom ?? true,
           icon: category?.icon ?? null,
           color: category?.color ?? null,
           limit,
@@ -229,6 +232,7 @@ export function useBudgetOverview(period: BudgetPeriod) {
         categoryId: mostPressured.categoryId,
         budgetId: mostPressured.budgetId,
         categoryName: mostPressured.name,
+        categoryIsCustom: mostPressured.isCustom,
         deltaPercent,
       };
     }

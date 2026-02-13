@@ -189,6 +189,7 @@ export default function BudgetsScreen() {
                       hintText={hint.text}
                       hideAmounts={hideAmounts}
                       locale={locale}
+                      t={t}
                       hiddenAmountLabel={hiddenAmountLabel}
                       currencyLabel={currencyLabel}
                       isRtl={isRtl}
@@ -229,6 +230,7 @@ export default function BudgetsScreen() {
                       hintText={hint.text}
                       hideAmounts={hideAmounts}
                       locale={locale}
+                      t={t}
                       hiddenAmountLabel={hiddenAmountLabel}
                       currencyLabel={currencyLabel}
                       isRtl={isRtl}
@@ -269,6 +271,7 @@ export default function BudgetsScreen() {
                       hintText={hint.text}
                       hideAmounts={hideAmounts}
                       locale={locale}
+                      t={t}
                       hiddenAmountLabel={hiddenAmountLabel}
                       currencyLabel={currencyLabel}
                       isRtl={isRtl}

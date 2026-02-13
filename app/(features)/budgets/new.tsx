@@ -19,6 +19,7 @@ import { useI18n } from "@/src/i18n/useI18n";
 import { palette } from "@/src/theme/theme";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { formatAmountForSummary } from "@/src/utils/amount";
+import { getCategoryLabel } from "@/src/utils/categories/labels";
 import Typography from "@/src/components/typography.component";
 import { useSQLiteContext } from "expo-sqlite";
 
@@ -45,14 +46,6 @@ const budgetKeypadKeys: KeypadKey[] = [
   { type: "zero" },
   { type: "backspace" },
 ] as const;
-
-function normalizeCategoryLabel(name: string, locale: string) {
-  if (locale === "ar") return name;
-  const hasLatin = /[a-zA-Z]/.test(name);
-  const cleaned = name.replace(/[-_]/g, " ");
-  if (!hasLatin) return cleaned;
-  return cleaned.replace(/\b\w/g, (char) => char.toUpperCase());
-}
 
 function isWithinRange(date: Date, start: Date, end: Date) {
   return date >= start && date <= end;
@@ -248,7 +241,7 @@ export default function NewBudgetScreen() {
   }, []);
 
   const selectedLabel = selectedCategory
-    ? normalizeCategoryLabel(selectedCategory.name, locale)
+    ? getCategoryLabel(selectedCategory, locale, t)
     : t("transaction.category.none");
 
   const guidanceText = useMemo(() => {
@@ -304,7 +297,7 @@ export default function NewBudgetScreen() {
                   const iconName = (category.icon ??
                     categoryIconMap[category.name] ??
                     "category") as MaterialIconName;
-                  const label = normalizeCategoryLabel(category.name, locale);
+                  const label = getCategoryLabel(category, locale, t);
                   const iconColor = isSelected ? colors.success : colors.muted;
                   const background = isSelected ? `${colors.success}22` : colors.card;
                   const border = isSelected ? colors.success : colors.border;

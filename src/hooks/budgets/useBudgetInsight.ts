@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useRouter } from "expo-router";
 
-import { normalizeCategoryLabel } from "./budgetFormatting";
+import { getCategoryLabelByName } from "@/src/utils/categories/labels";
 import type { useBudgetOverview } from "./useBudgetOverview";
 
 type BudgetInsight = ReturnType<typeof useBudgetOverview>["insight"];
@@ -17,7 +17,12 @@ export function useBudgetInsight({ insight, locale, t }: UseBudgetInsightParams)
 
   const insightText = useMemo(() => {
     if (insight.type === "aboveAverage" && insight.categoryName) {
-      const categoryLabel = normalizeCategoryLabel(insight.categoryName, locale);
+      const categoryLabel = getCategoryLabelByName(
+        insight.categoryName,
+        insight.categoryIsCustom,
+        locale,
+        t,
+      );
       if (locale === "ar") {
         return `${t("budget.insight.aboveAveragePrefix")} ${categoryLabel} ${t(
           "budget.insight.aboveAverageMiddle"

@@ -7,13 +7,12 @@ import {
   View,
 } from "react-native";
 
-import type { BudgetCardItem } from "@/src/hooks/budgets/budgetTypes";
-import type { MaterialIconName } from "@/src/hooks/budgets/budgetTypes";
+import type { BudgetCardItem, MaterialIconName } from "@/src/hooks/budgets/budgetTypes";
 import {
   formatPercent,
   getCategoryIconName,
-  normalizeCategoryLabel,
 } from "@/src/hooks/budgets/budgetFormatting";
+import { getCategoryLabelByName } from "@/src/utils/categories/labels";
 import { formatAmountForSummary } from "@/src/utils/amount";
 import Typography from "@/src/components/typography.component";
 
@@ -27,6 +26,7 @@ type BudgetCardProps = {
   hintText: string;
   hideAmounts: boolean;
   locale: string;
+  t: (key: string) => string;
   hiddenAmountLabel: string;
   currencyLabel: string;
   isRtl: boolean;
@@ -49,6 +49,7 @@ export function BudgetCard({
   hintText,
   hideAmounts,
   locale,
+  t,
   hiddenAmountLabel,
   currencyLabel,
   isRtl,
@@ -57,7 +58,7 @@ export function BudgetCard({
   onLayout,
   colors,
 }: BudgetCardProps) {
-  const categoryLabel = normalizeCategoryLabel(item.name, locale);
+  const categoryLabel = getCategoryLabelByName(item.name, item.isCustom, locale, t);
   const iconName = getCategoryIconName(item.name, item.icon);
   const spentLabel = hideAmounts
     ? hiddenAmountLabel

@@ -3,6 +3,7 @@ import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 
 import type { Category, Transaction, Wallet } from "@/src/data/entities";
 import { formatAmountForSummary } from "@/src/utils/amount";
+import { getCategoryLabel } from "@/src/utils/categories/labels";
 
 const weekStartDay = 6;
 
@@ -99,6 +100,7 @@ export function useWeeklyActivity(
   transactions: Transaction[],
   categories: Category[],
   wallets: Wallet[],
+  locale: string,
   t: (key: string) => string,
   maxItems = 5
 ): UseWeeklyActivityResult {
@@ -187,8 +189,8 @@ export function useWeeklyActivity(
         const targetWallet = tx.target_wallet_id
           ? walletMap.get(tx.target_wallet_id)
           : null;
-        const name = tx.note ?? category?.name ?? t("transaction.category.none");
-        const categoryLabel = category?.name ?? t("transaction.category.none");
+        const categoryLabel = getCategoryLabel(category, locale, t);
+        const name = tx.note ?? categoryLabel;
         const dateLabel = `- ${formatShortDate(new Date(tx.occurred_at))}`;
         const source =
           tx.type === "transfer"
@@ -211,7 +213,7 @@ export function useWeeklyActivity(
           source,
         };
       }),
-    [categoryMap, recentTransactions, t, walletMap]
+    [categoryMap, locale, recentTransactions, t, walletMap]
   );
 
   return {

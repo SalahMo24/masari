@@ -2,6 +2,7 @@ import { useMemo } from "react";
 
 import type { Category, Transaction } from "@/src/data/entities";
 import { formatAmountForSummary } from "@/src/utils/amount";
+import { getCategoryLabel } from "@/src/utils/categories/labels";
 
 type CategoryDatum = {
   id: string;
@@ -24,6 +25,7 @@ export function useCategoryBreakdown(
   expenseTransactions: Transaction[],
   totalExpenses: number,
   categories: Category[],
+  locale: string,
   t: (key: string) => string,
   colors: { primary: string; nileGreen: string; gold: string; border: string }
 ): UseCategoryBreakdownResult {
@@ -59,7 +61,7 @@ export function useCategoryBreakdown(
     () =>
       topCategoryTotals.map((item) => ({
         id: item.key,
-        label: item.category?.name ?? t("transaction.category.none"),
+        label: getCategoryLabel(item.category, locale, t),
         subtitle: t("dashboard.monthly"),
         amount: `${t("dashboard.currency")} ${formatAmountForSummary(item.amount)}`,
         percent: `${
@@ -67,7 +69,7 @@ export function useCategoryBreakdown(
         }%`,
         color: item.color,
       })),
-    [t, topCategoryTotals, totalExpenses]
+    [locale, t, topCategoryTotals, totalExpenses]
   );
 
   const spendingSegments = useMemo(() => {

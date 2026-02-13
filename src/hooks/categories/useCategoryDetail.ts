@@ -16,9 +16,9 @@ import {
   walletRepository,
 } from "@/src/data/repositories";
 import { formatAmountForSummary } from "@/src/utils/amount";
+import { getCategoryLabel } from "@/src/utils/categories/labels";
 import {
   getCategoryIconName,
-  normalizeCategoryLabel,
 } from "@/src/hooks/budgets/budgetFormatting";
 import type { MaterialIconName } from "@/src/hooks/budgets/budgetTypes";
 
@@ -161,10 +161,7 @@ export function useCategoryDetail({ categoryId, locale, t }: UseCategoryDetailAr
   const comparisonDirection: CategoryDetailDirection =
     comparisonPercent > 0 ? "up" : comparisonPercent < 0 ? "down" : "neutral";
 
-  const categoryLabel = normalizeCategoryLabel(
-    category?.name ?? t("transaction.category.none"),
-    locale,
-  );
+  const categoryLabel = getCategoryLabel(category, locale, t);
   const categoryIcon = getCategoryIconName(
     category?.name ?? "category",
     category?.icon ?? null,

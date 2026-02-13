@@ -29,12 +29,12 @@ import {
 import { useAmountInput } from "@/src/hooks/amount";
 import {
   getCategoryIconName,
-  normalizeCategoryLabel,
 } from "@/src/hooks/budgets/budgetFormatting";
 import { useI18n } from "@/src/i18n/useI18n";
 import { palette } from "@/src/theme/theme";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { formatAmountForSummary } from "@/src/utils/amount";
+import { getCategoryLabel } from "@/src/utils/categories/labels";
 
 const budgetKeypadKeys: KeypadKey[] = [
   { type: "digit", value: "1" },
@@ -209,9 +209,7 @@ export default function EditBudgetScreen() {
         : colors.success;
 
   const currencyLabel = t("dashboard.currency");
-  const categoryLabel = category
-    ? normalizeCategoryLabel(category.name, locale)
-    : t("transaction.category.none");
+  const categoryLabel = getCategoryLabel(category, locale, t);
   const categoryIcon = getCategoryIconName(
     category?.name ?? "category",
     category?.icon ?? null,

@@ -1,6 +1,8 @@
 import Typography from "@/src/components/typography.component";
 import type { Category, ID } from "@/src/data/entities";
 import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
+import { useI18n } from "@/src/i18n/useI18n";
+import { getCategoryLabel } from "@/src/utils/categories/labels";
 import { useMemo, useState } from "react";
 import {
   Modal,
@@ -43,11 +45,15 @@ export function TransactionCategoryPicker({
   onSelect,
 }: TransactionCategoryPickerProps) {
   const [isVisible, setVisible] = useState(false);
+  const { locale, t } = useI18n();
 
-  const selectedCategoryName = useMemo(
-    () => categories.find((item) => item.id === selectedId)?.name ?? null,
+  const selectedCategory = useMemo(
+    () => categories.find((item) => item.id === selectedId) ?? null,
     [categories, selectedId],
   );
+  const selectedCategoryName = selectedCategory
+    ? getCategoryLabel(selectedCategory, locale, t)
+    : null;
 
   const openSheet = () => setVisible(true);
   const closeSheet = () => setVisible(false);
@@ -155,7 +161,7 @@ export function TransactionCategoryPicker({
                         color={isActive ? colors.accent : colors.text}
                         style={styles.itemText}
                       >
-                        {category.name}
+                        {getCategoryLabel(category, locale, t)}
                       </Typography>
                       {isActive ? (
                         <MaterialIcons

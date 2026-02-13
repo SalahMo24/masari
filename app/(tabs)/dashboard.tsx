@@ -33,7 +33,7 @@ const monoFont = Platform.select({
 
 export default function DashboardScreen() {
   const theme = useAppTheme();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const isRtl = I18nManager.isRTL;
   const router = useRouter();
 
@@ -67,7 +67,7 @@ export default function DashboardScreen() {
     expenseTransactions,
   } = useSpendingTrend(transactions, t);
   const { categoryData, spendingSegments, totalAmountLabel } =
-    useCategoryBreakdown(expenseTransactions, totalExpenses, categories, t, {
+    useCategoryBreakdown(expenseTransactions, totalExpenses, categories, locale, t, {
       primary: colors.primary,
       nileGreen: colors.nileGreen,
       gold: colors.gold,
@@ -80,7 +80,7 @@ export default function DashboardScreen() {
     handlePrevWeek,
     handleNextWeek,
     recentActivity,
-  } = useWeeklyActivity(transactions, categories, wallets, t);
+  } = useWeeklyActivity(transactions, categories, wallets, locale, t);
 
   const handleCategoryPress = (categoryId: string) => {
     router.push({

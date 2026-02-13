@@ -1,5 +1,7 @@
 import Typography from "@/src/components/typography.component";
 import type { Category, ID } from "@/src/data/entities";
+import { useI18n } from "@/src/i18n/useI18n";
+import { getCategoryLabel } from "@/src/utils/categories/labels";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 export interface CategoryChipsProps {
@@ -24,6 +26,7 @@ export function CategoryChips({
   card,
   wrap,
 }: CategoryChipsProps) {
+  const { locale, t } = useI18n();
   const containerStyle = wrap
     ? styles.chipWrap
     : [styles.chipRow, { paddingHorizontal: 16 }];
@@ -55,7 +58,7 @@ export function CategoryChips({
                 },
               ]}
             >
-              {c.name}
+              {getCategoryLabel(c, locale, t)}
             </Typography>
           </Pressable>
         );

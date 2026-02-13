@@ -1,7 +1,7 @@
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useMemo, useState } from "react";
 import { I18nManager, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 
 import {
   BudgetDetailHeader,
@@ -10,11 +10,12 @@ import {
   BudgetStatusCard,
   BudgetTransactionsList,
 } from "@/src/components/budgets";
+import Typography from "@/src/components/typography.component";
 import { useBudgetDetail } from "@/src/hooks/budgets";
-import { getCategoryIconName, normalizeCategoryLabel } from "@/src/hooks/budgets/budgetFormatting";
+import { getCategoryIconName } from "@/src/hooks/budgets/budgetFormatting";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
-import Typography from "@/src/components/typography.component";
+import { getCategoryLabel } from "@/src/utils/categories/labels";
 
 export default function BudgetDetailScreen() {
   const theme = useAppTheme();
@@ -23,7 +24,7 @@ export default function BudgetDetailScreen() {
   const navigation = useNavigation();
   const isRtl = I18nManager.isRTL;
   const { id } = useLocalSearchParams<{ id?: string | string[] }>();
-  const budgetId = Array.isArray(id) ? id[0] : id ?? null;
+  const budgetId = Array.isArray(id) ? id[0] : (id ?? null);
 
   const {
     loading,
@@ -56,13 +57,17 @@ export default function BudgetDetailScreen() {
       card: theme.colors.card,
       border: theme.colors.border,
     }),
-    [theme]
+    [theme],
   );
 
   const headerTitle = category
-    ? normalizeCategoryLabel(category.name, locale)
+    ? getCategoryLabel(category, locale, t)
     : t("budget.detail.title");
-  const headerIcon = getCategoryIconName(category?.name ?? "category", category?.icon ?? null);
+  const headerIcon = getCategoryIconName(
+    category?.name ?? "category",
+    category?.icon ?? null,
+  );
+  console.log("headerIcon", headerTitle, category);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -100,9 +105,14 @@ export default function BudgetDetailScreen() {
 
   if (!loading && !budget) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: colors.background }]}
+      >
         <View style={styles.emptyState}>
-          <Typography variant="body" style={[styles.emptyText, { color: colors.muted }]}>
+          <Typography
+            variant="body"
+            style={[styles.emptyText, { color: colors.muted }]}
+          >
             {t("budget.detail.notFound")}
           </Typography>
         </View>
@@ -111,7 +121,9 @@ export default function BudgetDetailScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -149,7 +161,11 @@ export default function BudgetDetailScreen() {
           ctaLabel={t("budget.detail.insight.cta")}
           onPress={() => null}
           isRtl={isRtl}
-          colors={{ text: colors.text, muted: colors.muted, accent: colors.accent }}
+          colors={{
+            text: colors.text,
+            muted: colors.muted,
+            accent: colors.accent,
+          }}
         />
 
         <BudgetTransactionsList
@@ -167,7 +183,11 @@ export default function BudgetDetailScreen() {
               : undefined
           }
           items={visibleTransactions}
-          emptyLabel={loading ? t("budget.loading") : t("budget.detail.transactions.empty")}
+          emptyLabel={
+            loading
+              ? t("budget.loading")
+              : t("budget.detail.transactions.empty")
+          }
           colors={{
             text: colors.text,
             muted: colors.muted,

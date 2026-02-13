@@ -4,7 +4,7 @@ import { generateId } from "@/src/utils/id";
 
 async function getCount(db: SQLiteDatabase, table: string): Promise<number> {
   const row = await db.getFirstAsync<{ count: number }>(
-    `SELECT COUNT(*) as count FROM ${table};`
+    `SELECT COUNT(*) as count FROM ${table};`,
   );
   return row?.count ?? 0;
 }
@@ -19,11 +19,11 @@ export async function seedDatabase(db: SQLiteDatabase): Promise<void> {
   if (!walletCount) {
     await db.runAsync(
       `INSERT INTO Wallet (id, name, type, balance, created_at) VALUES (?, ?, ?, ?, ?);`,
-      [generateId("wallet"), "Cash", "cash", 0, now]
+      [generateId("wallet"), "Cash", "cash", 0, now],
     );
     await db.runAsync(
       `INSERT INTO Wallet (id, name, type, balance, created_at) VALUES (?, ?, ?, ?, ?);`,
-      [generateId("wallet"), "Bank", "bank", 0, now]
+      [generateId("wallet"), "Bank", "bank", 0, now],
     );
   }
 
@@ -43,6 +43,7 @@ export async function seedDatabase(db: SQLiteDatabase): Promise<void> {
       { name: "utilities", icon: null, color: null, is_custom: 0 },
       { name: "rent", icon: null, color: null, is_custom: 0 },
       { name: "loan", icon: null, color: null, is_custom: 0 },
+      { name: "gym", icon: null, color: null, is_custom: 0 },
       // Income-ish quick chips
       { name: "salary", icon: null, color: null, is_custom: 0 },
       { name: "gift", icon: null, color: null, is_custom: 0 },
@@ -54,7 +55,7 @@ export async function seedDatabase(db: SQLiteDatabase): Promise<void> {
     for (const c of categories) {
       await db.runAsync(
         `INSERT INTO Category (id, name, icon, color, is_custom, created_at) VALUES (?, ?, ?, ?, ?, ?);`,
-        [generateId("cat"), c.name, c.icon, c.color, c.is_custom, now]
+        [generateId("cat"), c.name, c.icon, c.color, c.is_custom, now],
       );
     }
   }
