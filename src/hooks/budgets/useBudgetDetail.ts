@@ -46,11 +46,21 @@ type BudgetDetailState = {
   budget: Budget | null;
   category: Category | null;
   statusLevel: BudgetStatusLevel;
+  spent: number;
+  limit: number;
   summaryText: string;
   percentLabel: string;
   progressPercent: number;
   paceText: string;
   insightText: string;
+  remainingBudget: number;
+  remainingDays: number;
+  dailyTarget: number;
+  weeklyTarget: number;
+  projectedTotal: number;
+  projectedDelta: number;
+  projectedPercent: number;
+  isAdjustmentNeeded: boolean;
   transactions: BudgetDetailTransaction[];
 };
 
@@ -160,6 +170,13 @@ export function useBudgetDetail({ budgetId, locale, t }: UseBudgetDetailArgs) {
   const projectedTotal = useMemo(() => {
     return daysElapsed > 0 ? (spent / daysElapsed) * daysInPeriod : spent;
   }, [daysElapsed, daysInPeriod, spent]);
+  const remainingBudget = Math.max(0, limit - spent);
+  const remainingDays = Math.max(1, daysInPeriod - daysElapsed);
+  const dailyTarget = remainingBudget / remainingDays;
+  const weeklyTarget = dailyTarget * 7;
+  const projectedDelta = limit - projectedTotal;
+  const projectedPercent = limit > 0 ? (projectedTotal / limit) * 100 : 0;
+  const isAdjustmentNeeded = projectedTotal > limit;
 
   const lastMonthSpent = useMemo(() => {
     if (!budget?.category_id) return 0;
@@ -269,11 +286,21 @@ export function useBudgetDetail({ budgetId, locale, t }: UseBudgetDetailArgs) {
     budget,
     category,
     statusLevel,
+    spent,
+    limit,
     summaryText,
     percentLabel,
     progressPercent,
     paceText,
     insightText,
+    remainingBudget,
+    remainingDays,
+    dailyTarget,
+    weeklyTarget,
+    projectedTotal,
+    projectedDelta,
+    projectedPercent,
+    isAdjustmentNeeded,
     transactions: transactionItems,
   } satisfies BudgetDetailState;
 }

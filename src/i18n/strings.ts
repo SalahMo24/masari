@@ -293,14 +293,43 @@ export const strings: Record<Locale, Dictionary> = {
     "budget.detail.pace":
       "At this pace, you'll spend ~{currency} {amount} this month.",
     "budget.detail.adjust": "Change Budget",
-    "budget.detail.insight.title": "Tip",
-    "budget.detail.insight.cta": "View Tips",
     "budget.detail.insight.more":
       "You spend {percent} more on {category} than last month.",
     "budget.detail.insight.less":
       "You spend {percent} less on {category} than last month.",
     "budget.detail.insight.onTrack":
       "Your {category} spending looks on track this month.",
+    "budget.detail.guidance.title": "Budget Guidance",
+    "budget.detail.guidance.openCta": "How to stay on track",
+    "budget.detail.guidance.subtitle.onTrack": "How to stay on track",
+    "budget.detail.guidance.subtitle.adjust":
+      "At-risk: adjustment needed",
+    "budget.detail.guidance.currentStatus": "Current Status",
+    "budget.detail.guidance.spent": "Spent",
+    "budget.detail.guidance.remaining": "Remaining",
+    "budget.detail.guidance.targetsTitle": "Your Daily & Weekly Targets",
+    "budget.detail.guidance.dailyLimit": "Daily Limit",
+    "budget.detail.guidance.weeklyLimit": "Weekly Limit",
+    "budget.detail.guidance.targetsHint.onTrack":
+      "If you stick to these limits, you'll end the month on your {amount} budget.",
+    "budget.detail.guidance.targetsHint.adjust":
+      "If you stick to these new limits, you can still end the month on your {amount} budget.",
+    "budget.detail.guidance.forecast.title": "Monthly Forecast",
+    "budget.detail.guidance.forecast.caption":
+      "Based on your current spending pace",
+    "budget.detail.guidance.forecast.projectedEnd": "Projected End",
+    "budget.detail.guidance.forecast.under":
+      "At this rate, you will finish {amount} under your budget.",
+    "budget.detail.guidance.forecast.over":
+      "At this rate, you will finish {amount} over your budget.",
+    "budget.detail.guidance.forecast.projectedSpend": "Projected Spend",
+    "budget.detail.guidance.forecast.projectedSavings": "Projected Savings",
+    "budget.detail.guidance.forecast.projectedOverspend": "Projected Overspend",
+    "budget.detail.guidance.cta.gotIt": "Got it",
+    "budget.detail.guidance.footer.onTrack":
+      "Your budget is on track for success",
+    "budget.detail.guidance.footer.adjust":
+      "Action needed to stay within budget",
     "budget.detail.transactions.title": "Recent activity",
     "budget.detail.transactions.seeAll": "See all",
     "budget.detail.transactions.showLess": "Show less",
@@ -623,14 +652,41 @@ export const strings: Record<Locale, Dictionary> = {
     "budget.detail.pace":
       "بهذا المعدل، ستنهي الشهر بإنفاق ~{currency} {amount}.",
     "budget.detail.adjust": "تغيير الميزانية",
-    "budget.detail.insight.title": "نصيحة",
-    "budget.detail.insight.cta": "عرض النصائح",
     "budget.detail.insight.more":
       "تنفق {percent} أكثر على {category} مقارنة بالشهر الماضي.",
     "budget.detail.insight.less":
       "تنفق {percent} أقل على {category} مقارنة بالشهر الماضي.",
     "budget.detail.insight.onTrack":
       "إنفاق {category} يبدو ضمن المسار هذا الشهر.",
+    "budget.detail.guidance.title": "إرشادات الميزانية",
+    "budget.detail.guidance.openCta": "كيف تبقى ضمن المسار",
+    "budget.detail.guidance.subtitle.onTrack": "كيف تبقى ضمن المسار",
+    "budget.detail.guidance.subtitle.adjust": "معرّضة للتجاوز: تحتاج تعديل",
+    "budget.detail.guidance.currentStatus": "الوضع الحالي",
+    "budget.detail.guidance.spent": "المصروف",
+    "budget.detail.guidance.remaining": "المتبقي",
+    "budget.detail.guidance.targetsTitle": "حدودك اليومية والأسبوعية",
+    "budget.detail.guidance.dailyLimit": "الحد اليومي",
+    "budget.detail.guidance.weeklyLimit": "الحد الأسبوعي",
+    "budget.detail.guidance.targetsHint.onTrack":
+      "لو التزمت بهذه الحدود، ستنهي الشهر على ميزانيتك {amount}.",
+    "budget.detail.guidance.targetsHint.adjust":
+      "لو التزمت بهذه الحدود الجديدة، ما زال ممكن تنهي الشهر على ميزانيتك {amount}.",
+    "budget.detail.guidance.forecast.title": "توقّع نهاية الشهر",
+    "budget.detail.guidance.forecast.caption": "بناءً على معدل إنفاقك الحالي",
+    "budget.detail.guidance.forecast.projectedEnd": "نهاية متوقعة",
+    "budget.detail.guidance.forecast.under":
+      "بهذا المعدل، ستنهي الشهر أقل من الميزانية بمقدار {amount}.",
+    "budget.detail.guidance.forecast.over":
+      "بهذا المعدل، ستنهي الشهر أعلى من الميزانية بمقدار {amount}.",
+    "budget.detail.guidance.forecast.projectedSpend": "الإنفاق المتوقع",
+    "budget.detail.guidance.forecast.projectedSavings": "التوفير المتوقع",
+    "budget.detail.guidance.forecast.projectedOverspend": "التجاوز المتوقع",
+    "budget.detail.guidance.cta.gotIt": "تمام",
+    "budget.detail.guidance.footer.onTrack":
+      "ميزانيتك ماشية بشكل ممتاز",
+    "budget.detail.guidance.footer.adjust":
+      "تحتاج إجراء بسيط عشان تبقى داخل الميزانية",
     "budget.detail.transactions.title": "آخر الحركات",
     "budget.detail.transactions.seeAll": "عرض الكل",
     "budget.detail.transactions.showLess": "عرض أقل",

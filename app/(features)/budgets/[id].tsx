@@ -1,11 +1,12 @@
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useLayoutEffect, useMemo, useState } from "react";
 import { I18nManager, ScrollView, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
   BudgetDetailHeader,
   BudgetDetailInsightCard,
+  BudgetGuidanceSheet,
   BudgetPaceSection,
   BudgetStatusCard,
   BudgetTransactionsList,
@@ -22,6 +23,7 @@ export default function BudgetDetailScreen() {
   const { t, locale } = useI18n();
   const router = useRouter();
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const isRtl = I18nManager.isRTL;
   const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const budgetId = Array.isArray(id) ? id[0] : (id ?? null);
@@ -36,10 +38,19 @@ export default function BudgetDetailScreen() {
     progressPercent,
     paceText,
     insightText,
+    spent,
+    limit,
+    dailyTarget,
+    weeklyTarget,
+    projectedTotal,
+    projectedDelta,
+    projectedPercent,
+    isAdjustmentNeeded,
     transactions,
   } = useBudgetDetail({ budgetId, locale, t });
 
   const [showAllTransactions, setShowAllTransactions] = useState(false);
+  const [isGuidanceVisible, setGuidanceVisible] = useState(false);
   const shouldToggleTransactions = transactions.length > 4;
   const visibleTransactions = showAllTransactions
     ? transactions
@@ -59,6 +70,33 @@ export default function BudgetDetailScreen() {
     }),
     [theme],
   );
+  const guidanceLabels = useMemo(
+    () => ({
+      title: t("budget.detail.guidance.title"),
+      subtitleOnTrack: t("budget.detail.guidance.subtitle.onTrack"),
+      subtitleAdjustment: t("budget.detail.guidance.subtitle.adjust"),
+      currentStatus: t("budget.detail.guidance.currentStatus"),
+      spent: t("budget.detail.guidance.spent"),
+      remaining: t("budget.detail.guidance.remaining"),
+      targetsTitle: t("budget.detail.guidance.targetsTitle"),
+      dailyLimit: t("budget.detail.guidance.dailyLimit"),
+      weeklyLimit: t("budget.detail.guidance.weeklyLimit"),
+      targetsHintOnTrack: t("budget.detail.guidance.targetsHint.onTrack"),
+      targetsHintAdjustment: t("budget.detail.guidance.targetsHint.adjust"),
+      forecastTitle: t("budget.detail.guidance.forecast.title"),
+      forecastCaption: t("budget.detail.guidance.forecast.caption"),
+      projectedEnd: t("budget.detail.guidance.forecast.projectedEnd"),
+      forecastUnder: t("budget.detail.guidance.forecast.under"),
+      forecastOver: t("budget.detail.guidance.forecast.over"),
+      projectedSpend: t("budget.detail.guidance.forecast.projectedSpend"),
+      projectedSavings: t("budget.detail.guidance.forecast.projectedSavings"),
+      projectedOverspend: t("budget.detail.guidance.forecast.projectedOverspend"),
+      ctaGotIt: t("budget.detail.guidance.cta.gotIt"),
+      footerOnTrack: t("budget.detail.guidance.footer.onTrack"),
+      footerAdjustment: t("budget.detail.guidance.footer.adjust"),
+    }),
+    [t],
+  );
 
   const headerTitle = category
     ? getCategoryLabel(category, locale, t)
@@ -67,7 +105,6 @@ export default function BudgetDetailScreen() {
     category?.name ?? "category",
     category?.icon ?? null,
   );
-  console.log("headerIcon", headerTitle, category);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -98,7 +135,7 @@ export default function BudgetDetailScreen() {
         : "check-circle";
   const statusColor =
     statusLevel === "atRisk"
-      ? colors.danger
+      ? colors.accent
       : statusLevel === "caution"
         ? colors.accent
         : colors.success;
@@ -156,10 +193,10 @@ export default function BudgetDetailScreen() {
         />
 
         <BudgetDetailInsightCard
-          title={t("budget.detail.insight.title")}
+          title={t("budget.detail.guidance.title")}
           insightText={loading ? t("budget.loading") : insightText}
-          ctaLabel={t("budget.detail.insight.cta")}
-          onPress={() => null}
+          ctaLabel={t("budget.detail.guidance.openCta")}
+          onPress={() => setGuidanceVisible(true)}
           isRtl={isRtl}
           colors={{
             text: colors.text,
@@ -197,6 +234,33 @@ export default function BudgetDetailScreen() {
           }}
         />
       </ScrollView>
+
+      <BudgetGuidanceSheet
+        visible={isGuidanceVisible}
+        insetsBottom={insets.bottom}
+        isAdjustmentNeeded={isAdjustmentNeeded || statusLevel === "caution"}
+        spent={spent}
+        limit={limit}
+        dailyTarget={dailyTarget}
+        weeklyTarget={weeklyTarget}
+        projectedTotal={projectedTotal}
+        projectedDelta={projectedDelta}
+        projectedPercent={projectedPercent}
+        currencyLabel={t("dashboard.currency")}
+        labels={guidanceLabels}
+        colors={{
+          text: colors.text,
+          muted: colors.muted,
+          background: colors.background,
+          card: colors.card,
+          border: colors.border,
+          accent: colors.accent,
+          success: colors.success,
+          warning: colors.accent,
+          primary: theme.colors.accent,
+        }}
+        onClose={() => setGuidanceVisible(false)}
+      />
     </SafeAreaView>
   );
 }

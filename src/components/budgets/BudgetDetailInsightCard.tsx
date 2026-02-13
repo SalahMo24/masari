@@ -30,33 +30,43 @@ export function BudgetDetailInsightCard({
         style={[
           styles.card,
           {
-            borderColor: `${colors.accent}33`,
-            backgroundColor: `${colors.accent}14`,
+            borderColor: `${colors.accent}2E`,
+            backgroundColor: `${colors.accent}12`,
           },
         ]}
       >
-        <View style={styles.headerRow}>
-          <MaterialIcons name="lightbulb" size={18} color={colors.accent} />
+        <View
+          style={[
+            styles.iconWrap,
+            { backgroundColor: `${colors.accent}22` },
+          ]}
+        >
+          <MaterialIcons name="insights" size={18} color={colors.accent} />
+        </View>
+        <View style={styles.body}>
           <Typography variant="subtitle" style={[styles.title, { color: colors.text }]}>
             {title}
           </Typography>
-        </View>
-        <Typography
-          variant="small"
-          style={[styles.bodyText, { color: colors.muted }]}
-        >
-          {insightText}
-        </Typography>
-        <Pressable onPress={onPress} style={styles.ctaRow}>
-          <Typography variant="caption" style={[styles.ctaText, { color: colors.accent }]}>
-            {ctaLabel}
+          <Typography
+            variant="small"
+            style={[styles.bodyText, { color: colors.muted }]}
+          >
+            {insightText}
           </Typography>
-          <MaterialIcons
-            name={isRtl ? "arrow-back-ios" : "arrow-forward-ios"}
-            size={12}
-            color={colors.accent}
-          />
-        </Pressable>
+          <Pressable onPress={onPress} style={styles.ctaRow}>
+            <Typography
+              variant="caption"
+              style={[styles.ctaText, { color: colors.accent }]}
+            >
+              {ctaLabel}
+            </Typography>
+            <MaterialIcons
+              name={isRtl ? "arrow-back-ios" : "arrow-forward-ios"}
+              size={12}
+              color={colors.accent}
+            />
+          </Pressable>
+        </View>
       </View>
     </View>
   );
@@ -71,19 +81,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 20,
     padding: 16,
-    gap: 8,
-  },
-  headerRow: {
     flexDirection: "row",
+    gap: 12,
+  },
+  iconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     alignItems: "center",
+    justifyContent: "center",
+  },
+  body: {
+    flex: 1,
     gap: 8,
   },
   title: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "700",
   },
   bodyText: {
-    fontSize: 12,
+    fontSize: 13,
     lineHeight: 18,
   },
   ctaRow: {

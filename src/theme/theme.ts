@@ -4,7 +4,7 @@ const palette = {
   // nileGreen: { deep: "#0A8554", base: "#10B981" },
   // nileGreen: { deep: "#2e8b57", base: "#2e8b57" },
   nileGreen: { deep: "#2d6a4f", base: "#2d6a4f" },
-  pharaonicGold: { deep: "#D4AF37", base: "#F59E0B" },
+  pharaonicGold: { deep: "#D4AF37", base: "#D4AF37" },
   // egyptianBlue: { deep: "#1034A6", base: "#1E40AF" },
   egyptianBlue: { deep: "#1134a7", base: "#1134a7" },
   blackEarth: { deep: "#0F172A", base: "#1C1917" },

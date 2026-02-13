@@ -1,6 +1,7 @@
 export { BudgetCard } from "./BudgetCard";
 export { BudgetDetailHeader } from "./BudgetDetailHeader";
 export { BudgetDetailInsightCard } from "./BudgetDetailInsightCard";
+export { BudgetGuidanceSheet } from "./BudgetGuidanceSheet";
 export { BudgetEmptyState } from "./BudgetEmptyState";
 export { BudgetHealthCard } from "./BudgetHealthCard";
 export { BudgetInsightCard } from "./BudgetInsightCard";
