@@ -90,6 +90,49 @@ export const categoryRepository = {
     }
     return row;
   },
+  listTopUsed: async (
+    db: SQLiteDatabase,
+    {
+      limit = 5,
+      type,
+    }: { limit?: number; type?: Transaction["type"] } = {},
+  ): Promise<Category[]> => {
+    const normalizedLimit = Number.isFinite(limit)
+      ? Math.max(1, Math.floor(limit))
+      : 5;
+
+    const rows = type
+      ? await db.getAllAsync<Category>(
+          `SELECT c.*
+             FROM Category c
+             JOIN (
+               SELECT category_id, COUNT(*) AS usage_count, MAX(occurred_at) AS latest_used_at
+               FROM "Transaction"
+               WHERE category_id IS NOT NULL AND type = ?
+               GROUP BY category_id
+               ORDER BY usage_count DESC, latest_used_at DESC
+               LIMIT ?
+             ) usage ON usage.category_id = c.id
+             ORDER BY usage.usage_count DESC, usage.latest_used_at DESC;`,
+          [type, normalizedLimit],
+        )
+      : await db.getAllAsync<Category>(
+          `SELECT c.*
+             FROM Category c
+             JOIN (
+               SELECT category_id, COUNT(*) AS usage_count, MAX(occurred_at) AS latest_used_at
+               FROM "Transaction"
+               WHERE category_id IS NOT NULL
+               GROUP BY category_id
+               ORDER BY usage_count DESC, latest_used_at DESC
+               LIMIT ?
+             ) usage ON usage.category_id = c.id
+             ORDER BY usage.usage_count DESC, usage.latest_used_at DESC;`,
+          [normalizedLimit],
+        );
+
+    return rows;
+  },
 };
 
 export const budgetRepository = {

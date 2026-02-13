@@ -1,40 +1,31 @@
 import Typography from "@/src/components/typography.component";
 import type { TransactionType } from "@/src/data/entities";
-import { Ionicons } from "@/src/components/icons/legacyVectorIcons";
-import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import { StyleSheet, TextInput, View } from "react-native";
 
 export interface NoteSectionProps {
   mode: TransactionType;
   note: string;
   onNoteChange: (text: string) => void;
-  createCategoryCandidate: string | null;
-  onCreateCategory: () => void;
   // Labels
   whatForLabel: string;
   placeholder: string;
-  createCategoryLabel: string;
   // Theme colors
   textColor: string;
   mutedTextColor: string;
   borderColor: string;
   cardColor: string;
-  accentColor: string;
 }
 
 export function NoteSection({
   mode,
   note,
   onNoteChange,
-  createCategoryCandidate,
-  onCreateCategory,
   whatForLabel,
   placeholder,
-  createCategoryLabel,
   textColor,
   mutedTextColor,
   borderColor,
   cardColor,
-  accentColor,
 }: NoteSectionProps) {
   if (mode === "transfer") {
     return null;
@@ -65,24 +56,6 @@ export function NoteSection({
         <View style={[styles.underline, { backgroundColor: borderColor }]} />
       ) : null}
 
-      {createCategoryCandidate ? (
-        <Pressable
-          onPress={onCreateCategory}
-          style={({ pressed }) => [
-            styles.createCategoryRow,
-            pressed && { opacity: 0.6 },
-          ]}
-        >
-          <Ionicons name="add-circle" size={16} color={accentColor} />
-          <Typography
-            style={[styles.createCategoryText, { color: accentColor }]}
-          >
-            {createCategoryLabel} {"'"}
-            {createCategoryCandidate}
-            {"'"}
-          </Typography>
-        </Pressable>
-      ) : null}
     </View>
   );
 }
@@ -112,15 +85,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 14,
-  },
-  createCategoryRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 10,
-  },
-  createCategoryText: {
-    fontSize: 12,
-    fontWeight: "700",
   },
 });

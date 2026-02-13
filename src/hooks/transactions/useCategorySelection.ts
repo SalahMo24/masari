@@ -14,12 +14,12 @@ export interface UseCategorySelectionResult {
   expenseCategories: Category[];
   /** Quick-access categories for income mode */
   incomeQuickCategories: Category[];
-  /** Candidate name for creating a new category from note */
-  createCategoryCandidate: string | null;
   /** Set the selected category ID */
   setSelectedCategoryId: (id: ID | null) => void;
-  /** Create a new category from the candidate name */
-  onCreateCategory: () => Promise<void>;
+  /** Create a new custom category and select it */
+  onCreateCategory: (
+    input: Pick<Category, "name" | "icon" | "color">,
+  ) => Promise<Category | null>;
   /** Update categories list (used after creating a category) */
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 }
@@ -32,7 +32,6 @@ const INCOME_QUICK_NAMES = new Set(["salary", "gift", "side hustle", "refund"]);
 export function useCategorySelection(
   initialCategories: Category[],
   mode: TransactionType,
-  note: string
 ): UseCategorySelectionResult {
   const { t } = useI18n();
   const db = useSQLiteContext();
@@ -69,44 +68,40 @@ export function useCategorySelection(
     [categories, selectedCategoryId]
   );
 
-  const createCategoryCandidate = useMemo(() => {
-    const name = note.trim();
-    if (!name) return null;
-    const exists = categories.some(
-      (c) => c.name.trim().toLowerCase() === name.toLowerCase()
-    );
-    if (exists) return null;
-    // For transfers, categories are irrelevant.
-    if (mode === "transfer") return null;
-    return name;
-  }, [categories, mode, note]);
-
-  const onCreateCategory = useCallback(async () => {
-    if (!createCategoryCandidate) return;
-    try {
-      const created = await categoryRepository.create(db, {
-        name: createCategoryCandidate,
-        icon: null,
-        color: null,
-        is_custom: true,
-      });
-      setCategories((prev) => [...prev, created]);
-      setSelectedCategoryId(created.id);
-    } catch (error) {
-      console.error(error);
-      Alert.alert(
-        t("transaction.error"),
-        t("transaction.error.createCategory")
+  const onCreateCategory = useCallback(
+    async (input: Pick<Category, "name" | "icon" | "color">) => {
+      if (mode === "transfer") return null;
+      const name = input.name.trim();
+      if (!name) return null;
+      const exists = categories.some(
+        (category) =>
+          category.name.trim().toLowerCase() === name.toLowerCase(),
       );
-    }
-  }, [createCategoryCandidate, db, t]);
+      if (exists) return null;
+      try {
+        const created = await categoryRepository.create(db, {
+          name,
+          icon: input.icon ?? null,
+          color: input.color ?? null,
+          is_custom: true,
+        });
+        setCategories((prev) => [...prev, created]);
+        setSelectedCategoryId(created.id);
+        return created;
+      } catch (error) {
+        console.error(error);
+        Alert.alert(t("transaction.error"), t("transaction.error.createCategory"));
+        return null;
+      }
+    },
+    [categories, db, mode, t],
+  );
 
   return {
     selectedCategoryId,
     selectedCategory,
     expenseCategories,
     incomeQuickCategories,
-    createCategoryCandidate,
     setSelectedCategoryId,
     onCreateCategory,
     setCategories,

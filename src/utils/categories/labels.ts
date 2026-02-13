@@ -56,6 +56,6 @@ export function getCategoryLabel(
   emptyKey = "transaction.category.none",
 ) {
   if (!category) return t(emptyKey);
-  console.log("getCategoryLabel", category.name, category.is_custom, locale, t);
+
   return getCategoryLabelByName(category.name, category.is_custom, locale, t);
 }

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 export interface UseTransactionDataResult {
   wallets: Wallet[];
   categories: Category[];
+  frequentCategories: Category[];
   loading: boolean;
   refreshData: () => Promise<void>;
 }
@@ -17,17 +18,20 @@ export function useTransactionData(): UseTransactionDataResult {
   const db = useSQLiteContext();
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [frequentCategories, setFrequentCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const [w, c] = await Promise.all([
+      const [w, c, frequent] = await Promise.all([
         walletRepository.list(db),
         categoryRepository.list(db),
+        categoryRepository.listTopUsed(db, { limit: 5 }),
       ]);
       setWallets(w);
       setCategories(c);
+      setFrequentCategories(frequent);
     } catch (error) {
       console.error(error);
     } finally {
@@ -42,6 +46,7 @@ export function useTransactionData(): UseTransactionDataResult {
   return {
     wallets,
     categories,
+    frequentCategories,
     loading,
     refreshData,
   };

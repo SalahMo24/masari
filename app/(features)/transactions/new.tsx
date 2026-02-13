@@ -48,7 +48,8 @@ export default function NewTransactionScreen() {
   const isRtl = I18nManager.isRTL;
 
   // Data fetching
-  const { wallets, categories, loading, refreshData } = useTransactionData();
+  const { wallets, categories, frequentCategories, loading, refreshData } =
+    useTransactionData();
 
   // Form state
   const [mode, setMode] = useState<TransactionType>("expense");
@@ -115,10 +116,9 @@ export default function NewTransactionScreen() {
     selectedCategory,
     expenseCategories,
     incomeQuickCategories,
-    createCategoryCandidate,
     setSelectedCategoryId,
     onCreateCategory,
-  } = useCategorySelection(categories, mode, note);
+  } = useCategorySelection(categories, mode);
 
   // Derived values
   const accent = useMemo(() => {
@@ -173,6 +173,15 @@ export default function NewTransactionScreen() {
     }
     return [];
   }, [expenseCategories, incomeQuickCategories, mode]);
+
+  const frequentPickerCategories = useMemo(() => {
+    if (mode === "transfer") return [];
+    if (frequentCategories.length === 0) return [];
+    const visibleCategoryIds = new Set(categoryPickerCategories.map((c) => c.id));
+    return frequentCategories.filter((category) =>
+      visibleCategoryIds.has(category.id),
+    );
+  }, [categoryPickerCategories, frequentCategories, mode]);
 
   const saveLabel = useMemo(() => {
     if (mode === "transfer") return t("transaction.cta.transfer");
@@ -392,7 +401,20 @@ export default function NewTransactionScreen() {
                 <TransactionCategoryPicker
                   selectedId={selectedCategoryId}
                   categories={categoryPickerCategories}
+                  frequentCategories={frequentPickerCategories}
                   onSelect={setSelectedCategoryId}
+                  onCreateCategory={async ({ name, icon }) => {
+                    const created = await onCreateCategory({
+                      name,
+                      icon,
+                      color: null,
+                    });
+                    if (created) {
+                      await refreshData();
+                      return true;
+                    }
+                    return false;
+                  }}
                   colors={{
                     text: theme.colors.text,
                     mutedText: theme.colors.mutedText,
@@ -404,6 +426,21 @@ export default function NewTransactionScreen() {
                   labels={{
                     triggerPlaceholder: t("transaction.category.none"),
                     pickTitle: t("transaction.category.pickTitle"),
+                    frequentTitle: t("transaction.category.frequent"),
+                    allTitle: t("transaction.category.all"),
+                    createCategory: t("transaction.createCategory"),
+                    createTitle: t("transaction.category.create.title"),
+                    categoryNameLabel: t("transaction.category.create.name.label"),
+                    categoryNamePlaceholder: t(
+                      "transaction.category.create.name.placeholder",
+                    ),
+                    categoryIconLabel: t("transaction.category.create.icon.label"),
+                    createSave: t("transaction.category.create.cta.save"),
+                    createSaving: t("transaction.category.create.cta.saving"),
+                    createCancel: t("transaction.category.create.cta.cancel"),
+                    errorNameEmpty: t("transaction.category.create.error.name"),
+                    errorNameExists: t("transaction.category.create.error.exists"),
+                    errorCreateCategory: t("transaction.error.createCategory"),
                     close: t("transaction.close"),
                     empty: t("transaction.category.empty"),
                   }}
@@ -414,16 +451,12 @@ export default function NewTransactionScreen() {
                 mode={mode}
                 note={note}
                 onNoteChange={setNote}
-                createCategoryCandidate={createCategoryCandidate}
-                onCreateCategory={onCreateCategory}
                 whatForLabel={t("transaction.whatFor")}
                 placeholder={t("transaction.note.placeholder")}
-                createCategoryLabel={t("transaction.createCategory")}
                 textColor={theme.colors.text}
                 mutedTextColor={theme.colors.mutedText}
                 borderColor={theme.colors.border}
                 cardColor={theme.colors.card}
-                accentColor={accent}
               />
             </ScrollView>
 
