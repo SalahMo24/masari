@@ -103,6 +103,13 @@ const migrations: Migration[] = [
       );`,
     ],
   },
+  {
+    version: 4,
+    statements: [
+      `ALTER TABLE "User" ADD COLUMN onboarding_completed INTEGER DEFAULT 0;`,
+      `UPDATE "User" SET onboarding_completed = 0 WHERE onboarding_completed IS NULL;`,
+    ],
+  },
 ];
 
 async function getUserVersion(db: SQLiteDatabase): Promise<number> {

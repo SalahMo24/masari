@@ -11,12 +11,72 @@ import type {
   Transaction,
   User,
   Wallet,
+  WalletType,
 } from "./entities";
+
+type UserRow = Omit<User, "onboarding_completed"> & {
+  onboarding_completed: number;
+};
+
+function toUser(row: UserRow): User {
+  return {
+    ...row,
+    onboarding_completed: Boolean(row.onboarding_completed),
+  };
+}
 
 export const userRepository = {
   getLocalUser: async (db: SQLiteDatabase): Promise<User | null> => {
-    const row = await db.getFirstAsync<User>(`SELECT * FROM "User" LIMIT 1;`);
-    return row ?? null;
+    const row = await db.getFirstAsync<UserRow>(`SELECT * FROM "User" LIMIT 1;`);
+    return row ? toUser(row) : null;
+  },
+  createLocalUser: async (
+    db: SQLiteDatabase,
+    {
+      currency = "EGP",
+      locale = "ar-EG",
+      onboarding_completed = false,
+    }: Partial<Pick<User, "currency" | "locale" | "onboarding_completed">> = {},
+  ): Promise<User> => {
+    const now = new Date().toISOString();
+    const id = generateId("user");
+    await db.runAsync(
+      `INSERT INTO "User" (id, created_at, currency, locale, onboarding_completed) VALUES (?, ?, ?, ?, ?);`,
+      [id, now, currency, locale, onboarding_completed ? 1 : 0],
+    );
+    const row = await db.getFirstAsync<UserRow>(
+      `SELECT * FROM "User" WHERE id = ? LIMIT 1;`,
+      [id],
+    );
+    if (!row) {
+      throw new Error("Failed to create local user");
+    }
+    return toUser(row);
+  },
+  getOrCreateLocalUser: async (db: SQLiteDatabase): Promise<User> => {
+    const existing = await userRepository.getLocalUser(db);
+    if (existing) {
+      return existing;
+    }
+    return userRepository.createLocalUser(db);
+  },
+  setOnboardingCompleted: async (
+    db: SQLiteDatabase,
+    completed: boolean,
+  ): Promise<User> => {
+    const current = await userRepository.getOrCreateLocalUser(db);
+    await db.runAsync(
+      `UPDATE "User" SET onboarding_completed = ? WHERE id = ?;`,
+      [completed ? 1 : 0, current.id],
+    );
+    const updated = await db.getFirstAsync<UserRow>(
+      `SELECT * FROM "User" WHERE id = ? LIMIT 1;`,
+      [current.id],
+    );
+    if (!updated) {
+      throw new Error("Failed to update onboarding status");
+    }
+    return toUser(updated);
   },
 };
 
@@ -32,6 +92,104 @@ export const walletRepository = {
       [_id],
     );
     return row ?? null;
+  },
+  getByType: async (
+    db: SQLiteDatabase,
+    type: WalletType,
+  ): Promise<Wallet | null> => {
+    const row = await db.getFirstAsync<Wallet>(
+      `SELECT * FROM Wallet WHERE type = ? LIMIT 1;`,
+      [type],
+    );
+    return row ?? null;
+  },
+  create: async (
+    db: SQLiteDatabase,
+    {
+      name,
+      type,
+      balance = 0,
+    }: Pick<Wallet, "name" | "type"> & Partial<Pick<Wallet, "balance">>,
+  ): Promise<Wallet> => {
+    const id = generateId("wallet");
+    const now = new Date().toISOString();
+    await db.runAsync(
+      `INSERT INTO Wallet (id, name, type, balance, created_at) VALUES (?, ?, ?, ?, ?);`,
+      [id, name, type, balance, now],
+    );
+    const row = await db.getFirstAsync<Wallet>(
+      `SELECT * FROM Wallet WHERE id = ? LIMIT 1;`,
+      [id],
+    );
+    if (!row) {
+      throw new Error("Failed to create wallet");
+    }
+    return row;
+  },
+  upsertInitialWallets: async (
+    db: SQLiteDatabase,
+    {
+      cashBalance,
+      bankBalance,
+      trackCashOnly,
+    }: {
+      cashBalance: number;
+      bankBalance: number;
+      trackCashOnly: boolean;
+    },
+  ): Promise<{ cash: Wallet; bank: Wallet | null }> => {
+    let cashWallet: Wallet | null = null;
+    let bankWallet: Wallet | null = null;
+
+    await db.withTransactionAsync(async () => {
+      const existingCash = await walletRepository.getByType(db, "cash");
+      if (existingCash) {
+        await db.runAsync(`UPDATE Wallet SET balance = ? WHERE id = ?;`, [
+          cashBalance,
+          existingCash.id,
+        ]);
+        cashWallet = await walletRepository.getById(db, existingCash.id);
+      } else {
+        cashWallet = await walletRepository.create(db, {
+          name: "Cash",
+          type: "cash",
+          balance: cashBalance,
+        });
+      }
+
+      const existingBank = await walletRepository.getByType(db, "bank");
+      if (trackCashOnly) {
+        if (existingBank) {
+          await db.runAsync(`UPDATE Wallet SET balance = 0 WHERE id = ?;`, [
+            existingBank.id,
+          ]);
+          bankWallet = await walletRepository.getById(db, existingBank.id);
+        } else {
+          bankWallet = null;
+        }
+      } else if (existingBank) {
+        await db.runAsync(`UPDATE Wallet SET balance = ? WHERE id = ?;`, [
+          bankBalance,
+          existingBank.id,
+        ]);
+        bankWallet = await walletRepository.getById(db, existingBank.id);
+      } else {
+        bankWallet = await walletRepository.create(db, {
+          name: "Bank",
+          type: "bank",
+          balance: bankBalance,
+        });
+      }
+    });
+
+    if (!cashWallet) {
+      throw new Error("Failed to initialize cash wallet");
+    }
+
+    return {
+      cash: cashWallet,
+      bank: bankWallet,
+    };
   },
   updateBalance: async (
     db: SQLiteDatabase,

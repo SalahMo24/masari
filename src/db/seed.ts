@@ -11,19 +11,15 @@ async function getCount(db: SQLiteDatabase, table: string): Promise<number> {
 
 export async function seedDatabase(db: SQLiteDatabase): Promise<void> {
   // Seed only if empty.
-  const walletCount = await getCount(db, "Wallet");
+  const userCount = await getCount(db, `"User"`);
   const categoryCount = await getCount(db, "Category");
 
   const now = new Date().toISOString();
 
-  if (!walletCount) {
+  if (!userCount) {
     await db.runAsync(
-      `INSERT INTO Wallet (id, name, type, balance, created_at) VALUES (?, ?, ?, ?, ?);`,
-      [generateId("wallet"), "Cash", "cash", 0, now],
-    );
-    await db.runAsync(
-      `INSERT INTO Wallet (id, name, type, balance, created_at) VALUES (?, ?, ?, ?, ?);`,
-      [generateId("wallet"), "Bank", "bank", 0, now],
+      `INSERT INTO "User" (id, created_at, currency, locale, onboarding_completed) VALUES (?, ?, ?, ?, ?);`,
+      [generateId("user"), now, "EGP", "ar-EG", 0],
     );
   }
 

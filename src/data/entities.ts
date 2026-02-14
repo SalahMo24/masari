@@ -10,6 +10,7 @@ export interface User {
   created_at: string;
   currency: string;
   locale: string;
+  onboarding_completed: boolean;
 }
 
 export interface Wallet {
