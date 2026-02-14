@@ -1,4 +1,5 @@
 import { generateId } from "@/src/utils/id";
+import { SUPPORTED_CURRENCIES } from "./entities";
 import type { SQLiteDatabase } from "expo-sqlite";
 import type {
   AITokenLedger,
@@ -7,6 +8,8 @@ import type {
   BillPaymentStatus,
   Budget,
   Category,
+  CurrencyCode,
+  LocaleCode,
   MonthlySummary,
   Transaction,
   User,
@@ -19,8 +22,15 @@ type UserRow = Omit<User, "onboarding_completed"> & {
 };
 
 function toUser(row: UserRow): User {
+  const normalizedCurrency = (
+    (SUPPORTED_CURRENCIES as string[]).includes(row.currency) ? row.currency : "EGP"
+  ) as CurrencyCode;
+  const normalizedLocale =
+    row.locale === "en-US" || row.locale === "ar-EG" ? row.locale : "ar-EG";
   return {
     ...row,
+    currency: normalizedCurrency,
+    locale: normalizedLocale,
     onboarding_completed: Boolean(row.onboarding_completed),
   };
 }
@@ -75,6 +85,66 @@ export const userRepository = {
     );
     if (!updated) {
       throw new Error("Failed to update onboarding status");
+    }
+    return toUser(updated);
+  },
+  updateLocale: async (
+    db: SQLiteDatabase,
+    locale: LocaleCode,
+  ): Promise<User> => {
+    const current = await userRepository.getOrCreateLocalUser(db);
+    await db.runAsync(`UPDATE "User" SET locale = ? WHERE id = ?;`, [
+      locale,
+      current.id,
+    ]);
+    const updated = await db.getFirstAsync<UserRow>(
+      `SELECT * FROM "User" WHERE id = ? LIMIT 1;`,
+      [current.id],
+    );
+    if (!updated) {
+      throw new Error("Failed to update locale");
+    }
+    return toUser(updated);
+  },
+  updateCurrency: async (
+    db: SQLiteDatabase,
+    currency: CurrencyCode,
+  ): Promise<User> => {
+    const current = await userRepository.getOrCreateLocalUser(db);
+    await db.runAsync(`UPDATE "User" SET currency = ? WHERE id = ?;`, [
+      currency,
+      current.id,
+    ]);
+    const updated = await db.getFirstAsync<UserRow>(
+      `SELECT * FROM "User" WHERE id = ? LIMIT 1;`,
+      [current.id],
+    );
+    if (!updated) {
+      throw new Error("Failed to update currency");
+    }
+    return toUser(updated);
+  },
+  updatePreferences: async (
+    db: SQLiteDatabase,
+    {
+      locale,
+      currency,
+    }: Partial<Pick<User, "locale" | "currency">>,
+  ): Promise<User> => {
+    const current = await userRepository.getOrCreateLocalUser(db);
+    await db.runAsync(
+      `UPDATE "User"
+       SET locale = COALESCE(?, locale),
+           currency = COALESCE(?, currency)
+       WHERE id = ?;`,
+      [locale ?? null, currency ?? null, current.id],
+    );
+    const updated = await db.getFirstAsync<UserRow>(
+      `SELECT * FROM "User" WHERE id = ? LIMIT 1;`,
+      [current.id],
+    );
+    if (!updated) {
+      throw new Error("Failed to update user preferences");
     }
     return toUser(updated);
   },

@@ -1,8 +1,8 @@
-import { useI18n } from "@/src/i18n/useI18n";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 import { useMemo } from "react";
-import { I18nManager, Platform, StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 
 import Typography from "@/src/components/typography.component";
 const monoFont = Platform.select({
@@ -23,8 +23,7 @@ const Wallet = ({
   value: string;
 }) => {
   const theme = useAppTheme();
-  const { t } = useI18n();
-  const isRtl = I18nManager.isRTL;
+  const { currency } = useUserPreferences();
 
   const colors = useMemo(
     () => ({
@@ -67,7 +66,7 @@ const Wallet = ({
           },
         ]}
       >
-        {t("dashboard.currency")} {value}
+        {currency} {value}
       </Typography>
     </View>
   );

@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import Typography from "@/src/components/typography.component";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useThemeMode } from "@/src/theme/AppThemeProvider";
 import { useAppTheme } from "@/src/theme/useAppTheme";
@@ -22,6 +23,7 @@ export default function ProfileScreen() {
   const theme = useAppTheme();
   const { mode, setMode } = useThemeMode();
   const { t, locale, setLocale } = useI18n();
+  const { currency: currencyLabel, setLocaleCode } = useUserPreferences();
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
 
   const colors = useMemo(
@@ -39,13 +41,13 @@ export default function ProfileScreen() {
 
   const languageLabel =
     locale === "ar" ? t("profile.language.ar.full") : t("profile.language.en.full");
-  const currencyLabel = t("dashboard.currency");
   const appVersion =
     Constants.expoConfig?.version ?? "2.4.0";
   const versionText = t("profile.version").replace("v2.4.0", `v${appVersion}`);
 
-  const handleSelectLanguage = (newLocale: "en" | "ar") => {
+  const handleSelectLanguage = async (newLocale: "en" | "ar") => {
     setLocale(newLocale);
+    await setLocaleCode(newLocale === "ar" ? "ar-EG" : "en-US");
     setLanguageModalVisible(false);
   };
 

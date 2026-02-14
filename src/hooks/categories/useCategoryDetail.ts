@@ -9,6 +9,7 @@ import {
 import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useMemo, useState } from "react";
 
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import type { Category, Transaction, Wallet } from "@/src/data/entities";
 import {
   categoryRepository,
@@ -72,6 +73,7 @@ const formatTime = (locale: string, date: Date) =>
 
 export function useCategoryDetail({ categoryId, locale, t }: UseCategoryDetailArgs) {
   const db = useSQLiteContext();
+  const { currency: currencyLabel } = useUserPreferences();
   const [category, setCategory] = useState<Category | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [wallets, setWallets] = useState<Wallet[]>([]);
@@ -116,7 +118,6 @@ export function useCategoryDetail({ categoryId, locale, t }: UseCategoryDetailAr
   const lastMonthEnd = useMemo(() => endOfMonth(subMonths(today, 1)), [today]);
 
   const localeTag = locale === "ar" ? "ar-EG" : "en-US";
-  const currencyLabel = t("dashboard.currency");
 
   const filteredTransactions = useMemo(() => {
     if (!categoryId) return [];

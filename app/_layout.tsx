@@ -3,6 +3,7 @@ import { SQLiteProvider, type SQLiteDatabase } from "expo-sqlite";
 import { Platform } from "react-native";
 
 import { initializeDatabase } from "@/src/db";
+import { UserPreferencesProvider } from "@/src/context/UserPreferencesProvider";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { useI18n } from "@/src/i18n/useI18n";
 import { AppThemeProvider } from "@/src/theme/AppThemeProvider";
@@ -13,7 +14,9 @@ export default function RootLayout() {
     <I18nProvider>
       <AppThemeProvider>
         <SQLiteProvider databaseName="masari.db" onInit={initializeSqlite}>
-          <RootStack />
+          <UserPreferencesProvider>
+            <RootStack />
+          </UserPreferencesProvider>
         </SQLiteProvider>
       </AppThemeProvider>
     </I18nProvider>

@@ -26,12 +26,14 @@ import {
 } from "@/src/hooks/budgets";
 import { formatPercent } from "@/src/hooks/budgets/budgetFormatting";
 import { SAFE_PREVIEW_COUNT } from "@/src/hooks/budgets/useBudgetScreenState";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 
 export default function BudgetsScreen() {
   const theme = useAppTheme();
   const { t, locale } = useI18n();
+  const { currency: currencyLabel } = useUserPreferences();
   const router = useRouter();
   const navigation = useNavigation();
   const isRtl = I18nManager.isRTL;
@@ -107,7 +109,6 @@ export default function BudgetsScreen() {
       : spentPercent >= 70
         ? t("budget.health.reassure.caution")
         : t("budget.health.reassure.safe");
-  const currencyLabel = t("dashboard.currency");
   const hiddenAmountLabel = t("budget.amount.hidden");
   const showSafeToggle = groupedByRisk.safe.length > SAFE_PREVIEW_COUNT;
 

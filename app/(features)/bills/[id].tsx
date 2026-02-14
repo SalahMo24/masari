@@ -27,6 +27,7 @@ import type {
   BillPayment,
   Wallet,
 } from "@/src/data/entities";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import {
   billPaymentRepository,
   billRepository,
@@ -70,6 +71,7 @@ const formatFrequency = (
 export default function BillDetailScreen() {
   const theme = useAppTheme();
   const { t, locale } = useI18n();
+  const { currency } = useUserPreferences();
   const router = useRouter();
   const db = useSQLiteContext();
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -156,7 +158,6 @@ export default function BillDetailScreen() {
     }
   }, [adjustOpen, bill, setAmount]);
 
-  const currency = t("dashboard.currency");
   const totalPaid = useMemo(
     () => payments.reduce((sum, payment) => sum + payment.amount, 0),
     [payments],

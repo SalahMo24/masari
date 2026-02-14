@@ -27,6 +27,7 @@ import {
   transactionRepository,
 } from "@/src/data/repositories";
 import { useAmountInput } from "@/src/hooks/amount";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import {
   getCategoryIconName,
 } from "@/src/hooks/budgets/budgetFormatting";
@@ -69,6 +70,7 @@ type BudgetPreset = {
 export default function EditBudgetScreen() {
   const theme = useAppTheme();
   const { t, locale } = useI18n();
+  const { currency: currencyLabel } = useUserPreferences();
   const router = useRouter();
   const navigation = useNavigation();
   const db = useSQLiteContext();
@@ -208,7 +210,6 @@ export default function EditBudgetScreen() {
         ? colors.warning
         : colors.success;
 
-  const currencyLabel = t("dashboard.currency");
   const categoryLabel = getCategoryLabel(category, locale, t);
   const categoryIcon = getCategoryIconName(
     category?.name ?? "category",

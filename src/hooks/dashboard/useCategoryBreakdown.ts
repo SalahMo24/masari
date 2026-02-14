@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import type { Category, Transaction } from "@/src/data/entities";
 import { formatAmountForSummary } from "@/src/utils/amount";
 import { getCategoryLabel } from "@/src/utils/categories/labels";
@@ -29,6 +30,7 @@ export function useCategoryBreakdown(
   t: (key: string) => string,
   colors: { primary: string; nileGreen: string; gold: string; border: string }
 ): UseCategoryBreakdownResult {
+  const { currency } = useUserPreferences();
   const categoryMap = useMemo(
     () => new Map(categories.map((category) => [category.id, category])),
     [categories]
@@ -63,13 +65,13 @@ export function useCategoryBreakdown(
         id: item.key,
         label: getCategoryLabel(item.category, locale, t),
         subtitle: t("dashboard.monthly"),
-        amount: `${t("dashboard.currency")} ${formatAmountForSummary(item.amount)}`,
+        amount: `${currency} ${formatAmountForSummary(item.amount)}`,
         percent: `${
           totalExpenses > 0 ? Math.round((item.amount / totalExpenses) * 100) : 0
         }%`,
         color: item.color,
       })),
-    [locale, t, topCategoryTotals, totalExpenses]
+    [currency, locale, t, topCategoryTotals, totalExpenses]
   );
 
   const spendingSegments = useMemo(() => {
@@ -87,7 +89,7 @@ export function useCategoryBreakdown(
     return segments;
   }, [colors.border, topCategoryTotals, totalExpenses]);
 
-  const totalAmountLabel = `${t("dashboard.currency")} ${formatAmountForSummary(
+  const totalAmountLabel = `${currency} ${formatAmountForSummary(
     totalExpenses
   )}`;
 

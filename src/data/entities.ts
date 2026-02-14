@@ -4,12 +4,21 @@ export type WalletType = "cash" | "bank";
 export type TransactionType = "income" | "expense" | "transfer";
 export type BillFrequency = "monthly" | "quarterly" | "yearly";
 export type BillPaymentStatus = "cleared" | "pending";
+export type CurrencyCode = "EGP" | "USD" | "EUR" | "SAR" | "AED";
+export type LocaleCode = "ar-EG" | "en-US";
+export const SUPPORTED_CURRENCIES: CurrencyCode[] = [
+  "EGP",
+  "USD",
+  "EUR",
+  "SAR",
+  "AED",
+];
 
 export interface User {
   id: ID;
   created_at: string;
-  currency: string;
-  locale: string;
+  currency: CurrencyCode;
+  locale: LocaleCode;
   onboarding_completed: boolean;
 }
 

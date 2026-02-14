@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import type { BillFrequency } from "@/src/data/entities";
 import { formatAmountForSummary } from "@/src/utils/amount";
 
@@ -16,7 +17,7 @@ export function useNewBillLabels({
   parsedAmount,
   name,
 }: UseNewBillLabelsParams) {
-  const currency = useMemo(() => t("dashboard.currency"), [t]);
+  const { currency } = useUserPreferences();
   const frequencyLabel = useMemo(() => {
     if (frequency === "quarterly") return t("bill.new.frequency.quarterly");
     if (frequency === "yearly") return t("bill.new.frequency.yearly");

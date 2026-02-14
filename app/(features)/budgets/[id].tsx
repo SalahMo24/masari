@@ -12,6 +12,7 @@ import {
   BudgetTransactionsList,
 } from "@/src/components/budgets";
 import Typography from "@/src/components/typography.component";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import { useBudgetDetail } from "@/src/hooks/budgets";
 import { getCategoryIconName } from "@/src/hooks/budgets/budgetFormatting";
 import { useI18n } from "@/src/i18n/useI18n";
@@ -21,6 +22,7 @@ import { getCategoryLabel } from "@/src/utils/categories/labels";
 export default function BudgetDetailScreen() {
   const theme = useAppTheme();
   const { t, locale } = useI18n();
+  const { currency: currencyLabel } = useUserPreferences();
   const router = useRouter();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -246,7 +248,7 @@ export default function BudgetDetailScreen() {
         projectedTotal={projectedTotal}
         projectedDelta={projectedDelta}
         projectedPercent={projectedPercent}
-        currencyLabel={t("dashboard.currency")}
+        currencyLabel={currencyLabel}
         labels={guidanceLabels}
         colors={{
           text: colors.text,

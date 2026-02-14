@@ -15,6 +15,7 @@ import {
   transactionRepository,
 } from "@/src/data/repositories";
 import { useAmountInput } from "@/src/hooks/amount";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import { useI18n } from "@/src/i18n/useI18n";
 import { palette } from "@/src/theme/theme";
 import { useAppTheme } from "@/src/theme/useAppTheme";
@@ -54,6 +55,7 @@ function isWithinRange(date: Date, start: Date, end: Date) {
 export default function NewBudgetScreen() {
   const theme = useAppTheme();
   const { t, locale } = useI18n();
+  const { currency: currencyLabel } = useUserPreferences();
   const router = useRouter();
   const db = useSQLiteContext();
   const isRtl = I18nManager.isRTL;
@@ -131,8 +133,6 @@ export default function NewBudgetScreen() {
         : null,
     [budgets, selectedCategoryId]
   );
-
-  const currencyLabel = t("dashboard.currency");
 
   const today = useMemo(() => new Date(), []);
   const avgWindowStart = useMemo(

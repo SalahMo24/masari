@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MarkPaidModal from "@/src/components/bills/MarkPaidModal";
 import Typography from "@/src/components/typography.component";
 import type { Bill, BillFrequency, ID } from "@/src/data/entities";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import { useBillsOverview } from "@/src/hooks/bills";
 import { useTransactionData } from "@/src/hooks/transactions";
 import { useI18n } from "@/src/i18n/useI18n";
@@ -34,6 +35,7 @@ const formatShortDate = (date: string, locale: string) =>
 export default function BillsScreen() {
   const theme = useAppTheme();
   const { t, locale } = useI18n();
+  const { currency: currencyLabel } = useUserPreferences();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -68,7 +70,6 @@ export default function BillsScreen() {
     [theme],
   );
 
-  const currencyLabel = t("dashboard.currency");
   const summaryTitle = t("bills.summary.title").replace("{month}", monthLabel);
   const frequencyLabels: Record<BillFrequency, string> = {
     monthly: t("bill.new.frequency.monthly"),

@@ -1,5 +1,6 @@
 import Typography from "@/src/components/typography.component";
 import { useI18n } from "@/src/i18n/useI18n";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 import {
   I18nManager,
@@ -53,10 +54,11 @@ const BarChartCard = ({
   onNextWeek?: () => void;
 }) => {
   const { t } = useI18n();
+  const { currency } = useUserPreferences();
   const isRtl = I18nManager.isRTL;
   const resolvedRangeLabel = rangeLabel ?? t("dashboard.dateRange");
-  const resolvedTodayValue = todayValue ?? `${t("dashboard.currency")} 0`;
-  const resolvedAverageValue = averageValue ?? `${t("dashboard.currency")} 0`;
+  const resolvedTodayValue = todayValue ?? `${currency} 0`;
+  const resolvedAverageValue = averageValue ?? `${currency} 0`;
   const resolvedTrendLabel = trendLabel ?? t("dashboard.trendUp");
   const resolvedTrendDirection = trendDirection ?? "flat";
   const canGoPrev = canGoPrevWeek ?? false;

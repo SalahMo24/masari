@@ -10,6 +10,7 @@ import {
 import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useMemo, useState } from "react";
 
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import type { Budget, Category, Transaction } from "@/src/data/entities";
 import {
   budgetRepository,
@@ -85,6 +86,7 @@ const formatTime = (locale: string, date: Date) =>
 
 export function useBudgetDetail({ budgetId, locale, t }: UseBudgetDetailArgs) {
   const db = useSQLiteContext();
+  const { currency: currencyLabel } = useUserPreferences();
   const [budget, setBudget] = useState<Budget | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -192,7 +194,6 @@ export function useBudgetDetail({ budgetId, locale, t }: UseBudgetDetailArgs) {
     }, 0);
   }, [budget?.category_id, lastMonthEnd, lastMonthStart, transactions]);
 
-  const currencyLabel = t("dashboard.currency");
   const categoryLabel = getCategoryLabel(category, locale, t);
 
   const summaryText = t("budget.detail.summary")

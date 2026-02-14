@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import type { Transaction } from "@/src/data/entities";
 import { formatAmountForSummary } from "@/src/utils/amount";
 
@@ -113,6 +114,7 @@ export function useSpendingTrend(
   transactions: Transaction[],
   t: (key: string) => string,
 ): UseSpendingTrendResult {
+  const { currency } = useUserPreferences();
   const today = useMemo(() => new Date(), []);
   const monthStart = useMemo(() => startOfMonth(today), [today]);
   const monthEnd = useMemo(() => endOfMonth(today), [today]);
@@ -213,13 +215,13 @@ export function useSpendingTrend(
         id: dayIndexMap.get(index)?.toString() ?? "",
         label: t(labelKey),
         value: maxValue > 0 ? value / maxValue : 0,
-        amountLabel: `${t("dashboard.currency")} ${formatAmountForSummary(
+        amountLabel: `${currency} ${formatAmountForSummary(
           value,
         )}`,
         highlight: isMax,
       };
     });
-  }, [weekExpenseTransactions, t]);
+  }, [currency, weekExpenseTransactions, t]);
 
   const daysInWeek = useMemo(() => {
     const msInDay = 24 * 60 * 60 * 1000;
@@ -229,9 +231,7 @@ export function useSpendingTrend(
   }, [displayWeekEnd, displayWeekStart]);
 
   const averagePerDay = weekTotalExpenses / Math.max(1, daysInWeek);
-  const averageValueLabel = `${t(
-    "dashboard.currency",
-  )} ${formatAmountForSummary(averagePerDay)}`;
+  const averageValueLabel = `${currency} ${formatAmountForSummary(averagePerDay)}`;
 
   const previousWeekStart = useMemo(
     () => addDays(activeWeekStart, -7),
@@ -278,7 +278,7 @@ export function useSpendingTrend(
       })
       .reduce((total, tx) => total + tx.amount, 0);
   }, [todayEnd, todayStart, transactions]);
-  const todayValueLabel = `${t("dashboard.currency")} ${formatAmountForSummary(
+  const todayValueLabel = `${currency} ${formatAmountForSummary(
     todayTotal,
   )}`;
 

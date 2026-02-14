@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 
 import type { BudgetOverviewCategory } from "./useBudgetOverview";
 import type { MaterialIconName } from "./budgetTypes";
@@ -16,9 +17,9 @@ type UseBudgetHintsParams = {
 };
 
 export function useBudgetHints({ locale, hideAmounts, t }: UseBudgetHintsParams) {
+  const { currency: currencyLabel } = useUserPreferences();
   return useCallback(
     (item: BudgetOverviewCategory): BudgetHint => {
-      const currencyLabel = t("dashboard.currency");
       const projectedLabel = hideAmounts
         ? t("budget.amount.hidden")
         : formatAmountForSummary(item.projectedOverage);
@@ -67,6 +68,6 @@ export function useBudgetHints({ locale, hideAmounts, t }: UseBudgetHintsParams)
         text: t("budget.hint.safe"),
       };
     },
-    [hideAmounts, locale, t]
+    [currencyLabel, hideAmounts, locale, t]
   );
 }

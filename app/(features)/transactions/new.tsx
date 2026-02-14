@@ -21,6 +21,7 @@ import {
   useWalletSelection,
 } from "@/src/hooks/transactions";
 import { useI18n } from "@/src/i18n/useI18n";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { formatAmountForSummary } from "@/src/utils/amount";
 import { Stack, router } from "expo-router";
@@ -42,6 +43,7 @@ import {
 export default function NewTransactionScreen() {
   const theme = useAppTheme();
   const { t, locale } = useI18n();
+  const { currency } = useUserPreferences();
   const db = useSQLiteContext();
   const insets = useSafeAreaInsets();
   const saveButtonOffset = SAVE_BUTTON_BASE_HEIGHT + insets.bottom - 30;
@@ -131,8 +133,6 @@ export default function NewTransactionScreen() {
     if (mode === "transfer") return t("transaction.title.transfer");
     return t("transaction.title.expense");
   }, [mode, t]);
-
-  const currency = t("dashboard.currency");
 
   const summary = useMemo(() => {
     const amountText = `${currency} ${formatAmountForSummary(parsedAmount)}`;
