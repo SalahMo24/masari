@@ -98,19 +98,19 @@ export function useBudgetOverview(period: BudgetPeriod) {
     useCallback(() => {
       refreshData();
       return () => undefined;
-    }, [refreshData])
+    }, [refreshData]),
   );
 
   const today = useMemo(() => new Date(), []);
   const monthBase = useMemo(
     () => (period === "current" ? today : subMonths(today, 1)),
-    [period, today]
+    [period, today],
   );
   const monthStart = useMemo(() => startOfMonth(monthBase), [monthBase]);
   const monthEnd = useMemo(() => endOfMonth(monthBase), [monthBase]);
   const daysInPeriod = useMemo(
     () => differenceInCalendarDays(monthEnd, monthStart) + 1,
-    [monthEnd, monthStart]
+    [monthEnd, monthStart],
   );
   const daysElapsed = useMemo(() => {
     if (period === "previous") return daysInPeriod;
@@ -123,9 +123,9 @@ export function useBudgetOverview(period: BudgetPeriod) {
       transactions.filter(
         (tx) =>
           tx.type === "expense" &&
-          isWithinRange(new Date(tx.occurred_at), monthStart, monthEnd)
+          isWithinRange(new Date(tx.occurred_at), monthStart, monthEnd),
       ),
-    [monthEnd, monthStart, transactions]
+    [monthEnd, monthStart, transactions],
   );
 
   const spentByCategory = useMemo(() => {
@@ -184,11 +184,11 @@ export function useBudgetOverview(period: BudgetPeriod) {
   const totals = useMemo<BudgetTotals>(() => {
     const totalLimit = overviewCategories.reduce(
       (sum, item) => sum + item.limit,
-      0
+      0,
     );
     const totalSpent = overviewCategories.reduce(
       (sum, item) => sum + item.spent,
-      0
+      0,
     );
     const percentUsed = totalLimit > 0 ? (totalSpent / totalLimit) * 100 : 0;
     const remaining = Math.max(0, totalLimit - totalSpent);
@@ -215,13 +215,16 @@ export function useBudgetOverview(period: BudgetPeriod) {
         ratio: item.spent / item.limit,
       }));
     if (!ratioEntries.length) {
-      return { type: "onTrack", budgetId: overviewCategories[0]?.budgetId ?? null };
+      return {
+        type: "onTrack",
+        budgetId: overviewCategories[0]?.budgetId ?? null,
+      };
     }
     const averageRatio =
       ratioEntries.reduce((sum, item) => sum + item.ratio, 0) /
       ratioEntries.length;
     const mostPressured = ratioEntries.reduce((max, item) =>
-      item.ratio > max.ratio ? item : max
+      item.ratio > max.ratio ? item : max,
     );
     const deltaRatio = mostPressured.ratio - averageRatio;
     const deltaPercent = Math.round(deltaRatio * 100);
@@ -244,9 +247,11 @@ export function useBudgetOverview(period: BudgetPeriod) {
   }, [overviewCategories]);
 
   const groupedByRisk = useMemo(() => {
-    const atRisk = overviewCategories.filter((item) => item.riskLevel === "atRisk");
+    const atRisk = overviewCategories.filter(
+      (item) => item.riskLevel === "atRisk",
+    );
     const caution = overviewCategories.filter(
-      (item) => item.riskLevel === "caution"
+      (item) => item.riskLevel === "caution",
     );
     const safe = overviewCategories.filter((item) => item.riskLevel === "safe");
     return { atRisk, caution, safe };

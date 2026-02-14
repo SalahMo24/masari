@@ -4,7 +4,13 @@ import { endOfMonth, startOfMonth } from "date-fns";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   ActivityIndicator,
   I18nManager,
@@ -13,13 +19,12 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import {
-  SafeAreaView,
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AmountDisplay, Keypad, type KeypadKey } from "@/src/components/amount";
 import { ScreenHeader } from "@/src/components/ScreenHeader";
 import Typography from "@/src/components/typography.component";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import type { Budget, Category, Transaction } from "@/src/data/entities";
 import {
   budgetRepository,
@@ -27,10 +32,7 @@ import {
   transactionRepository,
 } from "@/src/data/repositories";
 import { useAmountInput } from "@/src/hooks/amount";
-import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
-import {
-  getCategoryIconName,
-} from "@/src/hooks/budgets/budgetFormatting";
+import { getCategoryIconName } from "@/src/hooks/budgets/budgetFormatting";
 import { useI18n } from "@/src/i18n/useI18n";
 import { palette } from "@/src/theme/theme";
 import { useAppTheme } from "@/src/theme/useAppTheme";
@@ -311,9 +313,14 @@ export default function EditBudgetScreen() {
           title={headerTitle}
           colors={{ text: colors.text }}
           left={
-            <Pressable onPress={() => router.back()} style={styles.headerButton}>
+            <Pressable
+              onPress={() => router.back()}
+              style={styles.headerButton}
+            >
               <MaterialIcons
-                name={I18nManager.isRTL ? "arrow-forward-ios" : "arrow-back-ios"}
+                name={
+                  I18nManager.isRTL ? "arrow-forward-ios" : "arrow-back-ios"
+                }
                 size={22}
                 color={colors.text}
               />

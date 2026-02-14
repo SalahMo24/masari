@@ -1,12 +1,13 @@
+import { useSQLiteContext } from "expo-sqlite";
 import React, {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
-import { useSQLiteContext } from "expo-sqlite";
 
 import type { CurrencyCode, LocaleCode } from "@/src/data/entities";
 import { userRepository } from "@/src/data/repositories";
@@ -37,9 +38,17 @@ export function UserPreferencesProvider({
   const { locale, setLocale } = useI18n();
   const [currency, setCurrencyState] = useState<CurrencyCode>("EGP");
   const [localeCode, setLocaleCodeState] = useState<LocaleCode>("ar-EG");
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const refreshPreferences = useCallback(async () => {
     const user = await userRepository.getOrCreateLocalUser(db);
+    if (!mountedRef.current) return;
     setCurrencyState(user.currency);
     setLocaleCodeState(user.locale);
     const nextLocale = mapLocaleCodeToLocale(user.locale);
@@ -51,6 +60,7 @@ export function UserPreferencesProvider({
   const setCurrency = useCallback(
     async (nextCurrency: CurrencyCode) => {
       const updated = await userRepository.updateCurrency(db, nextCurrency);
+      if (!mountedRef.current) return;
       setCurrencyState(updated.currency);
     },
     [db],
@@ -59,6 +69,7 @@ export function UserPreferencesProvider({
   const setLocaleCode = useCallback(
     async (nextLocaleCode: LocaleCode) => {
       const updated = await userRepository.updateLocale(db, nextLocaleCode);
+      if (!mountedRef.current) return;
       setLocaleCodeState(updated.locale);
       const nextLocale = mapLocaleCodeToLocale(updated.locale);
       if (nextLocale !== locale) {
@@ -95,7 +106,9 @@ export function UserPreferencesProvider({
 export function useUserPreferences() {
   const context = useContext(UserPreferencesContext);
   if (!context) {
-    throw new Error("useUserPreferences must be used within UserPreferencesProvider");
+    throw new Error(
+      "useUserPreferences must be used within UserPreferencesProvider",
+    );
   }
   return context;
 }

@@ -1,13 +1,28 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, I18nManager, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
-import { Stack, useRouter } from "expo-router";
-import * as Haptics from "expo-haptics";
 import { endOfMonth, startOfMonth, subMonths } from "date-fns";
+import * as Haptics from "expo-haptics";
+import { Stack, useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  I18nManager,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import { AmountDisplay, Keypad, type KeypadKey } from "@/src/components/amount";
-import { SaveButton, SAVE_BUTTON_BASE_HEIGHT } from "@/src/components/SaveButton";
+import {
+  SAVE_BUTTON_BASE_HEIGHT,
+  SaveButton,
+} from "@/src/components/SaveButton";
+import Typography from "@/src/components/typography.component";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import type { Budget, Category, Transaction } from "@/src/data/entities";
 import {
   budgetRepository,
@@ -15,13 +30,11 @@ import {
   transactionRepository,
 } from "@/src/data/repositories";
 import { useAmountInput } from "@/src/hooks/amount";
-import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import { useI18n } from "@/src/i18n/useI18n";
 import { palette } from "@/src/theme/theme";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { formatAmountForSummary } from "@/src/utils/amount";
 import { getCategoryLabel } from "@/src/utils/categories/labels";
-import Typography from "@/src/components/typography.component";
 import { useSQLiteContext } from "expo-sqlite";
 
 const categoryIconMap: Record<string, string> = {
@@ -67,7 +80,9 @@ export default function NewBudgetScreen() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    null,
+  );
   const {
     parsedAmount,
     formattedAmount,
@@ -118,31 +133,34 @@ export default function NewBudgetScreen() {
       card: theme.colors.card,
       border: theme.colors.border,
     }),
-    [theme]
+    [theme],
   );
 
   const selectedCategory = useMemo(
-    () => categories.find((category) => category.id === selectedCategoryId) ?? null,
-    [categories, selectedCategoryId]
+    () =>
+      categories.find((category) => category.id === selectedCategoryId) ?? null,
+    [categories, selectedCategoryId],
   );
 
   const existingBudget = useMemo(
     () =>
       selectedCategoryId
-        ? budgets.find((budget) => budget.category_id === selectedCategoryId) ?? null
+        ? (budgets.find(
+            (budget) => budget.category_id === selectedCategoryId,
+          ) ?? null)
         : null,
-    [budgets, selectedCategoryId]
+    [budgets, selectedCategoryId],
   );
 
   const today = useMemo(() => new Date(), []);
   const avgWindowStart = useMemo(
     () => startOfMonth(subMonths(today, 2)),
-    [today]
+    [today],
   );
   const avgWindowEnd = useMemo(() => endOfMonth(today), [today]);
   const lastMonthStart = useMemo(
     () => startOfMonth(subMonths(today, 1)),
-    [today]
+    [today],
   );
   const lastMonthEnd = useMemo(() => endOfMonth(subMonths(today, 1)), [today]);
 
@@ -185,7 +203,10 @@ export default function NewBudgetScreen() {
   }, [selectedAverage]);
 
   const showLowWarning =
-    !!selectedCategoryId && selectedAverage > 0 && parsedAmount > 0 && parsedAmount < selectedAverage;
+    !!selectedCategoryId &&
+    selectedAverage > 0 &&
+    parsedAmount > 0 &&
+    parsedAmount < selectedAverage;
 
   const canSubmit =
     !!selectedCategoryId &&
@@ -202,10 +223,13 @@ export default function NewBudgetScreen() {
     setSelectedCategoryId(categoryId);
   }, []);
 
-  const onApplyPreset = useCallback((value: number) => {
-    if (!value || value <= 0) return;
-    setAmount(Math.round(value));
-  }, [setAmount]);
+  const onApplyPreset = useCallback(
+    (value: number) => {
+      if (!value || value <= 0) return;
+      setAmount(Math.round(value));
+    },
+    [setAmount],
+  );
 
   const onSave = useCallback(async () => {
     if (saving) return;
@@ -245,7 +269,8 @@ export default function NewBudgetScreen() {
     : t("transaction.category.none");
 
   const guidanceText = useMemo(() => {
-    if (!selectedCategoryId || selectedAverage <= 0 || safeSuggestion <= 0) return null;
+    if (!selectedCategoryId || selectedAverage <= 0 || safeSuggestion <= 0)
+      return null;
     const avgLabel = `${formatAmountForSummary(selectedAverage)} ${currencyLabel}`;
     const safeLabel = `${formatAmountForSummary(safeSuggestion)} ${currencyLabel}`;
     return t("budget.create.guidance")
@@ -299,7 +324,9 @@ export default function NewBudgetScreen() {
                     "category") as MaterialIconName;
                   const label = getCategoryLabel(category, locale, t);
                   const iconColor = isSelected ? colors.success : colors.muted;
-                  const background = isSelected ? `${colors.success}22` : colors.card;
+                  const background = isSelected
+                    ? `${colors.success}22`
+                    : colors.card;
                   const border = isSelected ? colors.success : colors.border;
                   return (
                     <Pressable
@@ -313,7 +340,11 @@ export default function NewBudgetScreen() {
                           { backgroundColor: background, borderColor: border },
                         ]}
                       >
-                        <MaterialIcons name={iconName} size={22} color={iconColor} />
+                        <MaterialIcons
+                          name={iconName}
+                          size={22}
+                          color={iconColor}
+                        />
                       </View>
                       <Typography
                         variant="caption"
@@ -349,7 +380,12 @@ export default function NewBudgetScreen() {
                   digit: styles.amountText,
                 }}
               />
-              <View style={[styles.amountIndicator, { backgroundColor: `${colors.success}33` }]} />
+              <View
+                style={[
+                  styles.amountIndicator,
+                  { backgroundColor: `${colors.success}33` },
+                ]}
+              />
               {guidanceText ? (
                 <Typography
                   variant="small"
@@ -368,8 +404,17 @@ export default function NewBudgetScreen() {
             </View>
 
             {showLowWarning && (
-              <View style={[styles.warningBanner, { borderColor: `${colors.warning}66` }]}>
-                <MaterialIcons name="warning-amber" size={18} color={colors.warning} />
+              <View
+                style={[
+                  styles.warningBanner,
+                  { borderColor: `${colors.warning}66` },
+                ]}
+              >
+                <MaterialIcons
+                  name="warning-amber"
+                  size={18}
+                  color={colors.warning}
+                />
                 <Typography
                   variant="caption"
                   style={[styles.warningText, { color: colors.text }]}
@@ -380,23 +425,40 @@ export default function NewBudgetScreen() {
             )}
 
             {existingBudget && (
-              <View style={[styles.duplicateBanner, { borderColor: `${colors.warning}66` }]}>
+              <View
+                style={[
+                  styles.duplicateBanner,
+                  { borderColor: `${colors.warning}66` },
+                ]}
+              >
                 <Typography
                   variant="small"
                   style={[styles.duplicateText, { color: colors.text }]}
                 >
-                  {t("budget.create.duplicate").replace("{category}", selectedLabel)}
+                  {t("budget.create.duplicate").replace(
+                    "{category}",
+                    selectedLabel,
+                  )}
                 </Typography>
                 <View style={styles.duplicateActions}>
-                  <Pressable onPress={onEditExisting} style={styles.inlineButton}>
+                  <Pressable
+                    onPress={onEditExisting}
+                    style={styles.inlineButton}
+                  >
                     <Typography
                       variant="caption"
-                      style={[styles.inlineButtonText, { color: colors.primary }]}
+                      style={[
+                        styles.inlineButtonText,
+                        { color: colors.primary },
+                      ]}
                     >
                       {t("budget.create.duplicate.edit")}
                     </Typography>
                   </Pressable>
-                  <Pressable onPress={onCancelExisting} style={styles.inlineButton}>
+                  <Pressable
+                    onPress={onCancelExisting}
+                    style={styles.inlineButton}
+                  >
                     <Typography
                       variant="caption"
                       style={[styles.inlineButtonText, { color: colors.muted }]}
@@ -408,13 +470,22 @@ export default function NewBudgetScreen() {
               </View>
             )}
 
-            <View style={[styles.previewCard, { backgroundColor: colors.accent }]}>
+            <View
+              style={[styles.previewCard, { backgroundColor: colors.accent }]}
+            >
               <View style={styles.previewLeft}>
-                <View style={[styles.previewIcon, { backgroundColor: "rgba(255,255,255,0.2)" }]}>
+                <View
+                  style={[
+                    styles.previewIcon,
+                    { backgroundColor: "rgba(255,255,255,0.2)" },
+                  ]}
+                >
                   <MaterialIcons
-                    name={(selectedCategory?.icon ??
-                      categoryIconMap[selectedCategory?.name ?? ""] ??
-                      "category") as MaterialIconName}
+                    name={
+                      (selectedCategory?.icon ??
+                        categoryIconMap[selectedCategory?.name ?? ""] ??
+                        "category") as MaterialIconName
+                    }
                     size={18}
                     color="#fff"
                   />
@@ -428,7 +499,12 @@ export default function NewBudgetScreen() {
                   </Typography>
                 </View>
               </View>
-              <View style={[styles.previewTag, { backgroundColor: palette.nileGreen.deep }]}>
+              <View
+                style={[
+                  styles.previewTag,
+                  { backgroundColor: palette.nileGreen.deep },
+                ]}
+              >
                 <Typography variant="caption" style={styles.previewTagText}>
                   {t("budget.tag.safe")}
                 </Typography>
@@ -439,7 +515,13 @@ export default function NewBudgetScreen() {
               {selectedLastMonth > 0 && (
                 <Pressable
                   onPress={() => onApplyPreset(selectedLastMonth)}
-                  style={[styles.presetChip, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  style={[
+                    styles.presetChip,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.border,
+                    },
+                  ]}
                 >
                   <Typography
                     variant="caption"
@@ -447,7 +529,7 @@ export default function NewBudgetScreen() {
                   >
                     {t("budget.create.chip.lastMonth").replace(
                       "{amount}",
-                      formatAmountForSummary(selectedLastMonth)
+                      formatAmountForSummary(selectedLastMonth),
                     )}
                   </Typography>
                 </Pressable>
@@ -455,7 +537,13 @@ export default function NewBudgetScreen() {
               {selectedAverage > 0 && (
                 <Pressable
                   onPress={() => onApplyPreset(selectedAverage)}
-                  style={[styles.presetChip, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  style={[
+                    styles.presetChip,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.border,
+                    },
+                  ]}
                 >
                   <Typography
                     variant="caption"
@@ -463,7 +551,7 @@ export default function NewBudgetScreen() {
                   >
                     {t("budget.create.chip.average").replace(
                       "{amount}",
-                      formatAmountForSummary(selectedAverage)
+                      formatAmountForSummary(selectedAverage),
                     )}
                   </Typography>
                 </Pressable>
@@ -473,7 +561,10 @@ export default function NewBudgetScreen() {
                   onPress={() => onApplyPreset(safeSuggestion)}
                   style={[
                     styles.presetChip,
-                    { backgroundColor: `${colors.success}12`, borderColor: `${colors.success}33` },
+                    {
+                      backgroundColor: `${colors.success}12`,
+                      borderColor: `${colors.success}33`,
+                    },
                   ]}
                 >
                   <Typography
@@ -482,7 +573,7 @@ export default function NewBudgetScreen() {
                   >
                     {t("budget.create.chip.safe").replace(
                       "{amount}",
-                      formatAmountForSummary(safeSuggestion)
+                      formatAmountForSummary(safeSuggestion),
                     )}
                   </Typography>
                 </Pressable>

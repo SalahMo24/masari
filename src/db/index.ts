@@ -1,10 +1,17 @@
 import type { SQLiteDatabase } from "expo-sqlite";
 
-import { closeDatabase, getDatabase, resetDatabase } from "./database";
+import {
+  closeDatabase,
+  getDatabase,
+  getDrizzleDb,
+  resetDatabase,
+  type AppDatabase,
+} from "./database";
 import { migrate } from "./migrations";
 import { seedDatabase } from "./seed";
 
-export { closeDatabase, getDatabase, migrate, resetDatabase };
+export { closeDatabase, getDatabase, getDrizzleDb, migrate, resetDatabase };
+export type { AppDatabase };
 
 let migrationsRun = false;
 let seedRun = false;

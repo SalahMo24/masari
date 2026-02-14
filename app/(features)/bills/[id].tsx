@@ -21,13 +21,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Keypad, type KeypadKey } from "@/src/components/amount/Keypad";
 import Typography from "@/src/components/typography.component";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import type {
   Bill,
   BillFrequency,
   BillPayment,
   Wallet,
 } from "@/src/data/entities";
-import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import {
   billPaymentRepository,
   billRepository,

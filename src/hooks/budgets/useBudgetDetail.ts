@@ -19,10 +19,7 @@ import {
 } from "@/src/data/repositories";
 import { formatAmountForSummary } from "@/src/utils/amount";
 import { getCategoryLabel } from "@/src/utils/categories/labels";
-import {
-  formatPercent,
-  getCategoryIconName,
-} from "./budgetFormatting";
+import { formatPercent, getCategoryIconName } from "./budgetFormatting";
 import type { MaterialIconName } from "./budgetTypes";
 
 export type BudgetDetailTransaction = {

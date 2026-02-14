@@ -12,7 +12,9 @@ const DASHBOARD_ROUTE = "/(tabs)/dashboard" as unknown as Href;
 export default function Index() {
   const db = useSQLiteContext();
   const theme = useAppTheme();
-  const [targetRoute, setTargetRoute] = useState<"/onboarding" | "/(tabs)/dashboard" | null>(null);
+  const [targetRoute, setTargetRoute] = useState<
+    "/onboarding" | "/(tabs)/dashboard" | null
+  >(null);
 
   useEffect(() => {
     let active = true;
@@ -23,7 +25,9 @@ export default function Index() {
         if (!active) {
           return;
         }
-        setTargetRoute(user.onboarding_completed ? "/(tabs)/dashboard" : "/onboarding");
+        setTargetRoute(
+          user.onboarding_completed ? "/(tabs)/dashboard" : "/onboarding",
+        );
       } catch (error) {
         console.error(error);
         if (active) {

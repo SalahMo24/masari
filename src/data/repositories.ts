@@ -1,9 +1,23 @@
 import { generateId } from "@/src/utils/id";
-import { SUPPORTED_CURRENCIES } from "./entities";
+import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import type { SQLiteDatabase } from "expo-sqlite";
+import { getDrizzleDb } from "../db/database";
+import {
+  aiTokenLedgerTable,
+  billPaymentTable,
+  billTable,
+  budgetTable,
+  categoryTable,
+  monthlySummaryTable,
+  transactionTable,
+  userTable,
+  walletTable,
+} from "../db/schema";
+import { SUPPORTED_CURRENCIES } from "./entities";
 import type {
   AITokenLedger,
   Bill,
+  BillFrequency,
   BillPayment,
   BillPaymentStatus,
   Budget,
@@ -12,16 +26,13 @@ import type {
   LocaleCode,
   MonthlySummary,
   Transaction,
+  TransactionType,
   User,
   Wallet,
   WalletType,
 } from "./entities";
 
-type UserRow = Omit<User, "onboarding_completed"> & {
-  onboarding_completed: number;
-};
-
-function toUser(row: UserRow): User {
+function toUser(row: typeof userTable.$inferSelect): User {
   const normalizedCurrency = (
     (SUPPORTED_CURRENCIES as string[]).includes(row.currency) ? row.currency : "EGP"
   ) as CurrencyCode;
@@ -35,9 +46,47 @@ function toUser(row: UserRow): User {
   };
 }
 
+function toCategory(row: typeof categoryTable.$inferSelect): Category {
+  return { ...row, is_custom: Boolean(row.is_custom) };
+}
+
+function toWallet(row: typeof walletTable.$inferSelect): Wallet {
+  return {
+    ...row,
+    type: row.type as WalletType,
+  };
+}
+
+function toTransaction(row: typeof transactionTable.$inferSelect): Transaction {
+  return {
+    ...row,
+    type: row.type as TransactionType,
+  };
+}
+
+function toBill(row: typeof billTable.$inferSelect): Bill {
+  return {
+    ...row,
+    frequency: row.frequency as BillFrequency,
+    active: Boolean(row.active),
+    paid: Boolean(row.paid),
+  };
+}
+
+function toBillPayment(row: typeof billPaymentTable.$inferSelect): BillPayment {
+  return {
+    ...row,
+    status: row.status as BillPaymentStatus,
+  };
+}
+
+function toDb(db: SQLiteDatabase) {
+  return getDrizzleDb(db);
+}
+
 export const userRepository = {
   getLocalUser: async (db: SQLiteDatabase): Promise<User | null> => {
-    const row = await db.getFirstAsync<UserRow>(`SELECT * FROM "User" LIMIT 1;`);
+    const row = toDb(db).select().from(userTable).limit(1).get();
     return row ? toUser(row) : null;
   },
   createLocalUser: async (
@@ -50,14 +99,17 @@ export const userRepository = {
   ): Promise<User> => {
     const now = new Date().toISOString();
     const id = generateId("user");
-    await db.runAsync(
-      `INSERT INTO "User" (id, created_at, currency, locale, onboarding_completed) VALUES (?, ?, ?, ?, ?);`,
-      [id, now, currency, locale, onboarding_completed ? 1 : 0],
-    );
-    const row = await db.getFirstAsync<UserRow>(
-      `SELECT * FROM "User" WHERE id = ? LIMIT 1;`,
-      [id],
-    );
+    toDb(db)
+      .insert(userTable)
+      .values({
+        id,
+        created_at: now,
+        currency,
+        locale,
+        onboarding_completed,
+      })
+      .run();
+    const row = toDb(db).select().from(userTable).where(eq(userTable.id, id)).get();
     if (!row) {
       throw new Error("Failed to create local user");
     }
@@ -75,14 +127,16 @@ export const userRepository = {
     completed: boolean,
   ): Promise<User> => {
     const current = await userRepository.getOrCreateLocalUser(db);
-    await db.runAsync(
-      `UPDATE "User" SET onboarding_completed = ? WHERE id = ?;`,
-      [completed ? 1 : 0, current.id],
-    );
-    const updated = await db.getFirstAsync<UserRow>(
-      `SELECT * FROM "User" WHERE id = ? LIMIT 1;`,
-      [current.id],
-    );
+    toDb(db)
+      .update(userTable)
+      .set({ onboarding_completed: completed })
+      .where(eq(userTable.id, current.id))
+      .run();
+    const updated = toDb(db)
+      .select()
+      .from(userTable)
+      .where(eq(userTable.id, current.id))
+      .get();
     if (!updated) {
       throw new Error("Failed to update onboarding status");
     }
@@ -93,14 +147,16 @@ export const userRepository = {
     locale: LocaleCode,
   ): Promise<User> => {
     const current = await userRepository.getOrCreateLocalUser(db);
-    await db.runAsync(`UPDATE "User" SET locale = ? WHERE id = ?;`, [
-      locale,
-      current.id,
-    ]);
-    const updated = await db.getFirstAsync<UserRow>(
-      `SELECT * FROM "User" WHERE id = ? LIMIT 1;`,
-      [current.id],
-    );
+    toDb(db)
+      .update(userTable)
+      .set({ locale })
+      .where(eq(userTable.id, current.id))
+      .run();
+    const updated = toDb(db)
+      .select()
+      .from(userTable)
+      .where(eq(userTable.id, current.id))
+      .get();
     if (!updated) {
       throw new Error("Failed to update locale");
     }
@@ -111,14 +167,16 @@ export const userRepository = {
     currency: CurrencyCode,
   ): Promise<User> => {
     const current = await userRepository.getOrCreateLocalUser(db);
-    await db.runAsync(`UPDATE "User" SET currency = ? WHERE id = ?;`, [
-      currency,
-      current.id,
-    ]);
-    const updated = await db.getFirstAsync<UserRow>(
-      `SELECT * FROM "User" WHERE id = ? LIMIT 1;`,
-      [current.id],
-    );
+    toDb(db)
+      .update(userTable)
+      .set({ currency })
+      .where(eq(userTable.id, current.id))
+      .run();
+    const updated = toDb(db)
+      .select()
+      .from(userTable)
+      .where(eq(userTable.id, current.id))
+      .get();
     if (!updated) {
       throw new Error("Failed to update currency");
     }
@@ -132,17 +190,17 @@ export const userRepository = {
     }: Partial<Pick<User, "locale" | "currency">>,
   ): Promise<User> => {
     const current = await userRepository.getOrCreateLocalUser(db);
-    await db.runAsync(
-      `UPDATE "User"
-       SET locale = COALESCE(?, locale),
-           currency = COALESCE(?, currency)
-       WHERE id = ?;`,
-      [locale ?? null, currency ?? null, current.id],
-    );
-    const updated = await db.getFirstAsync<UserRow>(
-      `SELECT * FROM "User" WHERE id = ? LIMIT 1;`,
-      [current.id],
-    );
+    const updates: Partial<Pick<User, "locale" | "currency">> = {};
+    if (locale !== undefined) updates.locale = locale;
+    if (currency !== undefined) updates.currency = currency;
+    if (Object.keys(updates).length > 0) {
+      toDb(db).update(userTable).set(updates).where(eq(userTable.id, current.id)).run();
+    }
+    const updated = toDb(db)
+      .select()
+      .from(userTable)
+      .where(eq(userTable.id, current.id))
+      .get();
     if (!updated) {
       throw new Error("Failed to update user preferences");
     }
@@ -152,26 +210,27 @@ export const userRepository = {
 
 export const walletRepository = {
   list: async (db: SQLiteDatabase): Promise<Wallet[]> => {
-    return await db.getAllAsync<Wallet>(
-      `SELECT * FROM Wallet ORDER BY created_at ASC;`,
-    );
+    return toDb(db)
+      .select()
+      .from(walletTable)
+      .orderBy(walletTable.created_at)
+      .all()
+      .map(toWallet);
   },
   getById: async (db: SQLiteDatabase, _id: string): Promise<Wallet | null> => {
-    const row = await db.getFirstAsync<Wallet>(
-      `SELECT * FROM Wallet WHERE id = ? LIMIT 1;`,
-      [_id],
-    );
-    return row ?? null;
+    const row = toDb(db).select().from(walletTable).where(eq(walletTable.id, _id)).get();
+    return row ? toWallet(row) : null;
   },
   getByType: async (
     db: SQLiteDatabase,
     type: WalletType,
   ): Promise<Wallet | null> => {
-    const row = await db.getFirstAsync<Wallet>(
-      `SELECT * FROM Wallet WHERE type = ? LIMIT 1;`,
-      [type],
-    );
-    return row ?? null;
+    const row = toDb(db)
+      .select()
+      .from(walletTable)
+      .where(eq(walletTable.type, type))
+      .get();
+    return row ? toWallet(row) : null;
   },
   create: async (
     db: SQLiteDatabase,
@@ -183,18 +242,15 @@ export const walletRepository = {
   ): Promise<Wallet> => {
     const id = generateId("wallet");
     const now = new Date().toISOString();
-    await db.runAsync(
-      `INSERT INTO Wallet (id, name, type, balance, created_at) VALUES (?, ?, ?, ?, ?);`,
-      [id, name, type, balance, now],
-    );
-    const row = await db.getFirstAsync<Wallet>(
-      `SELECT * FROM Wallet WHERE id = ? LIMIT 1;`,
-      [id],
-    );
+    toDb(db)
+      .insert(walletTable)
+      .values({ id, name, type, balance, created_at: now })
+      .run();
+    const row = toDb(db).select().from(walletTable).where(eq(walletTable.id, id)).get();
     if (!row) {
       throw new Error("Failed to create wallet");
     }
-    return row;
+    return toWallet(row);
   },
   upsertInitialWallets: async (
     db: SQLiteDatabase,
@@ -211,44 +267,87 @@ export const walletRepository = {
     let cashWallet: Wallet | null = null;
     let bankWallet: Wallet | null = null;
 
-    await db.withTransactionAsync(async () => {
-      const existingCash = await walletRepository.getByType(db, "cash");
+    toDb(db).transaction((txDb) => {
+      const existingCash = txDb
+        .select()
+        .from(walletTable)
+        .where(eq(walletTable.type, "cash"))
+        .get();
       if (existingCash) {
-        await db.runAsync(`UPDATE Wallet SET balance = ? WHERE id = ?;`, [
-          cashBalance,
-          existingCash.id,
-        ]);
-        cashWallet = await walletRepository.getById(db, existingCash.id);
+        txDb
+          .update(walletTable)
+          .set({ balance: cashBalance })
+          .where(eq(walletTable.id, existingCash.id))
+          .run();
+        const refreshedCash = txDb
+          .select()
+          .from(walletTable)
+          .where(eq(walletTable.id, existingCash.id))
+          .get();
+        cashWallet = refreshedCash ? toWallet(refreshedCash) : null;
       } else {
-        cashWallet = await walletRepository.create(db, {
-          name: "Cash",
-          type: "cash",
-          balance: cashBalance,
-        });
+        const cashId = generateId("wallet");
+        txDb
+          .insert(walletTable)
+          .values({
+            id: cashId,
+            name: "Cash",
+            type: "cash",
+            balance: cashBalance,
+            created_at: new Date().toISOString(),
+          })
+          .run();
+        const insertedCash = txDb.select().from(walletTable).where(eq(walletTable.id, cashId)).get();
+        cashWallet = insertedCash ? toWallet(insertedCash) : null;
       }
 
-      const existingBank = await walletRepository.getByType(db, "bank");
+      const existingBank = txDb
+        .select()
+        .from(walletTable)
+        .where(eq(walletTable.type, "bank"))
+        .get();
       if (trackCashOnly) {
         if (existingBank) {
-          await db.runAsync(`UPDATE Wallet SET balance = 0 WHERE id = ?;`, [
-            existingBank.id,
-          ]);
-          bankWallet = await walletRepository.getById(db, existingBank.id);
+          txDb
+            .update(walletTable)
+            .set({ balance: 0 })
+            .where(eq(walletTable.id, existingBank.id))
+            .run();
+          const refreshedBank = txDb
+            .select()
+            .from(walletTable)
+            .where(eq(walletTable.id, existingBank.id))
+            .get();
+          bankWallet = refreshedBank ? toWallet(refreshedBank) : null;
         } else {
           bankWallet = null;
         }
       } else if (existingBank) {
-        await db.runAsync(`UPDATE Wallet SET balance = ? WHERE id = ?;`, [
-          bankBalance,
-          existingBank.id,
-        ]);
-        bankWallet = await walletRepository.getById(db, existingBank.id);
+        txDb
+          .update(walletTable)
+          .set({ balance: bankBalance })
+          .where(eq(walletTable.id, existingBank.id))
+          .run();
+        const refreshedBank = txDb
+          .select()
+          .from(walletTable)
+          .where(eq(walletTable.id, existingBank.id))
+          .get();
+        bankWallet = refreshedBank ? toWallet(refreshedBank) : null;
       } else {
-        bankWallet = await walletRepository.create(db, {
-          name: "Bank",
-          type: "bank",
-          balance: bankBalance,
-        });
+        const bankId = generateId("wallet");
+        txDb
+          .insert(walletTable)
+          .values({
+            id: bankId,
+            name: "Bank",
+            type: "bank",
+            balance: bankBalance,
+            created_at: new Date().toISOString(),
+          })
+          .run();
+        const insertedBank = txDb.select().from(walletTable).where(eq(walletTable.id, bankId)).get();
+        bankWallet = insertedBank ? toWallet(insertedBank) : null;
       }
     });
 
@@ -266,33 +365,31 @@ export const walletRepository = {
     id: string,
     delta: number,
   ): Promise<Wallet | null> => {
-    await db.runAsync(`UPDATE Wallet SET balance = balance + ? WHERE id = ?;`, [
-      delta,
-      id,
-    ]);
-    const row = await db.getFirstAsync<Wallet>(
-      `SELECT * FROM Wallet WHERE id = ? LIMIT 1;`,
-      [id],
-    );
-    return row ?? null;
+    toDb(db)
+      .update(walletTable)
+      .set({ balance: sql`${walletTable.balance} + ${delta}` })
+      .where(eq(walletTable.id, id))
+      .run();
+    const row = toDb(db).select().from(walletTable).where(eq(walletTable.id, id)).get();
+    return row ? toWallet(row) : null;
   },
 };
 
 export const categoryRepository = {
   list: async (db: SQLiteDatabase): Promise<Category[]> => {
-    return await db.getAllAsync<Category>(
-      `SELECT * FROM Category ORDER BY created_at ASC;`,
-    );
+    return toDb(db)
+      .select()
+      .from(categoryTable)
+      .orderBy(categoryTable.created_at)
+      .all()
+      .map(toCategory);
   },
   getById: async (
     db: SQLiteDatabase,
     _id: string,
   ): Promise<Category | null> => {
-    const row = await db.getFirstAsync<Category>(
-      `SELECT * FROM Category WHERE id = ? LIMIT 1;`,
-      [_id],
-    );
-    return row ?? null;
+    const row = toDb(db).select().from(categoryTable).where(eq(categoryTable.id, _id)).get();
+    return row ? toCategory(row) : null;
   },
   create: async (
     db: SQLiteDatabase,
@@ -305,18 +402,22 @@ export const categoryRepository = {
   ): Promise<Category> => {
     const now = new Date().toISOString();
     const id = generateId("cat");
-    await db.runAsync(
-      `INSERT INTO Category (id, name, icon, color, is_custom, created_at) VALUES (?, ?, ?, ?, ?, ?);`,
-      [id, name, icon ?? null, color ?? null, is_custom ? 1 : 0, now],
-    );
-    const row = await db.getFirstAsync<Category>(
-      `SELECT * FROM Category WHERE id = ? LIMIT 1;`,
-      [id],
-    );
+    toDb(db)
+      .insert(categoryTable)
+      .values({
+        id,
+        name,
+        icon: icon ?? null,
+        color: color ?? null,
+        is_custom,
+        created_at: now,
+      })
+      .run();
+    const row = toDb(db).select().from(categoryTable).where(eq(categoryTable.id, id)).get();
     if (!row) {
       throw new Error("Failed to create category");
     }
-    return row;
+    return toCategory(row);
   },
   listTopUsed: async (
     db: SQLiteDatabase,
@@ -328,62 +429,59 @@ export const categoryRepository = {
     const normalizedLimit = Number.isFinite(limit)
       ? Math.max(1, Math.floor(limit))
       : 5;
+    const usage = toDb(db)
+      .select({
+        category_id: transactionTable.category_id,
+        usage_count: sql<number>`count(*)`.as("usage_count"),
+        latest_used_at: sql<string>`max(${transactionTable.occurred_at})`.as("latest_used_at"),
+      })
+      .from(transactionTable)
+      .where(
+        and(
+          isNotNull(transactionTable.category_id),
+          type ? eq(transactionTable.type, type) : undefined,
+        ),
+      )
+      .groupBy(transactionTable.category_id)
+      .orderBy(desc(sql`usage_count`), desc(sql`latest_used_at`))
+      .limit(normalizedLimit)
+      .as("usage");
 
-    const rows = type
-      ? await db.getAllAsync<Category>(
-          `SELECT c.*
-             FROM Category c
-             JOIN (
-               SELECT category_id, COUNT(*) AS usage_count, MAX(occurred_at) AS latest_used_at
-               FROM "Transaction"
-               WHERE category_id IS NOT NULL AND type = ?
-               GROUP BY category_id
-               ORDER BY usage_count DESC, latest_used_at DESC
-               LIMIT ?
-             ) usage ON usage.category_id = c.id
-             ORDER BY usage.usage_count DESC, usage.latest_used_at DESC;`,
-          [type, normalizedLimit],
-        )
-      : await db.getAllAsync<Category>(
-          `SELECT c.*
-             FROM Category c
-             JOIN (
-               SELECT category_id, COUNT(*) AS usage_count, MAX(occurred_at) AS latest_used_at
-               FROM "Transaction"
-               WHERE category_id IS NOT NULL
-               GROUP BY category_id
-               ORDER BY usage_count DESC, latest_used_at DESC
-               LIMIT ?
-             ) usage ON usage.category_id = c.id
-             ORDER BY usage.usage_count DESC, usage.latest_used_at DESC;`,
-          [normalizedLimit],
-        );
+    const rows = toDb(db)
+      .select({
+        id: categoryTable.id,
+        name: categoryTable.name,
+        icon: categoryTable.icon,
+        color: categoryTable.color,
+        is_custom: categoryTable.is_custom,
+        created_at: categoryTable.created_at,
+      })
+      .from(categoryTable)
+      .innerJoin(usage, eq(usage.category_id, categoryTable.id))
+      .orderBy(desc(usage.usage_count), desc(usage.latest_used_at))
+      .all();
 
-    return rows;
+    return rows.map(toCategory);
   },
 };
 
 export const budgetRepository = {
   list: async (db: SQLiteDatabase): Promise<Budget[]> => {
-    return await db.getAllAsync<Budget>(
-      `SELECT * FROM Budget ORDER BY created_at ASC;`,
-    );
+    return toDb(db).select().from(budgetTable).orderBy(budgetTable.created_at).all();
   },
   getById: async (db: SQLiteDatabase, _id: string): Promise<Budget | null> => {
-    const row = await db.getFirstAsync<Budget>(
-      `SELECT * FROM Budget WHERE id = ? LIMIT 1;`,
-      [_id],
-    );
+    const row = toDb(db).select().from(budgetTable).where(eq(budgetTable.id, _id)).get();
     return row ?? null;
   },
   getByCategoryId: async (
     db: SQLiteDatabase,
     _id: string,
   ): Promise<Budget | null> => {
-    const row = await db.getFirstAsync<Budget>(
-      `SELECT * FROM Budget WHERE category_id = ? LIMIT 1;`,
-      [_id],
-    );
+    const row = toDb(db)
+      .select()
+      .from(budgetTable)
+      .where(eq(budgetTable.category_id, _id))
+      .get();
     return row ?? null;
   },
   create: async (
@@ -392,14 +490,11 @@ export const budgetRepository = {
   ): Promise<Budget> => {
     const now = new Date().toISOString();
     const id = generateId("bud");
-    await db.runAsync(
-      `INSERT INTO Budget (id, category_id, monthly_limit, created_at) VALUES (?, ?, ?, ?);`,
-      [id, category_id, monthly_limit, now],
-    );
-    const row = await db.getFirstAsync<Budget>(
-      `SELECT * FROM Budget WHERE id = ? LIMIT 1;`,
-      [id],
-    );
+    toDb(db)
+      .insert(budgetTable)
+      .values({ id, category_id, monthly_limit, created_at: now })
+      .run();
+    const row = toDb(db).select().from(budgetTable).where(eq(budgetTable.id, id)).get();
     if (!row) {
       throw new Error("Failed to create budget");
     }
@@ -409,14 +504,12 @@ export const budgetRepository = {
     db: SQLiteDatabase,
     { id, monthly_limit }: Pick<Budget, "id" | "monthly_limit">,
   ): Promise<Budget> => {
-    await db.runAsync(`UPDATE Budget SET monthly_limit = ? WHERE id = ?;`, [
-      monthly_limit,
-      id,
-    ]);
-    const row = await db.getFirstAsync<Budget>(
-      `SELECT * FROM Budget WHERE id = ? LIMIT 1;`,
-      [id],
-    );
+    toDb(db)
+      .update(budgetTable)
+      .set({ monthly_limit })
+      .where(eq(budgetTable.id, id))
+      .run();
+    const row = toDb(db).select().from(budgetTable).where(eq(budgetTable.id, id)).get();
     if (!row) {
       throw new Error("Failed to update budget");
     }
@@ -426,19 +519,23 @@ export const budgetRepository = {
 
 export const transactionRepository = {
   list: async (db: SQLiteDatabase): Promise<Transaction[]> => {
-    return await db.getAllAsync<Transaction>(
-      `SELECT * FROM "Transaction" ORDER BY occurred_at DESC;`,
-    );
+    return toDb(db)
+      .select()
+      .from(transactionTable)
+      .orderBy(desc(transactionTable.occurred_at))
+      .all()
+      .map(toTransaction);
   },
   getById: async (
     db: SQLiteDatabase,
     _id: string,
   ): Promise<Transaction | null> => {
-    const row = await db.getFirstAsync<Transaction>(
-      `SELECT * FROM "Transaction" WHERE id = ? LIMIT 1;`,
-      [_id],
-    );
-    return row ?? null;
+    const row = toDb(db)
+      .select()
+      .from(transactionTable)
+      .where(eq(transactionTable.id, _id))
+      .get();
+    return row ? toTransaction(row) : null;
   },
   createAndApply: async (
     db: SQLiteDatabase,
@@ -449,41 +546,41 @@ export const transactionRepository = {
     const id = tx.id ?? generateId("tx");
 
     let created: Transaction | null = null;
-    await db.withTransactionAsync(async () => {
-      await db.runAsync(
-        `INSERT INTO "Transaction"
-          (id, amount, type, category_id, wallet_id, target_wallet_id, note, occurred_at, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-        [
+    toDb(db).transaction((txDb) => {
+      txDb
+        .insert(transactionTable)
+        .values({
           id,
-          tx.amount,
-          tx.type,
-          tx.category_id ?? null,
-          tx.wallet_id ?? null,
-          tx.target_wallet_id ?? null,
-          tx.note ?? null,
-          tx.occurred_at,
-          now,
-        ],
-      );
+          amount: tx.amount,
+          type: tx.type,
+          category_id: tx.category_id ?? null,
+          wallet_id: tx.wallet_id ?? null,
+          target_wallet_id: tx.target_wallet_id ?? null,
+          note: tx.note ?? null,
+          occurred_at: tx.occurred_at,
+          created_at: now,
+        })
+        .run();
 
       // Apply wallet balance side-effects.
       if (tx.type === "expense") {
         if (!tx.wallet_id) {
           throw new Error("Expense requires wallet_id");
         }
-        await db.runAsync(
-          `UPDATE Wallet SET balance = balance - ? WHERE id = ?;`,
-          [tx.amount, tx.wallet_id],
-        );
+        txDb
+          .update(walletTable)
+          .set({ balance: sql`${walletTable.balance} - ${tx.amount}` })
+          .where(eq(walletTable.id, tx.wallet_id))
+          .run();
       } else if (tx.type === "income") {
         if (!tx.wallet_id) {
           throw new Error("Income requires wallet_id");
         }
-        await db.runAsync(
-          `UPDATE Wallet SET balance = balance + ? WHERE id = ?;`,
-          [tx.amount, tx.wallet_id],
-        );
+        txDb
+          .update(walletTable)
+          .set({ balance: sql`${walletTable.balance} + ${tx.amount}` })
+          .where(eq(walletTable.id, tx.wallet_id))
+          .run();
       } else if (tx.type === "transfer") {
         if (!tx.wallet_id || !tx.target_wallet_id) {
           throw new Error("Transfer requires wallet_id and target_wallet_id");
@@ -491,21 +588,20 @@ export const transactionRepository = {
         if (tx.wallet_id === tx.target_wallet_id) {
           throw new Error("Transfer requires different wallets");
         }
-        await db.runAsync(
-          `UPDATE Wallet SET balance = balance - ? WHERE id = ?;`,
-          [tx.amount, tx.wallet_id],
-        );
-        await db.runAsync(
-          `UPDATE Wallet SET balance = balance + ? WHERE id = ?;`,
-          [tx.amount, tx.target_wallet_id],
-        );
+        txDb
+          .update(walletTable)
+          .set({ balance: sql`${walletTable.balance} - ${tx.amount}` })
+          .where(eq(walletTable.id, tx.wallet_id))
+          .run();
+        txDb
+          .update(walletTable)
+          .set({ balance: sql`${walletTable.balance} + ${tx.amount}` })
+          .where(eq(walletTable.id, tx.target_wallet_id))
+          .run();
       }
 
-      const row = await db.getFirstAsync<Transaction>(
-        `SELECT * FROM "Transaction" WHERE id = ? LIMIT 1;`,
-        [id],
-      );
-      created = row ?? null;
+      const row = txDb.select().from(transactionTable).where(eq(transactionTable.id, id)).get();
+      created = row ? toTransaction(row) : null;
     });
     if (!created) {
       throw new Error("Failed to create transaction");
@@ -536,56 +632,40 @@ export const billRepository = {
     const billId = id ?? generateId("bill");
     const isActive = active ?? true;
     const isPaid = paid ?? false;
-    await db.runAsync(
-      `INSERT INTO Bill
-        (id, name, amount, frequency, category_id, wallet_id, next_due_date, active, paid)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-      [
-        billId,
+    toDb(db)
+      .insert(billTable)
+      .values({
+        id: billId,
         name,
         amount,
         frequency,
-        category_id ?? null,
-        wallet_id ?? null,
+        category_id: category_id ?? null,
+        wallet_id: wallet_id ?? null,
         next_due_date,
-        isActive ? 1 : 0,
-        isPaid ? 1 : 0,
-      ]
-    );
-    const row = await db.getFirstAsync<Bill>(
-      `SELECT * FROM Bill WHERE id = ? LIMIT 1;`,
-      [billId]
-    );
+        active: isActive,
+        paid: isPaid,
+      })
+      .run();
+    const row = toDb(db).select().from(billTable).where(eq(billTable.id, billId)).get();
     if (!row) {
       throw new Error("Failed to create bill");
     }
-    return row;
+    return toBill(row);
   },
   list: async (db: SQLiteDatabase): Promise<Bill[]> => {
-    return await db.getAllAsync<Bill>(
-      `SELECT * FROM Bill ORDER BY next_due_date ASC;`,
-    );
+    return toDb(db).select().from(billTable).orderBy(billTable.next_due_date).all().map(toBill);
   },
   getById: async (db: SQLiteDatabase, _id: string): Promise<Bill | null> => {
-    const row = await db.getFirstAsync<Bill>(
-      `SELECT * FROM Bill WHERE id = ? LIMIT 1;`,
-      [_id],
-    );
-    return row ?? null;
+    const row = toDb(db).select().from(billTable).where(eq(billTable.id, _id)).get();
+    return row ? toBill(row) : null;
   },
   setPaid: async (
     db: SQLiteDatabase,
     { id, paid }: Pick<Bill, "id" | "paid">,
   ): Promise<Bill | null> => {
-    await db.runAsync(`UPDATE Bill SET paid = ? WHERE id = ?;`, [
-      paid ? 1 : 0,
-      id,
-    ]);
-    const row = await db.getFirstAsync<Bill>(
-      `SELECT * FROM Bill WHERE id = ? LIMIT 1;`,
-      [id],
-    );
-    return row ?? null;
+    toDb(db).update(billTable).set({ paid }).where(eq(billTable.id, id)).run();
+    const row = toDb(db).select().from(billTable).where(eq(billTable.id, id)).get();
+    return row ? toBill(row) : null;
   },
   updateSchedule: async (
     db: SQLiteDatabase,
@@ -595,40 +675,29 @@ export const billRepository = {
       paid,
     }: Pick<Bill, "id" | "next_due_date" | "paid">,
   ): Promise<Bill | null> => {
-    await db.runAsync(
-      `UPDATE Bill SET next_due_date = ?, paid = ? WHERE id = ?;`,
-      [next_due_date, paid ? 1 : 0, id],
-    );
-    const row = await db.getFirstAsync<Bill>(
-      `SELECT * FROM Bill WHERE id = ? LIMIT 1;`,
-      [id],
-    );
-    return row ?? null;
+    toDb(db)
+      .update(billTable)
+      .set({ next_due_date, paid })
+      .where(eq(billTable.id, id))
+      .run();
+    const row = toDb(db).select().from(billTable).where(eq(billTable.id, id)).get();
+    return row ? toBill(row) : null;
   },
   updateAmount: async (
     db: SQLiteDatabase,
     { id, amount }: Pick<Bill, "id" | "amount">,
   ): Promise<Bill | null> => {
-    await db.runAsync(`UPDATE Bill SET amount = ? WHERE id = ?;`, [amount, id]);
-    const row = await db.getFirstAsync<Bill>(
-      `SELECT * FROM Bill WHERE id = ? LIMIT 1;`,
-      [id],
-    );
-    return row ?? null;
+    toDb(db).update(billTable).set({ amount }).where(eq(billTable.id, id)).run();
+    const row = toDb(db).select().from(billTable).where(eq(billTable.id, id)).get();
+    return row ? toBill(row) : null;
   },
   setActive: async (
     db: SQLiteDatabase,
     { id, active }: Pick<Bill, "id" | "active">,
   ): Promise<Bill | null> => {
-    await db.runAsync(`UPDATE Bill SET active = ? WHERE id = ?;`, [
-      active ? 1 : 0,
-      id,
-    ]);
-    const row = await db.getFirstAsync<Bill>(
-      `SELECT * FROM Bill WHERE id = ? LIMIT 1;`,
-      [id],
-    );
-    return row ?? null;
+    toDb(db).update(billTable).set({ active }).where(eq(billTable.id, id)).run();
+    const row = toDb(db).select().from(billTable).where(eq(billTable.id, id)).get();
+    return row ? toBill(row) : null;
   },
 };
 
@@ -639,15 +708,22 @@ export const billPaymentRepository = {
     limit?: number,
   ): Promise<BillPayment[]> => {
     if (limit && limit > 0) {
-      return await db.getAllAsync<BillPayment>(
-        `SELECT * FROM BillPayment WHERE bill_id = ? ORDER BY paid_at DESC LIMIT ?;`,
-        [billId, limit],
-      );
+      return toDb(db)
+        .select()
+        .from(billPaymentTable)
+        .where(eq(billPaymentTable.bill_id, billId))
+        .orderBy(desc(billPaymentTable.paid_at))
+        .limit(limit)
+        .all()
+        .map(toBillPayment);
     }
-    return await db.getAllAsync<BillPayment>(
-      `SELECT * FROM BillPayment WHERE bill_id = ? ORDER BY paid_at DESC;`,
-      [billId],
-    );
+    return toDb(db)
+      .select()
+      .from(billPaymentTable)
+      .where(eq(billPaymentTable.bill_id, billId))
+      .orderBy(desc(billPaymentTable.paid_at))
+      .all()
+      .map(toBillPayment);
   },
   create: async (
     db: SQLiteDatabase,
@@ -664,41 +740,38 @@ export const billPaymentRepository = {
     const now = new Date().toISOString();
     const paymentId = id ?? generateId("billpay");
     const paymentStatus: BillPaymentStatus = status ?? "cleared";
-    await db.runAsync(
-      `INSERT INTO BillPayment
-        (id, bill_id, amount, wallet_id, status, paid_at, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?);`,
-      [
-        paymentId,
+    toDb(db)
+      .insert(billPaymentTable)
+      .values({
+        id: paymentId,
         bill_id,
         amount,
-        wallet_id ?? null,
-        paymentStatus,
+        wallet_id: wallet_id ?? null,
+        status: paymentStatus,
         paid_at,
-        now,
-      ],
-    );
-    const row = await db.getFirstAsync<BillPayment>(
-      `SELECT * FROM BillPayment WHERE id = ? LIMIT 1;`,
-      [paymentId],
-    );
+        created_at: now,
+      })
+      .run();
+    const row = toDb(db)
+      .select()
+      .from(billPaymentTable)
+      .where(eq(billPaymentTable.id, paymentId))
+      .get();
     if (!row) {
       throw new Error("Failed to create bill payment");
     }
-    return row;
+    return toBillPayment(row);
   },
 };
 
 export const monthlySummaryRepository = {
   list: async (db: SQLiteDatabase): Promise<MonthlySummary[]> => {
-    return await db.getAllAsync<MonthlySummary>(
-      `SELECT * FROM MonthlySummary;`,
-    );
+    return toDb(db).select().from(monthlySummaryTable).all();
   },
 };
 
 export const aiTokenLedgerRepository = {
   list: async (db: SQLiteDatabase): Promise<AITokenLedger[]> => {
-    return await db.getAllAsync<AITokenLedger>(`SELECT * FROM AITokenLedger;`);
+    return toDb(db).select().from(aiTokenLedgerTable).all();
   },
 };

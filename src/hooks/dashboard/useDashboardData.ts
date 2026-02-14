@@ -53,7 +53,7 @@ export function useDashboardData(): UseDashboardDataResult {
     useCallback(() => {
       refreshData();
       return () => undefined;
-    }, [refreshData])
+    }, [refreshData]),
   );
 
   return {

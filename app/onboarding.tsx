@@ -1,9 +1,9 @@
 import { AmountDisplay, Keypad, type KeypadKey } from "@/src/components/amount";
 import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import type { CurrencyCode, LocaleCode } from "@/src/data/entities";
 import { SUPPORTED_CURRENCIES } from "@/src/data/entities";
 import { userRepository, walletRepository } from "@/src/data/repositories";
-import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import { useAmountInput } from "@/src/hooks/amount";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
@@ -277,7 +277,9 @@ export default function OnboardingScreen() {
                     style={styles.checkIcon}
                   />
                 ) : null}
-                <Typography variant="subtitle">{t("onboarding.step0.lang.en")}</Typography>
+                <Typography variant="subtitle">
+                  {t("onboarding.step0.lang.en")}
+                </Typography>
               </Pressable>
               <Pressable
                 onPress={() => handleSelectLocaleCode("ar-EG")}
@@ -300,7 +302,9 @@ export default function OnboardingScreen() {
                     style={styles.checkIcon}
                   />
                 ) : null}
-                <Typography variant="subtitle">{t("onboarding.step0.lang.ar")}</Typography>
+                <Typography variant="subtitle">
+                  {t("onboarding.step0.lang.ar")}
+                </Typography>
               </Pressable>
             </View>
           </View>

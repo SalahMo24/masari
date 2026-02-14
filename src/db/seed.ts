@@ -1,26 +1,39 @@
 import type { SQLiteDatabase } from "expo-sqlite";
+import { sql } from "drizzle-orm";
 
 import { generateId } from "@/src/utils/id";
+import { getDrizzleDb } from "./database";
+import { categoryTable, userTable } from "./schema";
 
-async function getCount(db: SQLiteDatabase, table: string): Promise<number> {
-  const row = await db.getFirstAsync<{ count: number }>(
-    `SELECT COUNT(*) as count FROM ${table};`,
-  );
+async function getCount(
+  db: SQLiteDatabase,
+  table: typeof userTable | typeof categoryTable,
+): Promise<number> {
+  const drizzleDb = getDrizzleDb(db);
+  const row = drizzleDb
+    .select({ count: sql<number>`count(*)` })
+    .from(table)
+    .get();
   return row?.count ?? 0;
 }
 
 export async function seedDatabase(db: SQLiteDatabase): Promise<void> {
+  const drizzleDb = getDrizzleDb(db);
+
   // Seed only if empty.
-  const userCount = await getCount(db, `"User"`);
-  const categoryCount = await getCount(db, "Category");
+  const userCount = await getCount(db, userTable);
+  const categoryCount = await getCount(db, categoryTable);
 
   const now = new Date().toISOString();
 
   if (!userCount) {
-    await db.runAsync(
-      `INSERT INTO "User" (id, created_at, currency, locale, onboarding_completed) VALUES (?, ?, ?, ?, ?);`,
-      [generateId("user"), now, "EGP", "ar-EG", 0],
-    );
+    drizzleDb.insert(userTable).values({
+      id: generateId("user"),
+      created_at: now,
+      currency: "EGP",
+      locale: "ar-EG",
+      onboarding_completed: false,
+    }).run();
   }
 
   if (!categoryCount) {
@@ -48,11 +61,15 @@ export async function seedDatabase(db: SQLiteDatabase): Promise<void> {
       { name: "payback", icon: null, color: null, is_custom: 0 },
     ];
 
-    for (const c of categories) {
-      await db.runAsync(
-        `INSERT INTO Category (id, name, icon, color, is_custom, created_at) VALUES (?, ?, ?, ?, ?, ?);`,
-        [generateId("cat"), c.name, c.icon, c.color, c.is_custom, now],
-      );
-    }
+    drizzleDb.insert(categoryTable).values(
+      categories.map((c) => ({
+        id: generateId("cat"),
+        name: c.name,
+        icon: c.icon,
+        color: c.color,
+        is_custom: Boolean(c.is_custom),
+        created_at: now,
+      })),
+    ).run();
   }
 }

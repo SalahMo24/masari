@@ -2,22 +2,25 @@ import { Stack } from "expo-router";
 import { SQLiteProvider, type SQLiteDatabase } from "expo-sqlite";
 import { Platform } from "react-native";
 
-import { initializeDatabase } from "@/src/db";
 import { UserPreferencesProvider } from "@/src/context/UserPreferencesProvider";
+import { initializeDatabase } from "@/src/db";
 import { I18nProvider } from "@/src/i18n/I18nProvider";
 import { useI18n } from "@/src/i18n/useI18n";
 import { AppThemeProvider } from "@/src/theme/AppThemeProvider";
 import { useAppTheme } from "@/src/theme/useAppTheme";
+import { Suspense } from "react";
 
 export default function RootLayout() {
   return (
     <I18nProvider>
       <AppThemeProvider>
-        <SQLiteProvider databaseName="masari.db" onInit={initializeSqlite}>
-          <UserPreferencesProvider>
-            <RootStack />
-          </UserPreferencesProvider>
-        </SQLiteProvider>
+        <Suspense>
+          <SQLiteProvider databaseName="masari.db" onInit={initializeSqlite}>
+            <UserPreferencesProvider>
+              <RootStack />
+            </UserPreferencesProvider>
+          </SQLiteProvider>
+        </Suspense>
       </AppThemeProvider>
     </I18nProvider>
   );

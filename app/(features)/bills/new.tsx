@@ -1,11 +1,10 @@
-import { useEffect, useMemo } from "react";
-import {
-  I18nManager,
-  StyleSheet,
-  View,
-} from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Stack, useRouter } from "expo-router";
+import { useEffect, useMemo } from "react";
+import { I18nManager, StyleSheet, View } from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import NewBillHeader from "@/src/components/bills/NewBillHeader";
 import NewBillStepOne from "@/src/components/bills/NewBillStepOne";
@@ -17,7 +16,10 @@ import { useNewBillLabels } from "@/src/hooks/bills/useNewBillLabels";
 import { useTransactionData } from "@/src/hooks/transactions";
 import { useI18n } from "@/src/i18n/useI18n";
 import { useAppTheme } from "@/src/theme/useAppTheme";
-import { ensureBillCategories, isBillCategory } from "@/src/utils/bills/categories";
+import {
+  ensureBillCategories,
+  isBillCategory,
+} from "@/src/utils/bills/categories";
 import { useSQLiteContext } from "expo-sqlite";
 
 export default function NewBillScreen() {
@@ -81,7 +83,7 @@ export default function NewBillScreen() {
       success: theme.colors.success,
       warning: theme.colors.warning,
     }),
-    [theme]
+    [theme],
   );
 
   const {
@@ -107,12 +109,13 @@ export default function NewBillScreen() {
     today,
   });
 
-  const { currency, summaryLabel, stepOneLabel, stepTwoLabel } = useNewBillLabels({
-    t,
-    frequency,
-    parsedAmount,
-    name,
-  });
+  const { currency, summaryLabel, stepOneLabel, stepTwoLabel } =
+    useNewBillLabels({
+      t,
+      frequency,
+      parsedAmount,
+      name,
+    });
 
   const stepLabel = step === 1 ? stepOneLabel : stepTwoLabel;
 
@@ -179,8 +182,14 @@ export default function NewBillScreen() {
               frequencyQuarterly: t("bill.new.frequency.quarterly"),
               frequencyYearly: t("bill.new.frequency.yearly"),
               dueTitle: t("bill.new.field.due"),
-              dueSummary: t("bill.new.summary.due").replace("{day}", String(dueDay)),
-              repeatSummary: t("bill.new.summary.repeat").replace("{day}", String(dueDay)),
+              dueSummary: t("bill.new.summary.due").replace(
+                "{day}",
+                String(dueDay),
+              ),
+              repeatSummary: t("bill.new.summary.repeat").replace(
+                "{day}",
+                String(dueDay),
+              ),
               saving: t("bill.new.cta.saving"),
               add: t("bill.new.cta.add"),
             }}

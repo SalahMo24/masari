@@ -58,8 +58,7 @@ export function useBillsOverview(locale: string): BillsOverview {
   const [loading, setLoading] = useState(true);
   const [anchorDate, setAnchorDate] = useState(() => new Date());
   const monthLabel = useMemo(
-    () =>
-      new Intl.DateTimeFormat(locale, { month: "long" }).format(anchorDate),
+    () => new Intl.DateTimeFormat(locale, { month: "long" }).format(anchorDate),
     [anchorDate, locale],
   );
 
@@ -154,10 +153,7 @@ export function useBillsOverview(locale: string): BillsOverview {
   );
   const remainingAmount = useMemo(
     () =>
-      activeBills.reduce(
-        (sum, bill) => sum + (bill.paid ? 0 : bill.amount),
-        0,
-      ),
+      activeBills.reduce((sum, bill) => sum + (bill.paid ? 0 : bill.amount), 0),
     [activeBills],
   );
   const progressPercent = useMemo(() => {

@@ -11,6 +11,7 @@ import {
   WalletSection,
 } from "@/src/components/transactions";
 import Typography from "@/src/components/typography.component";
+import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import type { TransactionType } from "@/src/data/entities";
 import { transactionRepository } from "@/src/data/repositories";
 import { useAmountInput } from "@/src/hooks/amount";
@@ -21,7 +22,6 @@ import {
   useWalletSelection,
 } from "@/src/hooks/transactions";
 import { useI18n } from "@/src/i18n/useI18n";
-import { useUserPreferences } from "@/src/context/UserPreferencesProvider";
 import { useAppTheme } from "@/src/theme/useAppTheme";
 import { formatAmountForSummary } from "@/src/utils/amount";
 import { Stack, router } from "expo-router";
@@ -177,7 +177,9 @@ export default function NewTransactionScreen() {
   const frequentPickerCategories = useMemo(() => {
     if (mode === "transfer") return [];
     if (frequentCategories.length === 0) return [];
-    const visibleCategoryIds = new Set(categoryPickerCategories.map((c) => c.id));
+    const visibleCategoryIds = new Set(
+      categoryPickerCategories.map((c) => c.id),
+    );
     return frequentCategories.filter((category) =>
       visibleCategoryIds.has(category.id),
     );
@@ -430,16 +432,22 @@ export default function NewTransactionScreen() {
                     allTitle: t("transaction.category.all"),
                     createCategory: t("transaction.createCategory"),
                     createTitle: t("transaction.category.create.title"),
-                    categoryNameLabel: t("transaction.category.create.name.label"),
+                    categoryNameLabel: t(
+                      "transaction.category.create.name.label",
+                    ),
                     categoryNamePlaceholder: t(
                       "transaction.category.create.name.placeholder",
                     ),
-                    categoryIconLabel: t("transaction.category.create.icon.label"),
+                    categoryIconLabel: t(
+                      "transaction.category.create.icon.label",
+                    ),
                     createSave: t("transaction.category.create.cta.save"),
                     createSaving: t("transaction.category.create.cta.saving"),
                     createCancel: t("transaction.category.create.cta.cancel"),
                     errorNameEmpty: t("transaction.category.create.error.name"),
-                    errorNameExists: t("transaction.category.create.error.exists"),
+                    errorNameExists: t(
+                      "transaction.category.create.error.exists",
+                    ),
                     errorCreateCategory: t("transaction.error.createCategory"),
                     close: t("transaction.close"),
                     empty: t("transaction.category.empty"),

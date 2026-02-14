@@ -1,138 +1,92 @@
+import migrations from "@/drizzle/migrations";
+import { migrate as drizzleMigrate } from "drizzle-orm/expo-sqlite/migrator";
 import type { SQLiteDatabase } from "expo-sqlite";
+import { getDrizzleDb } from "./database";
 
-type Migration = {
-  version: number;
-  statements: string[];
-};
+async function hasTable(db: SQLiteDatabase, name: string): Promise<boolean> {
+  const row = await db.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(*) as count FROM sqlite_master WHERE type = 'table' AND name = ?;`,
+    [name],
+  );
+  return (row?.count ?? 0) > 0;
+}
 
-const migrations: Migration[] = [
-  {
-    version: 1,
-    statements: [
-      `CREATE TABLE IF NOT EXISTS "User" (
-        id TEXT PRIMARY KEY,
-        created_at TEXT,
-        currency TEXT DEFAULT 'EGP',
-        locale TEXT DEFAULT 'ar-EG'
-      );`,
-      `CREATE TABLE IF NOT EXISTS Wallet (
-        id TEXT PRIMARY KEY,
-        name TEXT,
-        type TEXT CHECK(type IN ('cash', 'bank')),
-        balance REAL,
-        created_at TEXT
-      );`,
-      `CREATE TABLE IF NOT EXISTS Category (
-        id TEXT PRIMARY KEY,
-        name TEXT,
-        icon TEXT,
-        color TEXT,
-        is_custom INTEGER,
-        created_at TEXT
-      );`,
-      `CREATE TABLE IF NOT EXISTS Budget (
-        id TEXT PRIMARY KEY,
-        category_id TEXT UNIQUE,
-        monthly_limit REAL,
-        created_at TEXT,
-        FOREIGN KEY(category_id) REFERENCES Category(id)
-      );`,
-      `CREATE TABLE IF NOT EXISTS "Transaction" (
-        id TEXT PRIMARY KEY,
-        amount REAL,
-        type TEXT CHECK(type IN ('income', 'expense', 'transfer')),
-        category_id TEXT,
-        wallet_id TEXT,
-        target_wallet_id TEXT,
-        note TEXT,
-        occurred_at TEXT,
-        created_at TEXT,
-        FOREIGN KEY(category_id) REFERENCES Category(id),
-        FOREIGN KEY(wallet_id) REFERENCES Wallet(id),
-        FOREIGN KEY(target_wallet_id) REFERENCES Wallet(id)
-      );`,
-      `CREATE TABLE IF NOT EXISTS Bill (
-        id TEXT PRIMARY KEY,
-        name TEXT,
-        amount REAL,
-        frequency TEXT CHECK(frequency IN ('monthly','quarterly','yearly')),
-        category_id TEXT,
-        wallet_id TEXT,
-        next_due_date TEXT,
-        active INTEGER,
-        FOREIGN KEY(category_id) REFERENCES Category(id),
-        FOREIGN KEY(wallet_id) REFERENCES Wallet(id)
-      );`,
-      `CREATE TABLE IF NOT EXISTS MonthlySummary (
-        id TEXT PRIMARY KEY,
-        month TEXT,
-        total_income REAL,
-        total_expenses REAL,
-        savings REAL,
-        created_at TEXT
-      );`,
-      `CREATE TABLE IF NOT EXISTS AITokenLedger (
-        id TEXT PRIMARY KEY,
-        month TEXT,
-        tokens_used INTEGER,
-        token_limit INTEGER,
-        last_reset TEXT
-      );`,
-    ],
-  },
-  {
-    version: 2,
-    statements: [
-      `ALTER TABLE Bill ADD COLUMN paid INTEGER DEFAULT 0;`,
-      `UPDATE Bill SET paid = 0 WHERE paid IS NULL;`,
-    ],
-  },
-  {
-    version: 3,
-    statements: [
-      `CREATE TABLE IF NOT EXISTS BillPayment (
-        id TEXT PRIMARY KEY,
-        bill_id TEXT,
-        amount REAL,
-        wallet_id TEXT,
-        status TEXT DEFAULT 'cleared',
-        paid_at TEXT,
-        created_at TEXT,
-        FOREIGN KEY(bill_id) REFERENCES Bill(id),
-        FOREIGN KEY(wallet_id) REFERENCES Wallet(id)
-      );`,
-    ],
-  },
-  {
-    version: 4,
-    statements: [
-      `ALTER TABLE "User" ADD COLUMN onboarding_completed INTEGER DEFAULT 0;`,
-      `UPDATE "User" SET onboarding_completed = 0 WHERE onboarding_completed IS NULL;`,
-    ],
-  },
-];
-
-async function getUserVersion(db: SQLiteDatabase): Promise<number> {
+async function getLegacyUserVersion(db: SQLiteDatabase): Promise<number> {
   const row = await db.getFirstAsync<{ user_version: number }>(
-    "PRAGMA user_version;"
+    "PRAGMA user_version;",
   );
   return row?.user_version ?? 0;
 }
 
+async function getRowCount(db: SQLiteDatabase, tableName: string): Promise<number> {
+  const row = await db.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(*) as count FROM "${tableName}";`,
+  );
+  return row?.count ?? 0;
+}
+
+async function hasAnyAppTable(db: SQLiteDatabase): Promise<boolean> {
+  const appTables = [
+    "User",
+    "Wallet",
+    "Category",
+    "Budget",
+    "Transaction",
+    "Bill",
+    "BillPayment",
+    "MonthlySummary",
+    "AITokenLedger",
+  ];
+
+  const placeholders = appTables.map(() => "?").join(", ");
+  const row = await db.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(*) as count
+       FROM sqlite_master
+      WHERE type = 'table'
+        AND name IN (${placeholders});`,
+    appTables,
+  );
+  return (row?.count ?? 0) > 0;
+}
+
+async function baselineLegacyDatabaseIfNeeded(db: SQLiteDatabase): Promise<void> {
+  const migrationTableExists = await hasTable(db, "__drizzle_migrations");
+  const hasMigrationMarkers = migrationTableExists
+    ? (await getRowCount(db, "__drizzle_migrations")) > 0
+    : false;
+  if (hasMigrationMarkers) {
+    return;
+  }
+
+  const hasExistingAppTables = await hasAnyAppTable(db);
+  const legacyUserVersion = await getLegacyUserVersion(db);
+  const hasLegacyDb = hasExistingAppTables || legacyUserVersion > 0;
+  if (!hasLegacyDb) {
+    return;
+  }
+
+  if (!migrationTableExists) {
+    await db.execAsync(`CREATE TABLE IF NOT EXISTS "__drizzle_migrations" (
+      id SERIAL PRIMARY KEY,
+      hash text NOT NULL,
+      created_at numeric
+    );`);
+  }
+
+  const latestKnownMigrationMillis =
+    migrations.journal.entries[migrations.journal.entries.length - 1]?.when ??
+    Date.now();
+
+  await db.runAsync(
+    `INSERT INTO "__drizzle_migrations" ("hash", "created_at") VALUES (?, ?);`,
+    ["legacy-baseline", latestKnownMigrationMillis],
+  );
+}
+
 export async function migrate(db: SQLiteDatabase): Promise<void> {
   await db.execAsync("PRAGMA foreign_keys = ON;");
+  await baselineLegacyDatabaseIfNeeded(db);
 
-  let currentVersion = await getUserVersion(db);
-  for (const migration of migrations) {
-    if (migration.version <= currentVersion) {
-      continue;
-    }
-
-    for (const statement of migration.statements) {
-      await db.execAsync(statement);
-    }
-
-    await db.execAsync(`PRAGMA user_version = ${migration.version};`);
-    currentVersion = migration.version;
-  }
+  const drizzleDb = getDrizzleDb(db);
+  await drizzleMigrate(drizzleDb, migrations);
 }

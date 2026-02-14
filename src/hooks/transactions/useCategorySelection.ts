@@ -52,20 +52,20 @@ export function useCategorySelection(
 
   const incomeQuickCategories = useMemo(() => {
     return categories.filter((c) =>
-      INCOME_QUICK_NAMES.has(c.name.toLowerCase())
+      INCOME_QUICK_NAMES.has(c.name.toLowerCase()),
     );
   }, [categories]);
 
   const expenseCategories = useMemo(() => {
     // If a category name matches income quick chips, hide it from expense chips.
     return categories.filter(
-      (c) => !INCOME_QUICK_NAMES.has(c.name.toLowerCase())
+      (c) => !INCOME_QUICK_NAMES.has(c.name.toLowerCase()),
     );
   }, [categories]);
 
   const selectedCategory = useMemo(
     () => categories.find((c) => c.id === selectedCategoryId) ?? null,
-    [categories, selectedCategoryId]
+    [categories, selectedCategoryId],
   );
 
   const onCreateCategory = useCallback(
@@ -74,8 +74,7 @@ export function useCategorySelection(
       const name = input.name.trim();
       if (!name) return null;
       const exists = categories.some(
-        (category) =>
-          category.name.trim().toLowerCase() === name.toLowerCase(),
+        (category) => category.name.trim().toLowerCase() === name.toLowerCase(),
       );
       if (exists) return null;
       try {
@@ -90,7 +89,10 @@ export function useCategorySelection(
         return created;
       } catch (error) {
         console.error(error);
-        Alert.alert(t("transaction.error"), t("transaction.error.createCategory"));
+        Alert.alert(
+          t("transaction.error"),
+          t("transaction.error.createCategory"),
+        );
         return null;
       }
     },

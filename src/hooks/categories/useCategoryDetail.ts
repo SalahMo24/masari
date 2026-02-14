@@ -16,12 +16,10 @@ import {
   transactionRepository,
   walletRepository,
 } from "@/src/data/repositories";
+import { getCategoryIconName } from "@/src/hooks/budgets/budgetFormatting";
+import type { MaterialIconName } from "@/src/hooks/budgets/budgetTypes";
 import { formatAmountForSummary } from "@/src/utils/amount";
 import { getCategoryLabel } from "@/src/utils/categories/labels";
-import {
-  getCategoryIconName,
-} from "@/src/hooks/budgets/budgetFormatting";
-import type { MaterialIconName } from "@/src/hooks/budgets/budgetTypes";
 
 export type CategoryDetailTransaction = {
   id: string;
@@ -67,11 +65,16 @@ const formatMonthLabel = (locale: string, date: Date) =>
   );
 
 const formatTime = (locale: string, date: Date) =>
-  new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit" }).format(
-    date,
-  );
+  new Intl.DateTimeFormat(locale, {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
 
-export function useCategoryDetail({ categoryId, locale, t }: UseCategoryDetailArgs) {
+export function useCategoryDetail({
+  categoryId,
+  locale,
+  t,
+}: UseCategoryDetailArgs) {
   const db = useSQLiteContext();
   const { currency: currencyLabel } = useUserPreferences();
   const [category, setCategory] = useState<Category | null>(null);
@@ -114,7 +117,10 @@ export function useCategoryDetail({ categoryId, locale, t }: UseCategoryDetailAr
   const today = useMemo(() => new Date(), []);
   const monthStart = useMemo(() => startOfMonth(today), [today]);
   const monthEnd = useMemo(() => endOfMonth(today), [today]);
-  const lastMonthStart = useMemo(() => startOfMonth(subMonths(today, 1)), [today]);
+  const lastMonthStart = useMemo(
+    () => startOfMonth(subMonths(today, 1)),
+    [today],
+  );
   const lastMonthEnd = useMemo(() => endOfMonth(subMonths(today, 1)), [today]);
 
   const localeTag = locale === "ar" ? "ar-EG" : "en-US";
@@ -147,7 +153,9 @@ export function useCategoryDetail({ categoryId, locale, t }: UseCategoryDetailAr
           ? !tx.category_id
           : tx.category_id === categoryId;
       if (tx.type !== "expense" || !isCategoryMatch) return total;
-      if (!isWithinRange(new Date(tx.occurred_at), lastMonthStart, lastMonthEnd)) {
+      if (
+        !isWithinRange(new Date(tx.occurred_at), lastMonthStart, lastMonthEnd)
+      ) {
         return total;
       }
       return total + tx.amount;
@@ -187,7 +195,9 @@ export function useCategoryDetail({ categoryId, locale, t }: UseCategoryDetailAr
       const key = formatDateKey(occurredAt);
       const timeLabel = formatTime(localeTag, occurredAt);
       const wallet = tx.wallet_id ? walletMap.get(tx.wallet_id) : undefined;
-      const subtitle = wallet?.name ? `${wallet.name} • ${timeLabel}` : timeLabel;
+      const subtitle = wallet?.name
+        ? `${wallet.name} • ${timeLabel}`
+        : timeLabel;
       const sourceLabel = wallet
         ? wallet.type === "bank"
           ? t("dashboard.bank")
@@ -219,9 +229,20 @@ export function useCategoryDetail({ categoryId, locale, t }: UseCategoryDetailAr
       }
     }
     return groups;
-  }, [categoryIcon, categoryLabel, currencyLabel, filteredTransactions, localeTag, t, walletMap]);
+  }, [
+    categoryIcon,
+    categoryLabel,
+    currencyLabel,
+    filteredTransactions,
+    localeTag,
+    t,
+    walletMap,
+  ]);
 
-  const monthLabel = useMemo(() => formatMonthLabel(localeTag, today), [localeTag, today]);
+  const monthLabel = useMemo(
+    () => formatMonthLabel(localeTag, today),
+    [localeTag, today],
+  );
   const totalSpentLabel = `${currencyLabel} ${formatAmountForSummary(totalSpent)}`;
   const transactionCountLabel = t("category.detail.transactions.count").replace(
     "{count}",
