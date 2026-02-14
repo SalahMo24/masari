@@ -1,5 +1,5 @@
 import { useTheme } from "@react-navigation/native";
-import type { TextProps, TextStyle } from "react-native";
+import type { StyleProp, TextProps, TextStyle } from "react-native";
 import { Text } from "react-native";
 
 import type { AppTheme } from "../theme/theme";
@@ -23,7 +23,7 @@ type TypographyProps = Omit<TextProps, "style"> & {
   align?: TextStyle["textAlign"];
   weight?: TextStyle["fontWeight"];
   baseSize?: number;
-  style?: TextStyle | TextStyle[];
+  style?: StyleProp<TextStyle>;
 };
 
 const PHI = 1.618;

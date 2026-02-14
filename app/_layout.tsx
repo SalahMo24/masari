@@ -44,10 +44,11 @@ function RootStack() {
       <Stack.Screen
         name="(features)/transactions/new"
         options={{
-          title: t("screen.transaction.new"),
-          presentation: Platform.OS === "ios" ? "modal" : "card",
-          animation: Platform.OS === "ios" ? "fade" : "slide_from_bottom",
+          headerShown: false,
+          presentation: Platform.OS === "ios" ? "fullScreenModal" : "card",
+          animation: "slide_from_bottom",
           contentStyle: { backgroundColor: theme.colors.background },
+
         }}
       />
       <Stack.Screen

@@ -1,6 +1,6 @@
+import Typography from "@/src/components/typography.component";
 import type { TransactionType } from "@/src/data/entities";
 import { Pressable, StyleSheet, View } from "react-native";
-import Typography from "@/src/components/typography.component";
 
 export interface SegmentedControlProps {
   value: TransactionType;

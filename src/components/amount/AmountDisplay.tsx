@@ -77,7 +77,11 @@ export function AmountDisplay({
         <Typography
           key={`caret-${i}`}
           variant="h3"
-          style={[styles.caret, { color: amountColor }, styleOverrides?.caret]}
+          style={[
+            styles.caret,
+            { color: amountColor },
+            StyleSheet.flatten(styleOverrides?.caret),
+          ]}
         >
           |
         </Typography>,
@@ -88,7 +92,11 @@ export function AmountDisplay({
       <Typography
         key={`char-${i}`}
         variant="h3"
-        style={[styles.digit, { color: amountColor }, styleOverrides?.digit]}
+        style={[
+          styles.digit,
+          { color: amountColor },
+          StyleSheet.flatten(styleOverrides?.digit),
+        ]}
       >
         {char}
       </Typography>,
@@ -100,7 +108,11 @@ export function AmountDisplay({
       <Typography
         key="caret-end"
         variant="h3"
-        style={[styles.caret, { color: amountColor }, styleOverrides?.caret]}
+        style={[
+          styles.caret,
+          { color: amountColor },
+          StyleSheet.flatten(styleOverrides?.caret),
+        ]}
       >
         |
       </Typography>,
@@ -113,7 +125,7 @@ export function AmountDisplay({
       style={[
         styles.currency,
         { color: currencyColor },
-        styleOverrides?.currency,
+        StyleSheet.flatten(styleOverrides?.currency),
       ]}
     >
       {currency}
@@ -177,12 +189,14 @@ const styles = StyleSheet.create({
   },
   digit: {
     fontSize: 56,
+    lineHeight: 66,
     fontWeight: "900",
     letterSpacing: -1,
     paddingVertical: 4,
   },
   caret: {
     fontSize: 56,
+    lineHeight: 66,
     fontWeight: "200",
     paddingVertical: 4,
   },

@@ -1,6 +1,6 @@
+import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 import Typography from "@/src/components/typography.component";
 import type { TransactionMonthCell } from "@/src/hooks/transactions/useTransactionDatePicker";
-import { MaterialIcons } from "@/src/components/icons/legacyVectorIcons";
 import {
   I18nManager,
   Modal,
@@ -94,7 +94,11 @@ export function TransactionDatePicker({
             },
           ]}
         >
-          <MaterialIcons name="calendar-month" size={18} color={colors.accent} />
+          <MaterialIcons
+            name="calendar-month"
+            size={18}
+            color={colors.accent}
+          />
         </Pressable>
 
         <ScrollView

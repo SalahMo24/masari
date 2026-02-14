@@ -13,6 +13,7 @@ import { Locale, strings } from "./strings";
 
 type I18nContextValue = {
   locale: Locale;
+  isRtl: boolean;
   setLocale: (locale: Locale) => void;
   toggleLocale: () => void;
   t: (key: string) => string;
@@ -20,100 +21,121 @@ type I18nContextValue = {
 
 const I18nContext = createContext<I18nContextValue | undefined>(undefined);
 
-const DEFAULT_LOCALE = "ar";
+const DEFAULT_LOCALE: Locale = "ar";
 type I18nProviderProps = {
   children: React.ReactNode;
 };
 
 const LOCALE_STORAGE_KEY = "masari.locale";
+/**
+ * Persisted direction key — survives JS bundle reloads (unlike a module-level
+ * variable). Stores the direction ("rtl" | "ltr") we last triggered a reload
+ * for so we never reload twice for the same direction.
+ */
+const APPLIED_DIRECTION_KEY = "masari.appliedDirection";
 
-function isRtlLocale(locale: Locale) {
+function isRtlLocale(locale: Locale): boolean {
   return locale === "ar";
-}
-
-function syncLayoutDirection(locale: Locale) {
-  const shouldBeRtl = isRtlLocale(locale);
-  if (I18nManager.isRTL === shouldBeRtl) {
-    return;
-  }
-
-  I18nManager.allowRTL(shouldBeRtl);
-  I18nManager.forceRTL(shouldBeRtl);
-
-  if (typeof DevSettings?.reload === "function") {
-    DevSettings.reload();
-  }
 }
 
 export function I18nProvider({ children }: I18nProviderProps) {
   const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE);
   const [isHydrated, setIsHydrated] = useState(false);
 
+  // ── Hydrate saved locale ──────────────────────────────────────────
   useEffect(() => {
-    let isActive = true;
+    let active = true;
 
     AsyncStorage.getItem(LOCALE_STORAGE_KEY)
       .then((saved) => {
-        if (!isActive || (saved !== "en" && saved !== "ar")) {
-          return;
-        }
-        setLocale((current) => (current === saved ? current : saved));
+        if (!active || (saved !== "en" && saved !== "ar")) return;
+        setLocale((prev) => (prev === saved ? prev : saved));
       })
-      .catch(() => null)
+      .catch(() => {})
       .finally(() => {
-        if (isActive) {
-          setIsHydrated(true);
-        }
+        if (active) setIsHydrated(true);
       });
 
     return () => {
-      isActive = false;
+      active = false;
     };
   }, []);
 
+  // ── Persist locale & sync native layout direction ─────────────────
   useEffect(() => {
-    if (!isHydrated) {
-      return;
-    }
+    if (!isHydrated) return;
 
-    let isActive = true;
+    let active = true;
 
-    const persistAndSyncDirection = async () => {
+    (async () => {
+      const shouldBeRtl = isRtlLocale(locale);
+      const targetDir = shouldBeRtl ? "rtl" : "ltr";
+
+      // 1. Persist locale first (survives a potential reload).
       try {
-        // Persist before triggering a potential app reload for RTL changes.
         await AsyncStorage.setItem(LOCALE_STORAGE_KEY, locale);
       } catch {
-        // Best effort persistence; still sync direction so UI remains correct.
+        // Best-effort; continue to sync direction.
       }
 
-      if (isActive) {
-        // Always enforce direction after hydration so initial load is correct.
-        syncLayoutDirection(locale);
-      }
-    };
+      // 2. Always tell the native side what direction we want.
+      I18nManager.allowRTL(shouldBeRtl);
+      I18nManager.forceRTL(shouldBeRtl);
 
-    persistAndSyncDirection();
+      if (!active) return;
+
+      // 3. Native direction already matches — record it and we're done.
+      if (I18nManager.isRTL === shouldBeRtl) {
+        try {
+          await AsyncStorage.setItem(APPLIED_DIRECTION_KEY, targetDir);
+        } catch {}
+        return;
+      }
+
+      // 4. We already reloaded for this exact direction once.
+      //    In Expo Go the native flag may not persist across reloads;
+      //    reloading again would cause an infinite loop, so bail out.
+      try {
+        const appliedDir = await AsyncStorage.getItem(APPLIED_DIRECTION_KEY);
+        if (appliedDir === targetDir) return;
+      } catch {}
+
+      // 5. First time we need this direction — record it, then reload once.
+      try {
+        await AsyncStorage.setItem(APPLIED_DIRECTION_KEY, targetDir);
+      } catch {}
+
+      if (active && typeof DevSettings?.reload === "function") {
+        DevSettings.reload();
+      }
+    })();
 
     return () => {
-      isActive = false;
+      active = false;
     };
   }, [isHydrated, locale]);
 
+  // ── Context value ─────────────────────────────────────────────────
   const setLocaleAndPersist = useCallback((nextLocale: Locale) => {
     setLocale(nextLocale);
   }, []);
 
-  const value = useMemo<I18nContextValue>(() => {
-    const dictionary = strings[locale] ?? strings[DEFAULT_LOCALE];
-    return {
-      locale,
-      setLocale: setLocaleAndPersist,
-      toggleLocale: () => {
-        setLocaleAndPersist(locale === "ar" ? "en" : "ar");
-      },
-      t: (key: string) => dictionary[key] ?? strings.en[key] ?? key,
-    };
-  }, [locale, setLocaleAndPersist]);
+  const isRtl = isRtlLocale(locale);
+
+  const value = useMemo<I18nContextValue>(
+    () => {
+      const dictionary = strings[locale] ?? strings[DEFAULT_LOCALE];
+      return {
+        locale,
+        isRtl,
+        setLocale: setLocaleAndPersist,
+        toggleLocale: () =>
+          setLocaleAndPersist(locale === "ar" ? "en" : "ar"),
+        t: (key: string) => dictionary[key] ?? strings.en[key] ?? key,
+      };
+    },
+    [locale, isRtl, setLocaleAndPersist],
+  );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

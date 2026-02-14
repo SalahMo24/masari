@@ -1,6 +1,6 @@
-import { StyleSheet, View } from "react-native";
-import type { TransactionType } from "@/src/data/entities";
 import Typography from "@/src/components/typography.component";
+import type { TransactionType } from "@/src/data/entities";
+import { StyleSheet, View } from "react-native";
 
 export interface TransactionSummaryProps {
   summary: string;
@@ -35,7 +35,7 @@ export function TransactionSummary({
 const styles = StyleSheet.create({
   summaryWrap: {
     paddingHorizontal: 16,
-    paddingBottom: 4,
+    // paddingBottom: 4,
   },
   summary: {
     textAlign: "center",

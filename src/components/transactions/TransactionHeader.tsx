@@ -1,6 +1,6 @@
 import { Ionicons } from "@/src/components/icons/legacyVectorIcons";
-import { Pressable, StyleSheet, View } from "react-native";
 import Typography from "@/src/components/typography.component";
+import { Pressable, StyleSheet, View } from "react-native";
 
 export interface TransactionHeaderProps {
   title: string;
@@ -28,7 +28,10 @@ export function TransactionHeader({
       <Pressable
         onPress={onClose}
         hitSlop={10}
-        style={({ pressed }) => [styles.headerIcon, pressed && { opacity: 0.6 }]}
+        style={({ pressed }) => [
+          styles.headerIcon,
+          pressed && { opacity: 0.6 },
+        ]}
         accessibilityRole="button"
         accessibilityLabel={closeLabel}
       >
@@ -40,7 +43,10 @@ export function TransactionHeader({
       <Pressable
         onPress={onHelp}
         hitSlop={10}
-        style={({ pressed }) => [styles.helpButton, pressed && { opacity: 0.6 }]}
+        style={({ pressed }) => [
+          styles.helpButton,
+          pressed && { opacity: 0.6 },
+        ]}
         accessibilityRole="button"
         accessibilityLabel={helpLabel}
       >

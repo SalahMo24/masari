@@ -1,6 +1,5 @@
 import { AmountDisplay, Keypad } from "@/src/components/amount";
 import {
-  NoteSection,
   SAVE_BUTTON_BASE_HEIGHT,
   SaveButton,
   SegmentedControl,
@@ -46,7 +45,7 @@ export default function NewTransactionScreen() {
   const { currency } = useUserPreferences();
   const db = useSQLiteContext();
   const insets = useSafeAreaInsets();
-  const saveButtonOffset = SAVE_BUTTON_BASE_HEIGHT + insets.bottom - 30;
+  const saveButtonOffset = SAVE_BUTTON_BASE_HEIGHT + insets.bottom;
   const isRtl = I18nManager.isRTL;
 
   // Data fetching
@@ -309,7 +308,10 @@ export default function NewTransactionScreen() {
   ]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+    >
       <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -333,7 +335,7 @@ export default function NewTransactionScreen() {
               paddingBottom: saveButtonOffset,
               display: "flex",
               flexDirection: "column",
-              gap: 12,
+              // gap: 12,
             }}
           >
             <SegmentedControl
@@ -362,7 +364,6 @@ export default function NewTransactionScreen() {
                 mode === "income" ? theme.colors.success : theme.colors.text
               }
             />
-
             <ScrollView
               style={{ flex: 1 }}
               contentContainerStyle={{ paddingBottom: 16 }}
@@ -455,7 +456,7 @@ export default function NewTransactionScreen() {
                 />
               ) : null}
 
-              <NoteSection
+              {/* <NoteSection
                 mode={mode}
                 note={note}
                 onNoteChange={setNote}
@@ -465,7 +466,7 @@ export default function NewTransactionScreen() {
                 mutedTextColor={theme.colors.mutedText}
                 borderColor={theme.colors.border}
                 cardColor={theme.colors.card}
-              />
+              /> */}
             </ScrollView>
 
             <TransactionSummary
