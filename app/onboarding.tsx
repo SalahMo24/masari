@@ -70,6 +70,10 @@ export default function OnboardingScreen() {
       try {
         const user = await userRepository.getOrCreateLocalUser(db);
         if (!active) return;
+        if (user.onboarding_completed) {
+          router.replace("/(tabs)/dashboard");
+          return;
+        }
         setSelectedCurrency(user.currency);
         setSelectedLocaleCode(user.locale);
       } catch (error) {
@@ -80,7 +84,7 @@ export default function OnboardingScreen() {
     return () => {
       active = false;
     };
-  }, [db]);
+  }, [db, router]);
 
   useEffect(() => {
     let active = true;
